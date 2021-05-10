@@ -34,3 +34,6 @@ var/
 *.log
 .idea/
 dev/
+*.npy
+*.swp
+*.tflite
