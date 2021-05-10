@@ -1,4 +1,4 @@
-# Cyclone
+# Infero
 
 ## Description
 Infero runs a pre-trained ML model on an input sample.
