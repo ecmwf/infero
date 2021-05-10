@@ -25,4 +25,4 @@ if __name__ == "__main__":
     print(f"Writing numpy of shape {out_data.shape} into {args.output}")
     print(f"Output numpy {out_data}")
     
-    np.save(args.output, out_data)
+    np.save(args.output, out_data.astype(np.float32))
