@@ -81,16 +81,16 @@ ecbuild_add_option( FEATURE TF_LITE
 # endif()
 
 list(APPEND infero_srcs
-    src/input_types/input_data.h
-    src/input_types/input_data.cpp
-    src/ml_engines/engine.h
-    src/ml_engines/engine.cpp
-    src/prediction.h
-    src/prediction.cpp
-    src/clustering/clustering.h
-    src/clustering/clustering.cpp
-    src/clustering/clustering_dbscan.h
-    src/clustering/clustering_dbscan.cpp
+    src/infero/input_types/input_data.h
+    src/infero/input_types/input_data.cpp
+    src/infero/ml_engines/engine.h
+    src/infero/ml_engines/engine.cpp
+    src/infero/prediction.h
+    src/infero/prediction.cpp
+    src/infero/clustering/clustering.h
+    src/infero/clustering/clustering.cpp
+    src/infero/clustering/clustering_dbscan.h
+    src/infero/clustering/clustering_dbscan.cpp
     contrib/DBSCAN/dbscan.h
     contrib/DBSCAN/dbscan.cpp
     contrib/cnpy/cnpy.h
@@ -99,24 +99,24 @@ list(APPEND infero_srcs
 
 if(HAVE_ONNX)
     list(APPEND infero_srcs
-        src/ml_engines/engine_onnx.h
-        src/ml_engines/engine_onnx.cpp
+        src/infero/ml_engines/engine_onnx.h
+        src/infero/ml_engines/engine_onnx.cpp
         )
     list(APPEND onnx_libs  onnxruntime )
 endif()
 
 if(HAVE_TF_LITE)
     list(APPEND infero_srcs
-        src/ml_engines/engine_tflite.h
-        src/ml_engines/engine_tflite.cpp
+        src/infero/ml_engines/engine_tflite.h
+        src/infero/ml_engines/engine_tflite.cpp
     )
     list(APPEND tensorflow_lite_libs tensorflow-lite)
 endif()
 
 if(HAVE_TENSOR_RT)
     list(APPEND infero_srcs
-        src/ml_engines/engine_trt.h
-        src/ml_engines/engine_trt.cpp
+        src/infero/ml_engines/engine_trt.h
+        src/infero/ml_engines/engine_trt.cpp
     )
 
     list(APPEND tensor_rt_libs 
@@ -171,7 +171,7 @@ ecbuild_add_library(
 
 
 ecbuild_add_executable( TARGET infero.x
-    SOURCES   src/infero.cpp
+    SOURCES   src/infero/infero.cpp
     CONDITION HAVE_BUILD_TOOLS
     # INCLUDES  ${ECKIT_INCLUDE_DIRS}
     LIBS      infero )

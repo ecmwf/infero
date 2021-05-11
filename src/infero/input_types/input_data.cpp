@@ -1,5 +1,5 @@
-#include "contrib/cnpy/cnpy.h"
-#include "input_types/input_data.h"
+#include "cnpy/cnpy.h"
+#include "infero/input_types/input_data.h"
 #include "eckit/log/Log.h"
 
 using namespace eckit;

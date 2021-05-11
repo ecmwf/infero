@@ -1,8 +1,7 @@
-#ifndef CLUSTERING_DBSCAN_H
-#define CLUSTERING_DBSCAN_H
+#pragma once
 
 #include "clustering.h"
-#include "contrib/DBSCAN/dbscan.h"
+#include "DBSCAN/dbscan.h"
 
 // min number of clusters
 static const unsigned int DBSCAN_MIN_N_CLUSTERS = 1;
@@ -37,5 +36,3 @@ private:
     float min_threshold;
 
 };
-
-#endif // CLUSTERING_DBSCAN_H

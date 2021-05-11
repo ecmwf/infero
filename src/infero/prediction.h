@@ -1,5 +1,4 @@
-#ifndef PREDICTION_H
-#define PREDICTION_H
+#pragma once
 
 #include <vector>
 #include <cstdint>
@@ -42,5 +41,3 @@ private:
     std::vector<long unsigned int> shape_static;
 
 };
-
-#endif // PREDICTION_H

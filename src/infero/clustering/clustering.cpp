@@ -1,10 +1,12 @@
-#include "clustering.h"
-#include "clustering/clustering_dbscan.h"
-#include "eckit/log/Log.h"
-#include "eckit/log/JSON.h"
+#include "infero/clustering/clustering.h"
 
 #include <fstream>
 #include <sstream>
+
+#include "eckit/log/JSON.h"
+#include "eckit/log/Log.h"
+
+#include "infero/clustering/clustering_dbscan.h"
 
 using namespace eckit;
 
@@ -16,31 +18,31 @@ Clustering::Clustering()
 }
 
 
-void Clustering::_calc_cluster_centers()
+void Clustering::calculate_cluster_centers()
 {
 
     // loop over cluster points
     // and fill a map < cluster ID, vec<points> >
-    ClusterMap _clust;
+    ClusterMap cluster;
     for (const auto& pt: points){
 
-        auto _it = _clust.find(pt.cid);
-        if (_it != _clust.end()){
+        auto it = cluster.find(pt.cid);
+        if (it != cluster.end()){
 
-            _it->second.push_back(ClusterPoint(pt.x, pt.y, pt.cid));
+            it->second.push_back(ClusterPoint(pt.x, pt.y, pt.cid));
 
         } else {
 
             ClusterPoints vv{ClusterPoint(pt.x, pt.y, pt.cid)};
             ClusterPair _new_clsr(pt.cid, vv);
-            _clust.emplace(_new_clsr);
+            cluster.emplace(_new_clsr);
         }
     }
 
 
     // average point coords for each cluster ID
     float _x, _y;
-    for (const auto& k: _clust){
+    for (const auto& k: cluster){
 
         _x = _y = 0;
 
