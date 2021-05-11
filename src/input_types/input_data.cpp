@@ -1,4 +1,4 @@
-#include "third_party/cnpy/cnpy.h"
+#include "contrib/cnpy/cnpy.h"
 #include "input_types/input_data.h"
 #include "eckit/log/Log.h"
 

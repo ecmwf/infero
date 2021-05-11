@@ -20,100 +20,66 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ########################################################################################################################
 ### dependencies and options
 
+set( PERSISTENT_NAMESPACE "eckit" CACHE INTERNAL "" ) # needed for generating .b files for persistent support
+
 ecbuild_find_package( NAME eckit  VERSION  1.16 REQUIRED )
 
-ecbuild_add_option( FEATURE TENSORFLOW_LITE
-                    DESCRIPTION "TensoflowLite engine"
-                    REQUIRED_PACKAGES TensoflowLite )
+ecbuild_add_option( FEATURE BUILD_TOOLS
+                    DEFAULT ON
+                    DESCRIPTION "Build the command line tools" )
 
-set(WITH_ONNX_RUNTIME $ENV{WITH_ONNX_RUNTIME})
-set(ONNXRT_SOURCE_DIR $ENV{ONNXRT_SOURCE_DIR})
-set(ONNXRT_BUILD_DIR $ENV{ONNXRT_BUILD_DIR})
+ecbuild_add_option( FEATURE TF_LITE
+                    DESCRIPTION "TensorflowLite engine"
+                    REQUIRED_PACKAGES TensorflowLite )
 
-set(WITH_TFLITE_RUNTIME $ENV{WITH_TFLITE_RUNTIME})
-set(TFLITE_SOURCE_DIR $ENV{TFLITE_SOURCE_DIR})
-set(TFLITE_BUILD_DIR $ENV{TFLITE_BUILD_DIR})
+# ecbuild_add_option( FEATURE ONNX
+#                     DESCRIPTION "ONNX engine"
+#                     REQUIRED_PACKAGES ONNX )
 
-set(WITH_TRT $ENV{WITH_TRT})
-set(TRT_SOURCE_DIR $ENV{TRT_SOURCE_DIR})
-set(TRT_BUILD_DIR $ENV{TRT_BUILD_DIR})
-###############################################
-
+# ecbuild_add_option( FEATURE TENSOR_RT
+#                     DESCRIPTION "TensorRT engine"
+#                     REQUIRED_PACKAGES TensorRT )
 
 # ONNX
-if(${WITH_ONNX_RUNTIME})
-
-    set(HAVE_ONNX ON)
-    set(INCL_REL include/onnxruntime/core/session)
-    set(ONNX_INCLUDE_DIR ${ONNXRT_SOURCE_DIR}/${INCL_REL})
-    set(ONNX_LIB_DIR ${ONNXRT_BUILD_DIR}/Linux/Release)
-
-    list(APPEND INCLUDE_DIRS_ALL ${ONNX_INCLUDE_DIR})
-
-    list(APPEND LINK_DIRS_ALL ${ONNX_LIB_DIR})
-
-    add_definitions(-DHAVE_ONNX)
-
-endif()
+# if(${WITH_ONNX_RUNTIME})
+#     set(HAVE_ONNX ON)
+#     set(INCL_REL include/onnxruntime/core/session)
+#     set(ONNX_INCLUDE_DIR ${ONNXRT_SOURCE_DIR}/${INCL_REL})
+#     set(ONNX_LIB_DIR ${ONNXRT_BUILD_DIR}/Linux/Release)
+#     list(APPEND INCLUDE_DIRS_ALL ${ONNX_INCLUDE_DIR})
+#     list(APPEND LINK_DIRS_ALL ${ONNX_LIB_DIR})
+#     add_definitions(-DHAVE_ONNX)
+# endif()
 
 
-# TFLITE
-if(${WITH_TFLITE_RUNTIME})
-
-    set(HAVE_TFLITE ON)
-    set(TFLITE_SCHEMA_DIR "${TFLITE_SOURCE_DIR}/schema")
-    set(TFLITE_FLATBUFFERS_DIR "${TFLITE_BUILD_DIR}/flatbuffers/include")
-
-    list(APPEND INCLUDE_DIRS_ALL ${TFLITE_SOURCE_DIR})
-    list(APPEND INCLUDE_DIRS_ALL ${TFLITE_SCHEMA_DIR})
-    list(APPEND INCLUDE_DIRS_ALL ${TFLITE_FLATBUFFERS_DIR})
-
-    list(APPEND LINK_DIRS_ALL ${TFLITE_BUILD_DIR})
-
-    add_definitions(-DHAVE_TFLITE)
-
-endif()
+# # TFLITE
+# if(${WITH_TFLITE_RUNTIME})
+#     set(HAVE_TFLITE ON)
+#     set(TFLITE_SCHEMA_DIR "${TFLITE_SOURCE_DIR}/schema")
+#     set(TFLITE_FLATBUFFERS_DIR "${TFLITE_BUILD_DIR}/flatbuffers/include")
+#     list(APPEND INCLUDE_DIRS_ALL ${TFLITE_SOURCE_DIR})
+#     list(APPEND INCLUDE_DIRS_ALL ${TFLITE_SCHEMA_DIR})
+#     list(APPEND INCLUDE_DIRS_ALL ${TFLITE_FLATBUFFERS_DIR})
+#     list(APPEND LINK_DIRS_ALL ${TFLITE_BUILD_DIR})
+#     add_definitions(-DHAVE_TFLITE)
+# endif()
 
 
-# TRT
-if(${WITH_TRT})
+# # TRT
+# if(${WITH_TRT})
+#     set(HAVE_TRT ON)
+#     set(TRT_TRG "x86_64-linux-gnu")
+#     set(TRT_COM ${TRT_SOURCE_DIR}/targets/${TRT_TRG}/samples/common)
+#     set(CUDA_INCLUDE_DIR /usr/local/cuda/include)
+#     set(CUDA_LIB_DIR /usr/local/cuda-10.2/targets/x86_64-linux/lib)
+#     list(APPEND INCLUDE_DIRS_ALL ${TRT_SOURCE_DIR}/include)
+#     list(APPEND INCLUDE_DIRS_ALL ${TRT_COM})
+#     list(APPEND INCLUDE_DIRS_ALL ${CUDA_INCLUDE_DIR})
+#     list(APPEND LINK_DIRS_ALL ${TRT_BUILD_DIR}/lib)
+#     list(APPEND LINK_DIRS_ALL ${CUDA_LIB_DIR})
+#     add_definitions(-DHAVE_TRT)
+# endif()
 
-    set(HAVE_TRT ON)
-    set(TRT_TRG "x86_64-linux-gnu")
-    set(TRT_COM ${TRT_SOURCE_DIR}/targets/${TRT_TRG}/samples/common)
-    set(CUDA_INCLUDE_DIR /usr/local/cuda/include)
-    set(CUDA_LIB_DIR /usr/local/cuda-10.2/targets/x86_64-linux/lib)
-
-    list(APPEND INCLUDE_DIRS_ALL ${TRT_SOURCE_DIR}/include)
-    list(APPEND INCLUDE_DIRS_ALL ${TRT_COM})
-    list(APPEND INCLUDE_DIRS_ALL ${CUDA_INCLUDE_DIR})
-
-    list(APPEND LINK_DIRS_ALL ${TRT_BUILD_DIR}/lib)
-    list(APPEND LINK_DIRS_ALL ${CUDA_LIB_DIR})
-
-    add_definitions(-DHAVE_TRT)
-
-endif()
-
-
-message("WITH_ONNX_RUNTIME ${WITH_ONNX_RUNTIME}")
-message("HAVE_ONNX ${HAVE_ONNX}")
-
-message("WITH_TFLITE_RUNTIME ${WITH_TFLITE_RUNTIME}")
-message("HAVE_TFLITE ${HAVE_TFLITE}")
-
-message("WITH_TRT ${WITH_TRT}")
-message("HAVE_TRT ${HAVE_TRT}")
-
-message("INCLUDE_DIRS_ALL ${INCLUDE_DIRS_ALL}")
-message("LINK_DIRS_ALL ${LINK_DIRS_ALL}")
-
-
-INCLUDE_DIRECTORIES(${INCLUDE_DIRS_ALL})
-LINK_DIRECTORIES(${LINK_DIRS_ALL})
-
-
-####################### build library #######################
 list(APPEND infero_srcs
     src/input_types/input_data.h
     src/input_types/input_data.cpp
@@ -129,101 +95,97 @@ list(APPEND infero_srcs
     contrib/DBSCAN/dbscan.cpp
     contrib/cnpy/cnpy.h
     contrib/cnpy/cnpy.cpp
+)
+
+if(HAVE_ONNX)
+    list(APPEND infero_srcs
+        src/ml_engines/engine_onnx.h
+        src/ml_engines/engine_onnx.cpp
+        )
+    list(APPEND onnx_libs  onnxruntime )
+endif()
+
+if(HAVE_TF_LITE)
+    list(APPEND infero_srcs
+        src/ml_engines/engine_tflite.h
+        src/ml_engines/engine_tflite.cpp
+    )
+    list(APPEND tensorflow_lite_libs tensorflow-lite)
+endif()
+
+if(HAVE_TENSOR_RT)
+    list(APPEND infero_srcs
+        src/ml_engines/engine_trt.h
+        src/ml_engines/engine_trt.cpp
     )
 
-if(${WITH_ONNX_RUNTIME})
-    list(APPEND SOURCE_FILES
-        ${CMAKE_SOURCE_DIR}/src/ml_engines/engine_onnx.h
-        ${CMAKE_SOURCE_DIR}/src/ml_engines/engine_onnx.cpp
-        )
-endif()
-
-if(${WITH_TFLITE_RUNTIME})
-    list(APPEND SOURCE_FILES
-        ${CMAKE_SOURCE_DIR}/src/ml_engines/engine_tflite.h
-        ${CMAKE_SOURCE_DIR}/src/ml_engines/engine_tflite.cpp
-        )
-endif()
-
-if(${WITH_TRT})
-    list(APPEND SOURCE_FILES
-        ${CMAKE_SOURCE_DIR}/src/ml_engines/engine_trt.h
-        ${CMAKE_SOURCE_DIR}/src/ml_engines/engine_trt.cpp
-        )
-
-    # TODO check this...
-    list(APPEND SOURCE_FILES
-        ${TRT_COM}/logger.h
-        ${TRT_COM}/logger.cpp
-        )
-endif()
-
-#message("SOURCE_FILES ${SOURCE_FILES}")
-
-add_library(Infero SHARED ${SOURCE_FILES})
-
-target_link_libraries(Infero
-    eckit
-    eckit_option
-)
-
-#################### build the executable ####################
-add_executable(infero
-    ${CMAKE_SOURCE_DIR}/src/infero.cpp
-)
-
-target_link_libraries(infero
-    Infero
-)
-
-if(${WITH_ONNX_RUNTIME})
-    target_link_libraries(infero
-        onnxruntime
-        )
-endif()
-
-if(${WITH_TFLITE_RUNTIME})
-    target_link_libraries(infero
-        tensorflow-lite
-        )
-endif()
-
-if(${WITH_TRT})
-    target_link_libraries(infero
+    list(APPEND tensor_rt_libs 
         nvinfer
         nvonnxparser
         nvparsers
         nvinfer_plugin
         nvrtc
         cudart
-        )
-endif()
-###############################################################
-
-##################### ONNX2TRTconverter #######################
-if(${WITH_TRT})
-
-    add_executable(onnx2trt
-        ${CMAKE_SOURCE_DIR}/src/onnx2trt.cpp
     )
 
-    target_link_libraries(onnx2trt
+    # # TODO check this...
+    # list(APPEND SOURCE_FILES
+    #     ${TRT_COM}/logger.h
+    #     ${TRT_COM}/logger.cpp
+    #     )
+endif()
 
+ecbuild_info("TENSORFLOWLITE_LIBRARIES ${TENSORFLOWLITE_LIBRARIES}")
+ecbuild_info("TENSORFLOWLITE_INCLUDE_DIRS ${TENSORFLOWLITE_INCLUDE_DIRS}")
+
+
+ecbuild_add_library(
+
+    TARGET infero
+
+    INSTALL_HEADERS LISTED
+
+    HEADER_DESTINATION
+        ${INSTALL_INCLUDE_DIR}/infero
+
+    # GENERATED
+    #     infero_version.cc
+
+    SOURCES
+        ${infero_srcs}
+
+    PUBLIC_INCLUDES
+       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>
+       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/contrib>
+
+    PRIVATE_LIBS
+        "${tensorflow_lite_libs}"
+        "${tensor_rt_libs}"
+        "${onnx_libs}"
+
+    PUBLIC_LIBS 
         eckit
         eckit_option
-        Infero
-
-        nvinfer
-        nvonnxparser
-        nvparsers
-        nvinfer_plugin
-        nvrtc
-        cudart
-        )
-endif()
-###############################################################
+)
 
 
+ecbuild_add_executable( TARGET infero.x
+    SOURCES   src/infero.cpp
+    CONDITION HAVE_BUILD_TOOLS
+    # INCLUDES  ${ECKIT_INCLUDE_DIRS}
+    LIBS      infero )
+
+############################################################################################
+# finalize
+
+ecbuild_pkgconfig( NAME infero
+                   DESCRIPTION "A lower level API for ML Inference in Operations"
+                   LIBRARIES infero )
+
+ecbuild_install_project( NAME ${PROJECT_NAME} )
+
+ecbuild_print_summary()
 
 
 

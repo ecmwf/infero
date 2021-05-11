@@ -1,6 +1,6 @@
 
 #include "prediction.h"
-#include "third_party/cnpy/cnpy.h"
+#include "contrib/cnpy/cnpy.h"
 #include "eckit/log/Log.h"
 #include <algorithm>
 
