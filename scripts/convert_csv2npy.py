@@ -17,10 +17,12 @@ if __name__ == "__main__":
                         type=int)
     
     args = parser.parse_args()
-
-    npy_data = load_data(args.input)[:args.channels]
     
-    out_data = npy_data[:args.channels]
+    # it assumes that batch size is the first
+    npy_data = load_data(args.input)
+    npy_data = npy_data.reshape((1, -1))
+    
+    out_data = npy_data[:args.channels, :]
     
     print(f"Writing numpy of shape {out_data.shape} into {args.output}")
     print(f"Output numpy {out_data}")
