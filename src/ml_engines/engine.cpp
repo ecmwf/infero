@@ -47,7 +47,7 @@ RTEnginePtr MLEngine::create(std::string choice,
     }
 #endif
 
-#ifdef HAVE_TFLITE
+#ifdef HAVE_TRT
     if (choice.compare("trt") == 0){
 
         Log::info() << "creating MLEngineTRT.. "
