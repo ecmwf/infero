@@ -19,8 +19,13 @@ variables in *env.sh* can be edited.
 Root variables below:
 
  - ${ROOT_SRC_DIR}: Root source path for dependencies
- - ${ROOT_BUILD_DIR}: Root build path for dependencies
+ - ${ROOT_BUILD_DIR}: Root build path
  - ${BUILD_NPROCS}: number of processes for building
+
+Supported backend runtime libraries
+ - ${WITH_ONNX_RUNTIME}: with ONNX runtime library
+ - ${WITH_TFLITE_RUNTIME}: with TfLite library
+ - ${WITH_TRT}: with TensorRT library
 
 Install this package
 > ./install.sh
