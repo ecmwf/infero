@@ -12,17 +12,23 @@ Infero TODO
   - orographic drag
 
 * follow eckit style guide
-
-* add #pragma once
+  - add #pragma once
+  - trailing underscore in private vars/functions
+  - camel-case for file names (matching class names)
+  - namespace for all infero code
+  - remove prefix get_ from getters
+  - .cc rather than .cpp
+  - infero exec and infero lib should have different names
 
 * add find onnx ecbuild pkg
 
 * move clustering as a separate library
-
-* namespace for all infero code
 
 * need to define interoperability models/engines
 
 * use csv rather than .npy  ???
 * use hdf5 rather than .npy ???
 
+* check all contrib licences
+
+* improve the README
