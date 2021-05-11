@@ -1,1 +1,1 @@
-add_subdirectory(cnpy)
+# add_subdirectory(cnpy)

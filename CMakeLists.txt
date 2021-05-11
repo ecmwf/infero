@@ -32,6 +32,9 @@ ecbuild_add_option( FEATURE TF_LITE
                     DESCRIPTION "TensorflowLite engine"
                     REQUIRED_PACKAGES TensorflowLite )
 
+find_package(ZLIB REQUIRED) # for cnpy
+
+
 # ecbuild_add_option( FEATURE ONNX
 #                     DESCRIPTION "ONNX engine"
 #                     REQUIRED_PACKAGES ONNX )

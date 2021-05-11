@@ -5,15 +5,11 @@ list(APPEND infero_srcs
     ml_engines/engine.cpp
     prediction.h
     prediction.cpp
-    # clustering/clustering.h
-    # clustering/clustering.cpp
-    # clustering/clustering_dbscan.h
-    # clustering/clustering_dbscan.cpp
-    # contrib/DBSCAN/dbscan.h
-    # contrib/DBSCAN/dbscan.cpp
-    # ../../contrib/cnpy/cnpy.h
-    # ../../contrib/cnpy/cnpy.cpp
+    ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.h
+    ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.cpp
 )
+
+### support for ONNX
 
 if(HAVE_ONNX)
     list(APPEND infero_srcs
@@ -23,13 +19,18 @@ if(HAVE_ONNX)
     list(APPEND onnx_libs  onnxruntime )
 endif()
 
+### support for TensorflowLite
+
 if(HAVE_TF_LITE)
     list(APPEND infero_srcs
         ml_engines/engine_tflite.h
         ml_engines/engine_tflite.cpp
     )
     list(APPEND tensorflow_lite_libs ${TENSORFLOWLITE_LIBRARIES})
+    add_definitions(-DHAVE_TFLITE)
 endif()
+
+### support for TensorRT
 
 if(HAVE_TENSOR_RT)
     list(APPEND infero_srcs
@@ -78,7 +79,7 @@ ecbuild_add_library(
         "${TENSORFLOWLITE_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
-        cnpy
+        ${ZLIB_LIBRARIES}
         eckit
         eckit_option
         "${tensorflow_lite_libs}"
