@@ -23,9 +23,9 @@ Root variables below:
  - ${BUILD_NPROCS}: number of processes for building
 
 Supported backend runtime libraries
- - {WITH_ONNX_RUNTIME}: with ONNX runtime library
- - {WITH_TFLITE_RUNTIME}: with TfLite library
- - {WITH_TRT}: with TensorRT library
+ - ${WITH_ONNX_RUNTIME}: with ONNX runtime library
+ - ${WITH_TFLITE_RUNTIME}: with TfLite library
+ - ${WITH_TRT}: with TensorRT library
 
 Install this package
 > ./install.sh
