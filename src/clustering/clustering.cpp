@@ -103,13 +103,14 @@ int Clustering::write_json(std::string filename)
                    << std::endl;
 
        fout << s.str();
+       return 0;
 
-   } else {
-       Log::error() << "Failed to open output file "
-                    << filename
-                    << std::endl;
-       return -1;
    }
+
+   Log::error() << "Failed to open output file "
+                << filename
+                << std::endl;
+   return -1;
 }
 
 ClusteringPtr Clustering::create(std::string choice)
