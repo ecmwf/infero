@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # ======= Basic config =========
-ROOT_SRC_DIR=${HPCPERM}/local
-ROOT_BUILD_DIR=${HPCPERM}/builds
+ROOT_SRC_DIR=${HOME}/local
+ROOT_BUILD_DIR=${HOME}/builds
 
 WITH_ONNX_RUNTIME=ON
 WITH_TFLITE_RUNTIME=ON
