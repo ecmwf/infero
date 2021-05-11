@@ -1,27 +1,35 @@
 # Infero
 
 ## Description
-Infero runs a pre-trained ML model on an input sample.
-It is deployed on a HPC node without the need for high-level 
-python libraries (e.g. Tensorflow, pytorch, etc..)
+Infero runs a pre-trained ML model on an input sample. It can be deployed 
+on a HPC system without the need for high-level python libraries 
+(e.g. TensorFlow, PyTorch, etc..)
 
 ### Installation
-Create a conda environment with all the required 
-dependencies in it:
+Requirements:
+  - cmake > 3.16
+  - C++ compiler
 
+Source the environment:
 > source env.sh
 
-For a custom configuration, the following environment 
-variables (in env.sh) can be edited
+For a custom configuration, the environment 
+variables in *env.sh* can be edited. 
 
- - CONDA_DIR: conda root directory
- - ENV_NAME: name of conda environment to create
- - ROOT_SRC_DIR: Root source path for dependencies
- - ROOT_BUILD_DIR: Root build path for dependencies
- - BUILD_NPROCS: number of processes for building
+Root variables below:
+
+ - ${ROOT_SRC_DIR}: Root source path for dependencies
+ - ${ROOT_BUILD_DIR}: Root build path for dependencies
+ - ${BUILD_NPROCS}: number of processes for building
 
 Install this package
 > ./install.sh
- 
+
+### Installation (python scripts)
+Create and source a conda environment with all the required 
+dependencies in it:
+
+> source scripts_env.sh
+
 ### User Guide
 WIP..
