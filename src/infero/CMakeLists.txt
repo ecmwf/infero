@@ -11,8 +11,8 @@ list(APPEND infero_srcs
     # clustering/clustering_dbscan.cpp
     # contrib/DBSCAN/dbscan.h
     # contrib/DBSCAN/dbscan.cpp
-    ../../contrib/cnpy/cnpy.h
-    ../../contrib/cnpy/cnpy.cpp
+    # ../../contrib/cnpy/cnpy.h
+    # ../../contrib/cnpy/cnpy.cpp
 )
 
 if(HAVE_ONNX)
@@ -78,6 +78,7 @@ ecbuild_add_library(
         "${TENSORFLOWLITE_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
+        cnpy
         eckit
         eckit_option
         "${tensorflow_lite_libs}"

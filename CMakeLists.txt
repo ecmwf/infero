@@ -85,13 +85,14 @@ ecbuild_info("TENSORFLOWLITE_INCLUDE_DIRS ${TENSORFLOWLITE_INCLUDE_DIRS}")
 
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
+add_subdirectory( contrib )
 add_subdirectory( src )
 
 ecbuild_add_executable( TARGET infero.x
     SOURCES   src/infero/infero.cpp
     CONDITION HAVE_BUILD_TOOLS
     INCLUDES  ${eckit_INCLUDE_DIRS}
-    LIBS      infero )
+    LIBS      infero eckit eckit_option )
 
 ############################################################################################
 # finalize

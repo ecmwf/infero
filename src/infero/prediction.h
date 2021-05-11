@@ -25,7 +25,7 @@ public:
     int size_flat() const;
 
     // ptr to raw data
-    float *data() const;
+    float* data();
 
     int n_rows() const;
 

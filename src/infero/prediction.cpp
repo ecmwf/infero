@@ -1,8 +1,10 @@
-
 #include "prediction.h"
-#include "cnpy/cnpy.h"
-#include "eckit/log/Log.h"
+
 #include <algorithm>
+
+#include "cnpy/cnpy.h"
+
+#include "eckit/log/Log.h"
 
 using namespace eckit;
 
@@ -43,7 +45,7 @@ int Prediction::size_flat() const {
   return _flat;
 }
 
-float *Prediction::data() const { return data_tensor.data(); }
+float *Prediction::data() { return data_tensor.data(); }
 
 int Prediction::n_rows() const { return shape_static[1]; }
 
