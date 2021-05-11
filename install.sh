@@ -121,7 +121,7 @@ fi
 echo "cd in ${BUILD_DIR}.."
 cd ${BUILD_DIR}
 
-echo "Building MLExecutor.."
+echo "Building Infero.."
 ECKIT_SRC_DIR=${ECKIT_SRC_DIR} \
 ECKIT_BUILD_DIR=${ECKIT_BUILD_DIR} \
 \
