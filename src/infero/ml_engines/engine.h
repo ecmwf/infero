@@ -1,8 +1,7 @@
-#ifndef RT_ENGINE_H
-#define RT_ENGINE_H
+#pragma once
 
-#include "prediction.h"
-#include "input_types/input_data.h"
+#include "infero/input_types/input_data.h"
+#include "infero/prediction.h"
 
 #include <string>
 #include <memory>
@@ -40,5 +39,3 @@ public:
 
 };
 
-
-#endif

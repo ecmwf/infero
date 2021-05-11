@@ -1,5 +1,4 @@
-#ifndef INPUT_DATA_H
-#define INPUT_DATA_H
+#pragma once
 
 #include <vector>
 #include <string>
@@ -35,5 +34,3 @@ private:
     std::vector<float> mDataVector;
 
 };
-
-#endif

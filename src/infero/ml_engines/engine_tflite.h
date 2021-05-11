@@ -1,8 +1,8 @@
-#ifndef ENGINE_TFLITE_H
-#define ENGINE_TFLITE_H
+#pragma once
 
-#include "ml_engines/engine.h"
 #include <string>
+
+#include "infero/ml_engines/engine.h"
 
 
 class MLEngineTFlite: public MLEngine
@@ -21,5 +21,3 @@ public:
     virtual PredictionPtr infer(InputDataPtr& input_sample);
 
 };
-
-#endif // TFLITE_H

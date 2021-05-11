@@ -1,14 +1,13 @@
+#include <memory>
 
 #include "input_types/input_data.h"
 #include "ml_engines/engine.h"
-#include "clustering/clustering.h"
+// #include "clustering/clustering.h"
 
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/log/Log.h"
-
-#include <memory>
 
 using namespace eckit;
 using namespace eckit::option;
@@ -93,25 +92,23 @@ int main(int argc, char** argv) {
     prediction->to_numpy("out.npy");
 
     // run clustering
-    ClusteringPtr cluster = Clustering::create(clustering_type);
-    if (!cluster) {
-        Log::error() << "Failed to instantiate clustering!" << std::endl;
-        return EXIT_FAILURE;
-    }
+    // ClusteringPtr cluster = Clustering::create(clustering_type);
+    // if (!cluster) {
+    //     Log::error() << "Failed to instantiate clustering!" << std::endl;
+    //     return EXIT_FAILURE;
+    // }
 
-    int err = cluster->run(prediction);
-    if(err){
-        Log::error() << "Clustering Failed!" << std::endl;
-        return EXIT_FAILURE;
-    } else {
-        // print prediction
-        cluster->print_summary();
+    // int err = cluster->run(prediction);
+    // if(err){
+    //     Log::error() << "Clustering Failed!" << std::endl;
+    //     return EXIT_FAILURE;
+    // } else {
+    //     // print prediction
+    //     cluster->print_summary();
 
-        // write to JSON
-        cluster->write_json("out.json");
-    }
-
-    Log::info() << "All done! " << std::endl;
+    //     // write to JSON
+    //     cluster->write_json("out.json");
+    // }
 
     return EXIT_SUCCESS;
 }

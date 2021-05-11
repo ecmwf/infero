@@ -33,7 +33,7 @@ int ClusteringDBscan::run(PredictionPtr& prediction)
     }
 
     // calc cluster centers
-    this->_calc_cluster_centers();
+    this->calculate_cluster_centers();
 
     return 0;
 

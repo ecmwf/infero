@@ -1,12 +1,11 @@
-#ifndef ENGINE_ONNX_H
-#define ENGINE_ONNX_H
+#pragma once
 
+#include <string>
 
 #include "ml_engines/engine.h"
 #include "input_types/input_data.h"
 
 #include <onnxruntime_cxx_api.h>
-#include <string>
 
 
 class MLEngineONNX: public MLEngine
@@ -56,6 +55,3 @@ private:
                           std::string filename);
 
 };
-
-
-#endif // ENGINE_ONNX_H

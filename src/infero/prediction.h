@@ -1,5 +1,4 @@
-#ifndef PREDICTION_H
-#define PREDICTION_H
+#pragma once
 
 #include <vector>
 #include <cstdint>
@@ -23,14 +22,14 @@ public:
     void to_numpy(std::string filename);
 
     // return the flat size
-    const int size_flat();
+    int size_flat() const;
 
     // ptr to raw data
-    const float* data();
+    float* data();
 
-    const int n_rows();
+    int n_rows() const;
 
-    const int n_cols();
+    int n_cols() const;
 
 public:
 
@@ -42,5 +41,3 @@ private:
     std::vector<long unsigned int> shape_static;
 
 };
-
-#endif // PREDICTION_H

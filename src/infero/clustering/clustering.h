@@ -1,12 +1,12 @@
 #ifndef CLUSTERING_H
 #define CLUSTERING_H
 
-#include "prediction.h"
-#include <vector>
 #include <map>
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 
+#include "infero/prediction.h"
 
 // a cluster point
 struct ClusterPoint{
@@ -66,7 +66,7 @@ protected:
     std::vector<ClusterPoint> points;
 
     // cluster centers
-    virtual void _calc_cluster_centers();
+    virtual void calculate_cluster_centers();
 
 };
 
