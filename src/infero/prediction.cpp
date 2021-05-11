@@ -33,36 +33,18 @@ void Prediction::to_numpy(std::string filename)
 
 }
 
-const int Prediction::size_flat()
-{
+int Prediction::size_flat() const {
 
-    int _flat = 1;
-    for(auto i: shape){
-        _flat *= i;
-    }
+  int _flat = 1;
+  for (auto i : shape) {
+    _flat *= i;
+  }
 
-    return _flat;
+  return _flat;
 }
 
-const float *Prediction::data()
-{
-    return data_tensor.data();
-}
+float *Prediction::data() const { return data_tensor.data(); }
 
-const int Prediction::n_rows(){
-    return shape_static[1];
-}
+int Prediction::n_rows() const { return shape_static[1]; }
 
-const int Prediction::n_cols(){
-    return shape_static[2];
-}
-
-
-
-
-
-
-
-
-
-
+int Prediction::n_cols() const { return shape_static[2]; }

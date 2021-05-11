@@ -80,100 +80,17 @@ ecbuild_add_option( FEATURE TF_LITE
 #     add_definitions(-DHAVE_TRT)
 # endif()
 
-list(APPEND infero_srcs
-    src/infero/input_types/input_data.h
-    src/infero/input_types/input_data.cpp
-    src/infero/ml_engines/engine.h
-    src/infero/ml_engines/engine.cpp
-    src/infero/prediction.h
-    src/infero/prediction.cpp
-    src/infero/clustering/clustering.h
-    src/infero/clustering/clustering.cpp
-    src/infero/clustering/clustering_dbscan.h
-    src/infero/clustering/clustering_dbscan.cpp
-    contrib/DBSCAN/dbscan.h
-    contrib/DBSCAN/dbscan.cpp
-    contrib/cnpy/cnpy.h
-    contrib/cnpy/cnpy.cpp
-)
-
-if(HAVE_ONNX)
-    list(APPEND infero_srcs
-        src/infero/ml_engines/engine_onnx.h
-        src/infero/ml_engines/engine_onnx.cpp
-        )
-    list(APPEND onnx_libs  onnxruntime )
-endif()
-
-if(HAVE_TF_LITE)
-    list(APPEND infero_srcs
-        src/infero/ml_engines/engine_tflite.h
-        src/infero/ml_engines/engine_tflite.cpp
-    )
-    list(APPEND tensorflow_lite_libs tensorflow-lite)
-endif()
-
-if(HAVE_TENSOR_RT)
-    list(APPEND infero_srcs
-        src/infero/ml_engines/engine_trt.h
-        src/infero/ml_engines/engine_trt.cpp
-    )
-
-    list(APPEND tensor_rt_libs 
-        nvinfer
-        nvonnxparser
-        nvparsers
-        nvinfer_plugin
-        nvrtc
-        cudart
-    )
-
-    # # TODO check this...
-    # list(APPEND SOURCE_FILES
-    #     ${TRT_COM}/logger.h
-    #     ${TRT_COM}/logger.cpp
-    #     )
-endif()
-
 ecbuild_info("TENSORFLOWLITE_LIBRARIES ${TENSORFLOWLITE_LIBRARIES}")
 ecbuild_info("TENSORFLOWLITE_INCLUDE_DIRS ${TENSORFLOWLITE_INCLUDE_DIRS}")
 
+include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
-ecbuild_add_library(
-
-    TARGET infero
-
-    INSTALL_HEADERS LISTED
-
-    HEADER_DESTINATION
-        ${INSTALL_INCLUDE_DIR}/infero
-
-    # GENERATED
-    #     infero_version.cc
-
-    SOURCES
-        ${infero_srcs}
-
-    PUBLIC_INCLUDES
-       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>
-       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
-       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/contrib>
-
-    PRIVATE_LIBS
-        "${tensorflow_lite_libs}"
-        "${tensor_rt_libs}"
-        "${onnx_libs}"
-
-    PUBLIC_LIBS 
-        eckit
-        eckit_option
-)
-
+add_subdirectory( src )
 
 ecbuild_add_executable( TARGET infero.x
     SOURCES   src/infero/infero.cpp
     CONDITION HAVE_BUILD_TOOLS
-    # INCLUDES  ${ECKIT_INCLUDE_DIRS}
+    INCLUDES  ${eckit_INCLUDE_DIRS}
     LIBS      infero )
 
 ############################################################################################
@@ -186,11 +103,3 @@ ecbuild_pkgconfig( NAME infero
 ecbuild_install_project( NAME ${PROJECT_NAME} )
 
 ecbuild_print_summary()
-
-
-
-
-
-
-
-

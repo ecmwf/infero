@@ -20,12 +20,12 @@
 
 # Search with priority for TENSORFLOWLITE_PATH if given as CMake or env var
 
-find_path(TENSORFLOWLITE_INCLUDE_DIR model.h
+find_path(TENSORFLOWLITE_INCLUDE_DIR tensorflow/lite/model.h
           HINTS $ENV{TENSORFLOWLITE_ROOT} ${TENSORFLOWLITE_ROOT}
           PATHS ${TENSORFLOWLITE_PATH} ENV TENSORFLOWLITE_PATH
-          PATH_SUFFIXES include/tensorflow/lite tensorflow/lite NO_DEFAULT_PATH)
+          PATH_SUFFIXES include NO_DEFAULT_PATH)
 
-find_path(TENSORFLOWLITE_INCLUDE_DIR model.h PATH_SUFFIXES include/tensorflow/lite tensorflow/lite )
+find_path(TENSORFLOWLITE_INCLUDE_DIR tensorflow/lite/model.h PATH_SUFFIXES include )
 
 # Search with priority for TENSORFLOWLITE_PATH if given as CMake or env var
 find_library(TENSORFLOW_LITE_LIB tensorflow-lite
