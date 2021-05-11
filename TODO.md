@@ -1,6 +1,11 @@
 Infero TODO
 ===========
 
+* add C + ISOC bindings Fortran interface
+* add test for fortran code
+
+* improve the factory code in engine.cpp
+
 * create unit tests under tests/
 * create regression test with inputs from:
   - tcylc
@@ -18,5 +23,6 @@ Infero TODO
 
 * need to define interoperability models/engines
 
-* use hdf5 rather than .npy 
+* use csv rather than .npy  ???
+* use hdf5 rather than .npy ???
 
