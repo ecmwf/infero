@@ -13,11 +13,7 @@ Infero TODO
   - orographic drag
 
 * follow eckit style guide
-  - trailing underscore in private vars/functions
   - namespace for all infero code
-  - remove prefix get_ from getters
-
-* add find onnx ecbuild pkg
 
 * move clustering as a separate library
 
