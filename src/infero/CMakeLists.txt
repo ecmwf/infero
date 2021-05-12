@@ -1,6 +1,6 @@
 list(APPEND infero_srcs
-    input_types/input_data.h
-    input_types/input_data.cpp
+    input_types/InputData.h
+    input_types/InputData.cc
     ml_engines/MLEngine.h
     ml_engines/MLEngine.cc
     Prediction.h

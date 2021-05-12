@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "infero/input_types/input_data.h"
+#include "infero/input_types/InputData.h"
 #include "infero/Prediction.h"
 
 #include <string>
