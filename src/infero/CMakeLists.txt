@@ -10,13 +10,15 @@ list(APPEND infero_srcs
 )
 
 ### support for ONNX
+message("*********HAVE_ONNX ${HAVE_ONNX}")
 
 if(HAVE_ONNX)
     list(APPEND infero_srcs
         ml_engines/MLEngineONNX.h
         ml_engines/MLEngineONNX.cc
         )
-    list(APPEND onnx_libs  onnxruntime )
+    list(APPEND onnx_libs  ${ONNX_LIBRARIES} )
+    add_definitions(-DHAVE_ONNX)
 endif()
 
 ### support for TensorflowLite
@@ -54,6 +56,13 @@ if(HAVE_TENSOR_RT)
     #     )
 endif()
 
+
+
+message("*********infero_srcs ${infero_srcs}")
+message("*********tensorflow_lite_libs ${tensorflow_lite_libs}")
+message("*********onnx_libs ${onnx_libs}")
+message("*********ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIRS}")
+
 ecbuild_add_library(
 
     TARGET infero
@@ -77,6 +86,7 @@ ecbuild_add_library(
     PRIVATE_INCLUDES
         "${eckit_INCLUDE_DIRS}"
         "${TENSORFLOWLITE_INCLUDE_DIRS}"
+        "${ONNX_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
         ${ZLIB_LIBRARIES}

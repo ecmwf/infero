@@ -32,6 +32,10 @@ ecbuild_add_option( FEATURE TF_LITE
                     DESCRIPTION "TensorflowLite engine"
                     REQUIRED_PACKAGES TensorflowLite )
 
+ecbuild_add_option( FEATURE ONNX
+                    DESCRIPTION "ONNX engine"
+                    REQUIRED_PACKAGES ONNX )
+
 find_package(ZLIB REQUIRED) # for cnpy
 
 
@@ -83,8 +87,13 @@ find_package(ZLIB REQUIRED) # for cnpy
 #     add_definitions(-DHAVE_TRT)
 # endif()
 
+ecbuild_info("TENSORFLOWLITE_FOUND ${TENSORFLOWLITE_FOUND}")
 ecbuild_info("TENSORFLOWLITE_LIBRARIES ${TENSORFLOWLITE_LIBRARIES}")
 ecbuild_info("TENSORFLOWLITE_INCLUDE_DIRS ${TENSORFLOWLITE_INCLUDE_DIRS}")
+
+ecbuild_info("ONNX_FOUND ${ONNX_FOUND}")
+ecbuild_info("ONNX_LIBRARIES ${ONNX_LIBRARIES}")
+ecbuild_info("ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIRS}")
 
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
