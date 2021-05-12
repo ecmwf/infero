@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "infero/prediction.h"
+#include "infero/Prediction.h"
 
 // a cluster point
 struct ClusterPoint{

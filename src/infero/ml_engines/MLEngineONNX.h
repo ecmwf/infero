@@ -13,7 +13,7 @@
 #include <string>
 
 #include "infero/ml_engines/MLEngine.h"
-#include "input_types/input_data.h"
+#include "infero/input_types/InputData.h"
 
 #include <onnxruntime_cxx_api.h>
 
