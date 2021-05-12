@@ -8,7 +8,7 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "infero/ml_engines/engine_trt.h"
+#include "infero/ml_engines/MLEngineTRT.h"
 
 #include "eckit/log/Log.h"
 

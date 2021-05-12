@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "infero/ml_engines/engine.h"
+#include "infero/ml_engines/MLEngine.h"
 
 
 class MLEngineTFlite: public MLEngine

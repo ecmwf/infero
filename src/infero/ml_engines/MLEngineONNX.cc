@@ -8,7 +8,7 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "ml_engines/engine_onnx.h"
+#include "infero/ml_engines/MLEngineONNX.h"
 
 #include "eckit/log/Log.h"
 #include <assert.h>

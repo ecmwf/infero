@@ -12,18 +12,18 @@
 
 #include "eckit/log/Log.h"
 
-#include "infero/ml_engines/engine.h"
+#include "infero/ml_engines/MLEngine.h"
 
 #ifdef HAVE_ONNX
-#include "infero/ml_engines/engine_onnx.h"
+#include "infero/ml_engines/MLEngineONNX.h"
 #endif
 
 #ifdef HAVE_TFLITE
-#include "infero/ml_engines/engine_tflite.h"
+#include "infero/ml_engines/MLEngineTFlite.h"
 #endif
 
 #ifdef HAVE_TRT
-#include "infero/ml_engines/engine_trt.h"
+#include "infero/ml_engines/MLEngineTRT.h"
 #endif
 
 using namespace eckit;

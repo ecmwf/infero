@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "input_types/input_data.h"
-#include "ml_engines/engine.h"
+#include "infero/ml_engines/MLEngine.h"
 // #include "clustering/clustering.h"
 
 #include "eckit/option/CmdArgs.h"

@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "ml_engines/engine.h"
+#include "infero/ml_engines/MLEngine.h"
 
 #include <cuda_runtime_api.h>
 #include "NvInfer.h"

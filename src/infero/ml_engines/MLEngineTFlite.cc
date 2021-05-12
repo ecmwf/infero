@@ -18,7 +18,7 @@
 
 #include "eckit/log/Log.h"
 
-#include "infero/ml_engines/engine_tflite.h"
+#include "infero/ml_engines/MLEngineTFlite.h"
 
 
 #define DATA_SCALAR_TYPE float

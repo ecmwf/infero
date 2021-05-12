@@ -1,8 +1,8 @@
 list(APPEND infero_srcs
     input_types/input_data.h
     input_types/input_data.cpp
-    ml_engines/engine.h
-    ml_engines/engine.cpp
+    ml_engines/MLEngine.h
+    ml_engines/MLEngine.cc
     prediction.h
     prediction.cpp
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.h
@@ -13,8 +13,8 @@ list(APPEND infero_srcs
 
 if(HAVE_ONNX)
     list(APPEND infero_srcs
-        ml_engines/engine_onnx.h
-        ml_engines/engine_onnx.cpp
+        ml_engines/MLEngineONNX.h
+        ml_engines/MLEngineONNX.cc
         )
     list(APPEND onnx_libs  onnxruntime )
 endif()
@@ -23,8 +23,8 @@ endif()
 
 if(HAVE_TF_LITE)
     list(APPEND infero_srcs
-        ml_engines/engine_tflite.h
-        ml_engines/engine_tflite.cpp
+        ml_engines/MLEngineTFlite.h
+        ml_engines/MLEngineTFlite.cc
     )
     list(APPEND tensorflow_lite_libs ${TENSORFLOWLITE_LIBRARIES})
     add_definitions(-DHAVE_TFLITE)
@@ -34,8 +34,8 @@ endif()
 
 if(HAVE_TENSOR_RT)
     list(APPEND infero_srcs
-        ml_engines/engine_trt.h
-        ml_engines/engine_trt.cpp
+        ml_engines/MLEngineTRT.h
+        ml_engines/MLEngineTRT.cc
     )
 
     list(APPEND tensor_rt_libs 
