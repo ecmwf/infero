@@ -13,11 +13,9 @@ Infero TODO
   - orographic drag
 
 * follow eckit style guide
-  - add #pragma once
   - trailing underscore in private vars/functions
   - namespace for all infero code
   - remove prefix get_ from getters
-  - .cc rather than .cpp
   - infero exec and infero lib should have different names
 
 * add find onnx ecbuild pkg
