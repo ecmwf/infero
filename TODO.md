@@ -16,7 +16,6 @@ Infero TODO
   - trailing underscore in private vars/functions
   - namespace for all infero code
   - remove prefix get_ from getters
-  - infero exec and infero lib should have different names
 
 * add find onnx ecbuild pkg
 
