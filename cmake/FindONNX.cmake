@@ -19,7 +19,6 @@
 #  ONNX_ROOT              - Set this variable to the root installation
 
 # Search with priority for ONNX_PATH if given as CMake or env var
-#include/onnxruntime/core/session/
 find_path(ONNX_INCLUDE_DIR onnxruntime_cxx_api.h
           HINTS $ENV{ONNX_ROOT}/include/onnxruntime/core/session/
                 ${ONNX_ROOT}/include/onnxruntime/core/session/
@@ -48,8 +47,3 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(ONNX DEFAULT_MSG ONNX_LIB ONNX_INCLUDE_DIR)
 
 mark_as_advanced(ONNX_INCLUDE_DIR ONNX_LIB)
-
-message("============== ONNX_FOUND ${ONNX_FOUND}")
-message("============== ONNX_LIBRARIES ${ONNX_LIBRARIES}")
-message("============== ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIRS}")
-
