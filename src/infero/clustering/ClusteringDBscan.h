@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "clustering.h"
+#include "infero/clustering/Clustering.h"
 #include "DBSCAN/dbscan.h"
 
 // min number of clusters

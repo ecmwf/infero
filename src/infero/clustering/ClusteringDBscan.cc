@@ -9,6 +9,7 @@
  */
 
 #include "clustering_dbscan.h"
+#include "infero/clustering/ClusteringDBscan.h"
 
 
 ClusteringDBscan::ClusteringDBscan():

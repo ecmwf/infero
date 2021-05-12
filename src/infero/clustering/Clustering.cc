@@ -8,7 +8,7 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "infero/clustering/clustering.h"
+#include "infero/clustering/Clustering.h"
 
 #include <fstream>
 #include <sstream>
