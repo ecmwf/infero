@@ -39,11 +39,11 @@ InputDataPtr InputData::from_numpy(std::string filename)
 }
 
 
-float* InputData::get_data(){
+float* InputData::data(){
     return mDataVector.data();
 }
 
 
-size_t InputData::get_size(){
+size_t InputData::size(){
     return mSize;
 }

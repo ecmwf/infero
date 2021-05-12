@@ -51,22 +51,22 @@ void Clustering::calculate_cluster_centers()
 
 
     // average point coords for each cluster ID
-    float _x, _y;
+    float x, y;
     for (const auto& k: cluster){
 
-        _x = _y = 0;
+        x = y = 0;
 
         for (auto& p: k.second){
-            _x += p.x;
-            _y += p.y;
+            x += p.x;
+            y += p.y;
         }
 
         if (k.second.size()){
-            _x /= k.second.size();
-            _y /= k.second.size();
+            x /= k.second.size();
+            y /= k.second.size();
         }
 
-        this->cluster_centers.push_back(ClusterPoint(_x, _y, k.first));
+        this->cluster_centers.push_back(ClusterPoint(x, y, k.first));
 
     }
 

@@ -68,7 +68,7 @@ PredictionPtr MLEngineONNX::infer(InputDataPtr& input_sample)
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
     Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info,
-                                                              input_sample->get_data(),
+                                                              input_sample->data(),
                                                               input_shape_flat,
                                                               input_node_dims_1.data(),
                                                               input_node_dims_1.size());

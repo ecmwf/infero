@@ -15,7 +15,7 @@
 #include "infero/ml_engines/MLEngine.h"
 #include "infero/input_types/InputData.h"
 
-#include <onnxruntime_cxx_api.h>
+#include "onnxruntime_cxx_api.h"
 
 
 class MLEngineONNX: public MLEngine

@@ -29,10 +29,10 @@ public:
     static InputDataPtr from_numpy(std::string filename);
 
     // get data
-    float* get_data();
+    float* data();
 
     // get size
-    size_t get_size();
+    size_t size();
 
 public:
 

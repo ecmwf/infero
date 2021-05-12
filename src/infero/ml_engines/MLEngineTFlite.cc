@@ -74,8 +74,8 @@ PredictionPtr MLEngineTFlite::infer(InputDataPtr& input_sample)
 
     // ========================== Run inference ===========================
     float* input = interpreter->typed_input_tensor<float>(0);
-    float* data = input_sample->get_data();
-    size_t data_size = input_sample->get_size();
+    float* data = input_sample->data();
+    size_t data_size = input_sample->size();
     for (size_t i = 0; i<data_size; i++){
       *(input+i) = *(data+i);
     }

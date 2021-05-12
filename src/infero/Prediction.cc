@@ -47,12 +47,12 @@ void Prediction::to_numpy(std::string filename)
 
 int Prediction::size_flat() const {
 
-  int _flat = 1;
+  int flat = 1;
   for (auto i : shape) {
-    _flat *= i;
+    flat *= i;
   }
 
-  return _flat;
+  return flat;
 }
 
 float *Prediction::data() { return data_tensor.data(); }
