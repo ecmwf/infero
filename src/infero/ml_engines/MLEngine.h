@@ -11,7 +11,7 @@
 #pragma once
 
 #include "infero/input_types/input_data.h"
-#include "infero/prediction.h"
+#include "infero/Prediction.h"
 
 #include <string>
 #include <memory>

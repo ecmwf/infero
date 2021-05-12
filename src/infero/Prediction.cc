@@ -8,7 +8,7 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "prediction.h"
+#include "Prediction.h"
 
 #include <algorithm>
 
