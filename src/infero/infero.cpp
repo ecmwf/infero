@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -19,6 +19,8 @@
 #include "eckit/runtime/Main.h"
 #include "eckit/log/Log.h"
 
+#include <iostream>
+
 using namespace eckit;
 using namespace eckit::option;
 
@@ -35,53 +37,30 @@ void usage(const std::string&){
                 << std::endl;
 }
 
-typedef SimpleOption<std::string> OptStr;
-
 
 int main(int argc, char** argv) {
 
     Main::initialise(argc, argv);
     std::vector<Option*> options;
 
-    std::string input_path;
-    std::string model_path;
-    std::string engine_type;
-    std::string clustering_type;
+    options.push_back(new SimpleOption<std::string>("input", "Path to input file"));
+    options.push_back(new SimpleOption<std::string>("output", "Path to output file"));
+    options.push_back(new SimpleOption<std::string>("model", "Path to ML model"));
+    options.push_back(new SimpleOption<std::string>("engine", "ML engine [onnx, tflite, trt]"));
+    options.push_back(new SimpleOption<std::string>("clustering", "Clustering [dbscan, ...]"));
+    options.push_back(new SimpleOption<std::string>("verify_against", "Path to Reference CSV values"));
+    options.push_back(new SimpleOption<long>("verify_threshold", "Verification threshold"));
 
-    options.push_back(new OptStr("input", "Path to input file"));
-    options.push_back(new OptStr("model", "Path to ML model"));
-    options.push_back(new OptStr("engine", "ML engine [onnx, tflite, trt]"));
-    options.push_back(new OptStr("clustering", "Clustering [dbscan, ...]"));
 
-    CmdArgs args(&usage, options, 0,0, true);
+    CmdArgs args(&usage, options, 0, 0, true);
 
     // input path
-    if (!args.has("input")){
-        input_path = "data.npy";
-    } else {
-        args.get("input", input_path);
-    }
-
-    // model path
-    if (!args.has("model")){
-        model_path = "model.onnx";
-    } else {
-        args.get("model", model_path);
-    }
-
-    // engine type
-    if (!args.has("engine")){
-        engine_type = "onnx";
-    } else {
-        args.get("engine", engine_type);
-    }
-
-    // clustering type
-    if (!args.has("clustering")){
-        clustering_type = "dbscan";
-    } else {
-        args.get("clustering", clustering_type);
-    }
+    std::string input_path = args.getString("input","data.npy");
+    std::string model_path = args.getString("model", "model.onnx");
+    std::string engine_type = args.getString("engine", "onnx");
+    std::string output_path = args.getString("output", "out.npy");
+    std::string verify_against = args.getString("verify_against");
+    float verify_threshold = args.getFloat("verify_threshold", 0.01);
 
     // input data
     InputDataPtr input_sample = InputData::from_numpy(input_path);
@@ -99,9 +78,25 @@ int main(int argc, char** argv) {
 
     // Run inference
     PredictionPtr prediction = engine->infer(input_sample);
-    prediction->to_numpy("out.npy");
+    prediction->write_output(output_path);
+
+    if (args.has("verify_against")){
+
+        int exit_code;
+        if (args.has("verify_threshold")){
+            exit_code = prediction->verify_against(verify_against,
+                                                   verify_threshold);
+        } else {
+            exit_code = prediction->verify_against(verify_against);
+        }
+
+        std::cout << "verify_threshold " << verify_threshold << std::endl;
+
+        return exit_code;
+    }
 
     // run clustering
+    // std::string clustering_type = args.getString("clustering", "dbscan");
     // ClusteringPtr cluster = Clustering::create(clustering_type);
     // if (!cluster) {
     //     Log::error() << "Failed to instantiate clustering!" << std::endl;

@@ -4,16 +4,32 @@ set -eux
 
 srcdir=@CMAKE_CURRENT_SOURCE_DIR@
 bindir=@CMAKE_CURRENT_BINARY_DIR@
-
-exedir=@CMAKE_BINARY_DIR@/bin
 datadir=@CMAKE_SOURCE_DIR@/tests/data
+exedir=@CMAKE_BINARY_DIR@/bin
 
-wdir=$bindir/orographic_drag_ws
+
+model_path=$datadir/model.onnx
+input_path=$datadir/m36966_input.npy
+eng_type=onnx
+output_path=$bindir/prediction_onnx.csv
+ref_pred=$datadir/m36966_prediction.csv
+ref_pred_sample0=$bindir/ref_sample_0.onnx.csv
+
+threshold=0.001
+
 
 ### prepare test
+
+# take only sample 0 from the reference batch
+head -n 1 $datadir/m36966_prediction.csv > $ref_pred_sample0
+
+# run inference
 $exedir/infero.x \
---model=$datadir/model.onnx \
---input=$datadir/m36966_input.npy \
---engine=onnx
+--model=$model_path \
+--input=$input_path \
+--engine=$eng_type \
+--output=$output_path \
+--verify_against=$ref_pred_sample0 \
+#--verify_threshold=$threshold
 
 
