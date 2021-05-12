@@ -9,9 +9,8 @@ list(APPEND infero_srcs
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.cpp
 )
 
-### support for ONNX
-message("*********HAVE_ONNX ${HAVE_ONNX}")
 
+### support for ONNX
 if(HAVE_ONNX)
     list(APPEND infero_srcs
         ml_engines/MLEngineONNX.h
@@ -21,8 +20,8 @@ if(HAVE_ONNX)
     add_definitions(-DHAVE_ONNX)
 endif()
 
-### support for TensorflowLite
 
+### support for TensorflowLite
 if(HAVE_TF_LITE)
     list(APPEND infero_srcs
         ml_engines/MLEngineTFlite.h
@@ -32,8 +31,8 @@ if(HAVE_TF_LITE)
     add_definitions(-DHAVE_TFLITE)
 endif()
 
-### support for TensorRT
 
+### support for TensorRT
 if(HAVE_TENSOR_RT)
     list(APPEND infero_srcs
         ml_engines/MLEngineTRT.h
@@ -55,13 +54,6 @@ if(HAVE_TENSOR_RT)
     #     ${TRT_COM}/logger.cpp
     #     )
 endif()
-
-
-
-message("*********infero_srcs ${infero_srcs}")
-message("*********tensorflow_lite_libs ${tensorflow_lite_libs}")
-message("*********onnx_libs ${onnx_libs}")
-message("*********ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIRS}")
 
 ecbuild_add_library(
 
