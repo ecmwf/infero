@@ -15,7 +15,6 @@ Infero TODO
 * follow eckit style guide
   - add #pragma once
   - trailing underscore in private vars/functions
-  - camel-case for file names (matching class names)
   - namespace for all infero code
   - remove prefix get_ from getters
   - .cc rather than .cpp
