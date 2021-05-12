@@ -15,8 +15,6 @@ Infero TODO
 * follow eckit style guide
   - namespace for all infero code
 
-* move clustering as a separate library
-
 * need to define interoperability models/engines
 
 * use csv rather than .npy  ???

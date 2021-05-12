@@ -12,7 +12,7 @@
 
 #include "DBSCAN/dbscan.h"
 
-#include "infero/clustering/Clustering.h"
+#include "clustering/Clustering.h"
 
 
 // min number of clusters

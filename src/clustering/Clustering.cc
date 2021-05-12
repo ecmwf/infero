@@ -14,8 +14,8 @@
 #include "eckit/log/JSON.h"
 #include "eckit/log/Log.h"
 
-#include "infero/clustering/Clustering.h"
-#include "infero/clustering/ClusteringDBscan.h"
+#include "clustering/Clustering.h"
+#include "clustering/ClusteringDBscan.h"
 
 using namespace eckit;
 

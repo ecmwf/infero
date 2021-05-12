@@ -9,7 +9,6 @@ list(APPEND infero_srcs
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.cpp
 )
 
-
 ### support for ONNX
 if(HAVE_ONNX)
     list(APPEND infero_srcs
@@ -55,6 +54,8 @@ if(HAVE_TENSOR_RT)
     #     )
 endif()
 
+
+# Infero library
 ecbuild_add_library(
 
     TARGET infero
