@@ -10,8 +10,10 @@
 
 #pragma once
 
-#include "infero/clustering/Clustering.h"
 #include "DBSCAN/dbscan.h"
+
+#include "infero/clustering/Clustering.h"
+
 
 // min number of clusters
 static const unsigned int DBSCAN_MIN_N_CLUSTERS = 1;

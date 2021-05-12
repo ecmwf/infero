@@ -8,12 +8,14 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "infero/ml_engines/MLEngineONNX.h"
-
-#include "eckit/log/Log.h"
 #include <assert.h>
 #include <iostream>
 #include <chrono>
+
+#include "eckit/log/Log.h"
+
+#include "infero/ml_engines/MLEngineONNX.h"
+
 
 //using namespace std;
 //using namespace std::chrono;

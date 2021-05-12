@@ -8,13 +8,14 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "Prediction.h"
-
 #include <algorithm>
 
 #include "cnpy/cnpy.h"
 
 #include "eckit/log/Log.h"
+
+#include "Prediction.h"
+
 
 using namespace eckit;
 

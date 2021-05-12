@@ -8,11 +8,11 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "infero/ml_engines/MLEngineTRT.h"
+#include <iostream>
 
 #include "eckit/log/Log.h"
 
-#include <iostream>
+#include "infero/ml_engines/MLEngineTRT.h"
 
 
 using namespace eckit;

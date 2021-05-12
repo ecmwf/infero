@@ -10,7 +10,11 @@
 
 #pragma once
 
-#include "infero/ml_engines/MLEngine.h"
+#include <string>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <sstream>
 
 #include <cuda_runtime_api.h>
 #include "NvInfer.h"
@@ -20,11 +24,8 @@
 #include "logger.h"
 #include "parserOnnxConfig.h"
 
-#include <string>
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <sstream>
+#include "infero/ml_engines/MLEngine.h"
+
 
 class MLEngineTRT;
 

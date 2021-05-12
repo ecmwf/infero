@@ -9,8 +9,10 @@
  */
 
 #include "cnpy/cnpy.h"
-#include "infero/input_types/InputData.h"
+
 #include "eckit/log/Log.h"
+
+#include "infero/input_types/InputData.h"
 
 using namespace eckit;
 

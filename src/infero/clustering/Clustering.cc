@@ -8,14 +8,13 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include "infero/clustering/Clustering.h"
-
 #include <fstream>
 #include <sstream>
 
 #include "eckit/log/JSON.h"
 #include "eckit/log/Log.h"
 
+#include "infero/clustering/Clustering.h"
 #include "infero/clustering/ClusteringDBscan.h"
 
 using namespace eckit;

@@ -10,11 +10,12 @@
 
 #pragma once
 
+#include <string>
+#include <memory>
+
 #include "infero/input_types/InputData.h"
 #include "infero/Prediction.h"
 
-#include <string>
-#include <memory>
 
 using namespace std;
 
