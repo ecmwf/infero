@@ -99,6 +99,7 @@ include(cmake/compiler_warnings.cmake) # optionally handle compiler specific war
 
 add_subdirectory( contrib )
 add_subdirectory( src )
+add_subdirectory( tests )
 
 ecbuild_add_executable( TARGET infero.x
     SOURCES   src/infero/infero.cpp

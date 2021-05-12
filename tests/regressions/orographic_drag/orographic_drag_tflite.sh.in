@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -eux
+
+srcdir=@CMAKE_CURRENT_SOURCE_DIR@
+bindir=@CMAKE_CURRENT_BINARY_DIR@
+
+exedir=@CMAKE_BINARY_DIR@/bin
+datadir=@CMAKE_SOURCE_DIR@/tests/data
+
+### prepare test
+$exedir/infero.x \
+--model=$datadir/model.tflite \
+--input=$datadir/m36966_input.npy \
+--engine=tflite
+
+
