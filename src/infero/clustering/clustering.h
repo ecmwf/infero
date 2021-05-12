@@ -8,8 +8,7 @@
  * nor does it submit to any jurisdiction.
  */
 
-#ifndef CLUSTERING_H
-#define CLUSTERING_H
+#pragma once
 
 #include <map>
 #include <memory>
@@ -79,5 +78,3 @@ protected:
     virtual void calculate_cluster_centers();
 
 };
-
-#endif // CLUSTERING_H

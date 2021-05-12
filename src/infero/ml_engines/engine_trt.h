@@ -8,8 +8,7 @@
  * nor does it submit to any jurisdiction.
  */
 
-#ifndef ENGINE_TRT_H
-#define ENGINE_TRT_H
+#pragma once
 
 #include "ml_engines/engine.h"
 
@@ -93,5 +92,3 @@ private:
     SampleUniquePtr<nvinfer1::INetworkDefinition> network;
 
 };
-
-#endif // ENGINE_TRT_H
