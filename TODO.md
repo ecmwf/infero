@@ -20,6 +20,4 @@ Infero TODO
 * use csv rather than .npy  ???
 * use hdf5 rather than .npy ???
 
-* check all contrib licences
-
 * improve the README
