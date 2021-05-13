@@ -31,7 +31,7 @@ using namespace eckit;
 
 MLEngine::~MLEngine(){}
 
-RTEnginePtr MLEngine::create(std::string choice,
+std::unique_ptr<MLEngine> MLEngine::create(std::string choice,
                                            std::string model_path)
 {
     Log::info() << "Loading model "
@@ -44,7 +44,7 @@ RTEnginePtr MLEngine::create(std::string choice,
         Log::info() << "creating RTEngineONNX.. "
                     << std::endl;
 
-        return RTEnginePtr(new MLEngineONNX(model_path));
+        return std::unique_ptr<MLEngine>(new MLEngineONNX(model_path));
     }
 #endif
 
@@ -54,7 +54,7 @@ RTEnginePtr MLEngine::create(std::string choice,
         Log::info() << "creating RTEngineTFlite.. "
                     << std::endl;
 
-        return RTEnginePtr(new MLEngineTFlite(model_path));
+        return std::unique_ptr<MLEngine>(new MLEngineTFlite(model_path));
     }
 #endif
 
@@ -64,7 +64,7 @@ RTEnginePtr MLEngine::create(std::string choice,
         Log::info() << "creating MLEngineTRT.. "
                     << std::endl;
 
-        return RTEnginePtr(new MLEngineTRT(model_path));
+        return std::unique_ptr<MLEngine>(new MLEngineTRT(model_path));
     }
 #endif
 

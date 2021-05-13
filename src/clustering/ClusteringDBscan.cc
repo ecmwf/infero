@@ -10,6 +10,7 @@
 
 
 #include "clustering/ClusteringDBscan.h"
+#include "eckit/exception/Exceptions.h"
 
 
 ClusteringDBscan::ClusteringDBscan():
@@ -18,7 +19,7 @@ ClusteringDBscan::ClusteringDBscan():
 
 }
 
-int ClusteringDBscan::run(PredictionPtr& prediction)
+int ClusteringDBscan::run(std::unique_ptr<Tensor>& prediction)
 {
 
     // read point data
@@ -53,16 +54,26 @@ int ClusteringDBscan::run(PredictionPtr& prediction)
 
 
 //read and ingest the prediction
-std::vector<Point> ClusteringDBscan::readPrediction(PredictionPtr& prediction)
+std::vector<Point> ClusteringDBscan::readPrediction(std::unique_ptr<Tensor>& prediction)
 {
 
     std::vector<Point> _points;
 
-    int val_count = 0;
-    for (int irow=0; irow<prediction->n_rows(); irow++){
-        for (int icol=0; icol<prediction->n_cols(); icol++){
+    // we run clustering only if the prediction is an image
+    // so, here we assume tha:
+    // dim-0 is batch dimension
+    // dim-1 is image_rows
+    // dim-2 is image_columns
+    ASSERT(prediction->nbDims() >= 3);
 
-            if (prediction->data_tensor[val_count] > min_threshold){
+    size_t nrows = prediction->shape(1);
+    size_t ncols = prediction->shape(2);
+
+    int val_count = 0;
+    for (int irow=0; irow<nrows; irow++){
+        for (int icol=0; icol<ncols; icol++){
+
+            if (prediction->data()[val_count] > min_threshold){
                 Point p;
                 p.clusterID = UNCLASSIFIED;
                 p.x = irow;

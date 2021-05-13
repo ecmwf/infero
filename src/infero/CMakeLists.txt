@@ -1,12 +1,8 @@
 list(APPEND infero_srcs
-    input_types/InputData.h
-    input_types/InputData.cc
-    ml_engines/MLEngine.h
-    ml_engines/MLEngine.cc
-    Prediction.h
-    Prediction.cc
     Tensor.h
     Tensor.cc
+    ml_engines/MLEngine.h
+    ml_engines/MLEngine.cc
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.h
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.cpp
 )

@@ -95,7 +95,6 @@ ecbuild_info("ONNX_FOUND ${ONNX_FOUND}")
 ecbuild_info("ONNX_LIBRARIES ${ONNX_LIBRARIES}")
 ecbuild_info("ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIRS}")
 
-
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
 add_subdirectory( contrib )

@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <iostream>
 #include <cmath>
 #include <iomanip>
 #include <limits>
@@ -19,10 +20,27 @@
 #include "cnpy/cnpy.h"
 
 #include "eckit/log/Log.h"
-
 #include "eckit/exception/Exceptions.h"
+#include "eckit/serialisation/FileStream.h"
 
 using namespace eckit;
+
+#define CSV_FLOAT_PRECISION 16
+
+Tensor::Tensor(const Tensor &other)
+{
+    // copy shape
+    shape_.resize(other.nbDims());
+    for (int i=0; i<other.nbDims(); i++){
+        shape_[i] = other.shape(i);
+    }
+
+    // copy data
+    data_.resize(other.size());
+    for (int i=0; i<other.size(); i++){
+        data_[i] = other.data()[i];
+    }
+}
 
 Tensor::Tensor(std::vector<float> data, std::vector<int64_t> shape) :
     shape_(shape),
@@ -39,61 +57,129 @@ Tensor::Tensor(std::vector<float> data, std::vector<int64_t> shape) :
     std::replace(shape_.begin(), shape_.end(), -1, 1);
 }
 
+Tensor::Tensor(eckit::Stream &ss)
+{
+    // read nb dims
+    size_t ndims;
+    ss >> ndims;
+    shape_.resize(ndims);
 
-int Tensor::compare(const std::string& filename, float threshold) {
-
-    std::ifstream ifile(filename);
-    std::vector<float> other;
-    float val;
-    while (ifile >> val) {
-        other.push_back(val);
+    // read shape
+    for (int i=0; i<ndims; i++){
+        ss >> shape_[i];
     }
-    ifile.close();
+
+    // read data
+    size_t sz=1;
+    for (int i=0; i<ndims; i++){
+        sz *= shape_[i];
+    }
+    data_.resize(sz);
+    ss.readBlob(const_cast<float*>(&data_[0]), sizeof(float) * sz);
+}
+
+
+Tensor::Comparison Tensor::compare(const Tensor& other, float threshold) {
 
     ASSERT(other.size() == size());
 
     // verify against threshold
     float mean_rel_err = 0.0;
     for (int i=0; i<other.size(); i++){
-        mean_rel_err += fabs( (other.data()[i] - data_[i]) / other[i] );
+        mean_rel_err += fabs( ( *(other.data()+i) - data_[i]) / *(other.data()+i) );
     }
 
     mean_rel_err /= other.size();
 
-    int exit_code;
-    if (mean_rel_err <= threshold){
-
-        Log::info() << "Relative Error "
-                    << mean_rel_err
-                    << " LESS than threshold "
-                    << threshold
-                    << " => PASSED!"
-                    << std::endl;
-
-        exit_code = 0;
-
-    } else {
-
-        Log::info() << "Relative Error "
-                    << mean_rel_err
-                    << " GREATER than threshold "
-                    << threshold
-                    << " => FAILED!"
-                    << std::endl;
-
-        exit_code = 1;
-
-    }
-
-    return exit_code;
+    // result of comparison
+    return Comparison(mean_rel_err, threshold, mean_rel_err <= threshold);
 }
 
-void Tensor::write(const std::string& filename) const {
+void Tensor::encode(eckit::Stream& ss) const
+{
+    ss << nbDims();
+    for (const auto& d: shape_){
+        ss << d;
+    }
+    ss.writeBlob(const_cast<float*>(data()), sizeof(float) * size());
+}
+
+std::unique_ptr<Tensor> Tensor::from_file(const std::string &filename)
+{
     std::string ext = filename.substr(filename.find_last_of("."));
+
+    std::vector<int64_t> local_shape;
+    std::vector<float> local_data;
+
+    if (!ext.compare(".csv")) {
+
+        // read nbdims
+        std::ifstream file(filename);
+        int ndims;
+        file >> ndims;
+        file.get();
+
+        // read shape
+        local_shape.resize(ndims);
+        for (int i=0; i<ndims; i++){
+            file >> local_shape[i];
+            file.get();
+        }
+
+        // read data
+        size_t sz=1;
+        for (int i=0; i<ndims; i++){
+            sz *= local_shape[i];
+        }
+
+        local_data.resize(sz);
+        for (int i=0; i<sz; i++){
+            file >> local_data[i];
+            file.get();
+        }
+
+        file.close();
+
+    }
+    else if (!ext.compare(".npy")) {
+
+        cnpy::NpyArray arr = cnpy::npy_load(filename);
+        local_data = arr.as_vec<float>();
+
+        local_shape.resize(arr.shape.size());
+
+        for (size_t i = 0; i<arr.shape.size(); i++){
+            local_shape[i] = arr.shape[i];
+        }
+
+    } else {
+        throw eckit::BadValue("File extension not recognised", Here());
+    }
+
+    return std::unique_ptr<Tensor>(new Tensor(local_data, local_shape));
+
+}
+
+
+void Tensor::write(const std::string& filename) const {
+
+    std::string ext = filename.substr(filename.find_last_of("."));
+
     if (!ext.compare(".csv")) {
         std::ofstream of(filename);
+
+        // dims
+        of << nbDims() << ',';
+
+        // shape
+        for (const auto& d: shape_){
+            of << d << ',';
+        }
+
+        // data
         for (auto& v : data_)
-            of << v << ',';
+            of << std::setprecision(CSV_FLOAT_PRECISION) << v << ',';
+
         of.close();
         return;
     }

@@ -61,7 +61,7 @@ public:
     virtual int build();
 
     // run the inference
-    virtual PredictionPtr infer(InputDataPtr& input_sample);
+    virtual std::unique_ptr<Tensor> infer(InputDataPtr& input_sample);
 
     static MLEngineTRTPtr from_onnx(std::string onnx_path,
                                     TRTOptions& options,

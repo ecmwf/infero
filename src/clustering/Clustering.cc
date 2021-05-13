@@ -124,14 +124,14 @@ int Clustering::write_json(std::string filename)
    return -1;
 }
 
-ClusteringPtr Clustering::create(std::string choice)
+std::unique_ptr<Clustering> Clustering::create(std::string choice)
 {
     if (choice.compare("dbscan") == 0){
 
         Log::info() << "creating ClusteringDBscan.. "
                   << std::endl;
 
-        return ClusteringPtr(new ClusteringDBscan);
+        return std::unique_ptr<Clustering>(new ClusteringDBscan);
 
     } else {
 

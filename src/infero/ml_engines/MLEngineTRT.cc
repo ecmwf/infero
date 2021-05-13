@@ -146,7 +146,7 @@ MLEngineTRTPtr MLEngineTRT::from_onnx(std::string onnx_path,
 
 
 // TODO still work in progress
-PredictionPtr MLEngineTRT::infer(InputDataPtr& input_sample)
+std::unique_ptr<Tensor> MLEngineTRT::infer(InputDataPtr& input_sample)
 {
 
 #if 0

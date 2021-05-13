@@ -15,7 +15,7 @@
 #include "onnxruntime_cxx_api.h"
 
 #include "infero/ml_engines/MLEngine.h"
-#include "infero/input_types/InputData.h"
+
 
 
 class MLEngineONNX: public MLEngine
@@ -31,7 +31,7 @@ public:
     virtual int build();
 
     // run the inference
-    PredictionPtr infer(InputDataPtr& input_sample);
+    std::unique_ptr<Tensor> infer(std::unique_ptr<Tensor>& input_sample);
 
 
 private:
@@ -56,6 +56,8 @@ private:
     std::vector<int64_t> output_node_dims;
     std::vector<int64_t> output_node_dims_1;
     int64_t output_shape_flat;
+
+    std::vector<float> data_buffer;
 
 private:
 

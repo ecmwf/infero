@@ -38,7 +38,7 @@ int MLEngineONNX::build()
     return 0;
 }
 
-PredictionPtr MLEngineONNX::infer(InputDataPtr& input_sample)
+std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sample)
 {
 
     Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "onnx_model");
@@ -54,9 +54,14 @@ PredictionPtr MLEngineONNX::infer(InputDataPtr& input_sample)
     this->_input_info(session);
     this->_output_info(session);
 
+    // make a copy of the input data
+    data_buffer.resize(input_sample->size());
+    for (int i=0; i<input_sample->size(); i++){
+        data_buffer[i] = input_sample->data()[i];
+    }
 
     input_shape_flat = 1;
-    for(const auto& i: input_sample->shape)
+    for(const auto& i: input_sample->shape())
         input_shape_flat *= i;
 
     Log::debug() << "input_shape_flat " << input_shape_flat << std::endl;
@@ -70,7 +75,7 @@ PredictionPtr MLEngineONNX::infer(InputDataPtr& input_sample)
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
     Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info,
-                                                              input_sample->data(),
+                                                              data_buffer.data(),
                                                               input_shape_flat,
                                                               input_node_dims_1.data(),
                                                               input_node_dims_1.size());
@@ -116,7 +121,7 @@ PredictionPtr MLEngineONNX::infer(InputDataPtr& input_sample)
         output_data[i] = *(floatarr+i);
     }
 
-    return PredictionPtr(new Prediction(output_data, output_node_dims_1));
+    return std::unique_ptr<Tensor>(new Tensor(output_data, output_node_dims_1));
 
 }
 

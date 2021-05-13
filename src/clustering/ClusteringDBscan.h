@@ -34,13 +34,13 @@ public:
     ClusteringDBscan();
 
     // run clustering
-    virtual int run(PredictionPtr& prediction);
+    virtual int run(std::unique_ptr<Tensor>& prediction);
 
 
 private:
 
     // read the prediction
-    virtual std::vector<Point> readPrediction(PredictionPtr& prediction);
+    virtual std::vector<Point> readPrediction(std::unique_ptr<Tensor>& prediction);
 
 
 private:

@@ -50,7 +50,7 @@ int MLEngineTFlite::build()
     return 0;
 }
 
-PredictionPtr MLEngineTFlite::infer(InputDataPtr& input_sample)
+std::unique_ptr<Tensor> MLEngineTFlite::infer(std::unique_ptr<Tensor>& input_sample)
 {
 
     // =========================== Copy Input =============================
@@ -74,7 +74,7 @@ PredictionPtr MLEngineTFlite::infer(InputDataPtr& input_sample)
 
     // ========================== Run inference ===========================
     float* input = interpreter->typed_input_tensor<float>(0);
-    float* data = input_sample->data();
+    const float* data = input_sample->data();
     size_t data_size = input_sample->size();
     for (size_t i = 0; i<data_size; i++){
       *(input+i) = *(data+i);
@@ -120,7 +120,6 @@ PredictionPtr MLEngineTFlite::infer(InputDataPtr& input_sample)
     }
     // ====================================================================
 
-//    return Prediction(output_data, out_shape_1);
-    return PredictionPtr(new Prediction(output_data, out_shape_1));
+    return std::unique_ptr<Tensor>(new Tensor(output_data, out_shape_1));
 
 }

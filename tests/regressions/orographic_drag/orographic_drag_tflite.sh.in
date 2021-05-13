@@ -8,20 +8,14 @@ datadir=@CMAKE_SOURCE_DIR@/tests/data
 exedir=@CMAKE_BINARY_DIR@/bin
 
 
+eng_type=tflite
+
 model_path=$datadir/model.tflite
 input_path=$datadir/m36966_input.npy
-eng_type=tflite
+ref_pred=$datadir/m36966_prediction_0.csv
+
 output_path=$bindir/prediction_tflite.csv
 
-ref_pred=$datadir/m36966_prediction.csv
-ref_pred_sample0=$bindir/ref_sample_0.tflite.csv
-
-threshold=0.01
-
-### prepare test
-
-# take only sample 0 from the reference batch
-head -n 1 $datadir/m36966_prediction.csv > $ref_pred_sample0
 
 # run inference
 $exedir/infero.x \
@@ -29,7 +23,6 @@ $exedir/infero.x \
 --input=$input_path \
 --engine=$eng_type \
 --output=$output_path \
---verify_against=$ref_pred_sample0 \
-#--verify_threshold=$threshold
+--ref_path=$ref_pred
 
 

@@ -28,6 +28,6 @@ public:
     virtual int build();
 
     // run the inference
-    virtual PredictionPtr infer(InputDataPtr& input_sample);
+    virtual std::unique_ptr<Tensor> infer(std::unique_ptr<Tensor>& input_sample);
 
 };

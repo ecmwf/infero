@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "infero/Prediction.h"
+#include "infero/Tensor.h"
 
 // a cluster point
 struct ClusterPoint{
@@ -37,10 +37,6 @@ typedef std::map<int, ClusterPoints> ClusterMap;
 typedef std::pair<int, ClusterPoints> ClusterPair;
 
 
-class Clustering;
-typedef std::unique_ptr<Clustering> ClusteringPtr;
-
-
 // generic clustering algorithm
 class Clustering
 {
@@ -50,7 +46,7 @@ public:
     Clustering();
 
     // run the clustering
-    virtual int run(PredictionPtr& prediction) = 0;
+    virtual int run(std::unique_ptr<Tensor>& prediction) = 0;
 
     // summary of clustering
     virtual void print_summary();
@@ -58,7 +54,7 @@ public:
     // write JSON
     virtual int write_json(std::string filename);
 
-    static ClusteringPtr create(std::string choice);
+    static std::unique_ptr<Clustering> create(std::string choice);
 
 public:
 

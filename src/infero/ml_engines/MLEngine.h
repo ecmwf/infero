@@ -13,14 +13,10 @@
 #include <string>
 #include <memory>
 
-#include "infero/input_types/InputData.h"
-#include "infero/Prediction.h"
+#include "infero/Tensor.h"
 
 
 using namespace std;
-
-class MLEngine;
-typedef std::unique_ptr<MLEngine> RTEnginePtr;
 
 
 // Minimal interface for a runtime engine
@@ -43,10 +39,10 @@ public:
     virtual int build() = 0;
 
     // run the inference
-    virtual PredictionPtr infer(InputDataPtr& input_sample) = 0;
+    virtual std::unique_ptr<Tensor> infer(std::unique_ptr<Tensor>& input_sample) = 0;
 
-    static RTEnginePtr create(std::string choice,
-                              std::string model_path);
+    static std::unique_ptr<MLEngine> create(std::string choice,
+                                            std::string model_path);
 
 };
 

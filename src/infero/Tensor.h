@@ -15,6 +15,9 @@
 #include <string>
 #include <vector>
 #include <iosfwd>
+#include <sstream>
+
+#include "eckit/serialisation/Stream.h"
 
 
 /// Dense tensor of numerical values
@@ -22,18 +25,85 @@
 /// Ordering is RowMajor (C order), including in output
 
 class Tensor {
+
 public:
 
+    /// Tensor Comparison info
+    /// It account for the fact that Tensor comparison
+    /// may include additional information to just true/false
+    class Comparison {
+
+    public:
+
+        Comparison(float err, float thr, bool pass) :
+            mean_rel_error(err),
+            threshold(thr),
+            passed(pass){}
+
+        float RelError() const { return mean_rel_error;}
+        float Threshold() const { return threshold;}
+        bool  HasPassed() const { return passed;}
+        bool  ExitCode() const { return !passed;}
+
+        friend std::ostream& operator<<(std::ostream& ost,
+                                        const Comparison& obj) {
+            if (obj.HasPassed()){
+                ost << "Relative Error " << obj.RelError()
+                   << " LESS than threshold " << obj.Threshold()
+                   << " => PASSED!";
+            } else {
+                ost << "Relative Error " << obj.RelError()
+                   << " GREATER than threshold " << obj.Threshold()
+                   << " => FAILED!";
+            }
+
+            return ost;
+        }
+
+    private:
+
+        float mean_rel_error;
+        float threshold;
+        bool passed;
+    };
+
+public: // methods
+
+    // -- Constructors
+
+    // from another tensor
+    Tensor(const Tensor& other);
+
+    // from data and shape
     Tensor(std::vector<float> data_tensor, std::vector<int64_t> shape);
 
-    int compare(const std::string& filename, float threshold = 0.01);
+    // from Tensor stream
+    Tensor(eckit::Stream& ss);
+
+
+    // -- Mutators
+
+    // compare against another tensor
+    Comparison compare(const Tensor& other, float threshold = 0.01);
+
+    // to stream
+    void encode(eckit::Stream& ss) const;
+
+    // from_file (only used for convenience)
+    static std::unique_ptr<Tensor> from_file(const std::string& filename);
+
+
+    // -- Accessors
 
     /// @returns flattened size of the whole tensor
     int size() const { return data_.size(); }
 
-    float* data() { return data_.data(); }
+    const float* data() const { return data_.data(); }
 
-    int64_t shape(size_t idx) { return shape_[idx]; }
+    const std::vector<int64_t>& shape() const { return shape_; }
+    int64_t shape(size_t idx) const { return shape_[idx]; }
+
+    size_t nbDims() const { return shape_.size(); }
 
     void write(const std::string& filename) const;
 

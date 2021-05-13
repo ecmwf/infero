@@ -10,7 +10,6 @@
 
 #include <memory>
 
-#include "infero/input_types/InputData.h"
 #include "infero/ml_engines/MLEngine.h"
 // #include "clustering/clustering.h"
 
@@ -18,8 +17,8 @@
 #include "eckit/option/SimpleOption.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/log/Log.h"
+#include "eckit/serialisation/FileStream.h"
 
-#include <iostream>
 
 using namespace eckit;
 using namespace eckit::option;
@@ -48,8 +47,8 @@ int main(int argc, char** argv) {
     options.push_back(new SimpleOption<std::string>("model", "Path to ML model"));
     options.push_back(new SimpleOption<std::string>("engine", "ML engine [onnx, tflite, trt]"));
     options.push_back(new SimpleOption<std::string>("clustering", "Clustering [dbscan, ...]"));
-    options.push_back(new SimpleOption<std::string>("verify_against", "Path to Reference CSV values"));
-    options.push_back(new SimpleOption<long>("verify_threshold", "Verification threshold"));
+    options.push_back(new SimpleOption<std::string>("ref_path", "Path to Reference prediction"));
+    options.push_back(new SimpleOption<long>("threshold", "Verification threshold"));
 
 
     CmdArgs args(&usage, options, 0, 0, true);
@@ -59,40 +58,36 @@ int main(int argc, char** argv) {
     std::string model_path = args.getString("model", "model.onnx");
     std::string engine_type = args.getString("engine", "onnx");
     std::string output_path = args.getString("output", "out.npy");
-    std::string verify_against = args.getString("verify_against");
-    float verify_threshold = args.getFloat("verify_threshold", 0.01);
+    std::string ref_path = args.getString("ref_path");
+    float threshold = args.getFloat("threshold", 0.01);
 
     // input data
-    InputDataPtr input_sample = InputData::from_numpy(input_path);
-    if (!input_sample) {
+    std::unique_ptr<Tensor> inputT = Tensor::from_file(input_path);
+    if (!inputT) {
         Log::error() << "Failed to read data from " << input_path << std::endl;
         return EXIT_FAILURE;
     }
 
     // runtime engine
-    RTEnginePtr engine = MLEngine::create( engine_type, model_path);
+    std::unique_ptr<MLEngine> engine = MLEngine::create( engine_type, model_path);
     if (!engine) {
         Log::error() << "Failed to instantiate engine!" << std::endl;
         return EXIT_FAILURE;
     }
 
     // Run inference
-    PredictionPtr prediction = engine->infer(input_sample);
-    prediction->write_output(output_path);
+    std::unique_ptr<Tensor> predT = engine->infer(inputT);
 
-    if (args.has("verify_against")){
+    // compare against ref values
+    if (args.has("ref_path")){
 
-        int exit_code;
-        if (args.has("verify_threshold")){
-            exit_code = prediction->verify_against(verify_against,
-                                                   verify_threshold);
-        } else {
-            exit_code = prediction->verify_against(verify_against);
-        }
+        // compare agains ref tensor (from CSV)
+        std::unique_ptr<Tensor> refT = Tensor::from_file(ref_path);
+        Tensor::Comparison comparison = predT->compare(*refT, threshold);
 
-        std::cout << "verify_threshold " << verify_threshold << std::endl;
+        Log::info() << comparison << std::endl;
 
-        return exit_code;
+        return comparison.ExitCode();
     }
 
     // run clustering
@@ -103,12 +98,11 @@ int main(int argc, char** argv) {
     //     return EXIT_FAILURE;
     // }
 
-    // int err = cluster->run(prediction);
+    // int err = cluster->run(predT);
     // if(err){
     //     Log::error() << "Clustering Failed!" << std::endl;
     //     return EXIT_FAILURE;
     // } else {
-    //     // print prediction
     //     cluster->print_summary();
 
     //     // write to JSON
