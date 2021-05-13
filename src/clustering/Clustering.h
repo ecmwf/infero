@@ -45,6 +45,8 @@ public:
 
     Clustering();
 
+    virtual ~Clustering();
+
     // run the clustering
     virtual int run(std::unique_ptr<Tensor>& prediction) = 0;
 

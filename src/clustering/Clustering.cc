@@ -27,20 +27,21 @@ Clustering::Clustering()
 }
 
 
-void Clustering::calculate_cluster_centers()
-{
+Clustering::~Clustering() {}
+
+void Clustering::calculate_cluster_centers() {
 
     // loop over cluster points
     // and fill a map < cluster ID, vec<points> >
     ClusterMap cluster;
-    for (const auto& pt: points){
+    for (const auto& pt : points) {
 
         auto it = cluster.find(pt.cid);
-        if (it != cluster.end()){
+        if (it != cluster.end()) {
 
             it->second.push_back(ClusterPoint(pt.x, pt.y, pt.cid));
-
-        } else {
+        }
+        else {
 
             ClusterPoints vv{ClusterPoint(pt.x, pt.y, pt.cid)};
             ClusterPair _new_clsr(pt.cid, vv);
@@ -51,93 +52,76 @@ void Clustering::calculate_cluster_centers()
 
     // average point coords for each cluster ID
     float x, y;
-    for (const auto& k: cluster){
+    for (const auto& k : cluster) {
 
         x = y = 0;
 
-        for (auto& p: k.second){
+        for (auto& p : k.second) {
             x += p.x;
             y += p.y;
         }
 
-        if (k.second.size()){
+        if (k.second.size()) {
             x /= k.second.size();
             y /= k.second.size();
         }
 
         this->cluster_centers.push_back(ClusterPoint(x, y, k.first));
-
     }
-
 }
 
 // print clusters
-void Clustering::print_summary()
-{
+void Clustering::print_summary() {
 
     Log::info() << "\n*** centers *** " << std::endl;
 
-    for (const auto& clust_ctr: cluster_centers){
+    for (const auto& clust_ctr : cluster_centers) {
 
-        printf("%2d) x = %8.3f, y = %8.3f\n",
-               clust_ctr.cid,
-               clust_ctr.x,
-               clust_ctr.y);
+        printf("%2d) x = %8.3f, y = %8.3f\n", clust_ctr.cid, clust_ctr.x, clust_ctr.y);
     }
 
     Log::info() << std::endl;
-
 }
 
 
-int Clustering::write_json(std::string filename)
-{
-   std::stringstream s;
-   JSON json_out(s, JSON::Formatting::indent(2));
+int Clustering::write_json(std::string filename) {
+    std::stringstream s;
+    JSON json_out(s, JSON::Formatting::indent(2));
 
-   json_out.startObject();
-   json_out.startList();
-   for (const auto& c: cluster_centers){
-       json_out.startList();
-       json_out << c.x << c.y;
-       json_out.endList();
-   }
-   json_out.endList();
-   json_out.endObject();
+    json_out.startObject();
+    json_out.startList();
+    for (const auto& c : cluster_centers) {
+        json_out.startList();
+        json_out << c.x << c.y;
+        json_out.endList();
+    }
+    json_out.endList();
+    json_out.endObject();
 
-   std::ofstream fout( filename );
+    std::ofstream fout(filename);
 
-   if( fout ) {
+    if (fout) {
 
-       Log::info() << "Writing to JSON file "
-                   << filename
-                   << std::endl;
+        Log::info() << "Writing to JSON file " << filename << std::endl;
 
-       fout << s.str();
-       return 0;
+        fout << s.str();
+        return 0;
+    }
 
-   }
-
-   Log::error() << "Failed to open output file "
-                << filename
-                << std::endl;
-   return -1;
+    Log::error() << "Failed to open output file " << filename << std::endl;
+    return -1;
 }
 
-std::unique_ptr<Clustering> Clustering::create(std::string choice)
-{
-    if (choice.compare("dbscan") == 0){
+std::unique_ptr<Clustering> Clustering::create(std::string choice) {
+    if (choice.compare("dbscan") == 0) {
 
-        Log::info() << "creating ClusteringDBscan.. "
-                  << std::endl;
+        Log::info() << "creating ClusteringDBscan.. " << std::endl;
 
         return std::unique_ptr<Clustering>(new ClusteringDBscan);
+    }
+    else {
 
-    } else {
-
-        Log::error() << "Invalid Clustering choice "
-                     << choice
-                     << std::endl;
+        Log::error() << "Invalid Clustering choice " << choice << std::endl;
 
         return nullptr;
     }
