@@ -95,6 +95,7 @@ ecbuild_info("ONNX_FOUND ${ONNX_FOUND}")
 ecbuild_info("ONNX_LIBRARIES ${ONNX_LIBRARIES}")
 ecbuild_info("ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIRS}")
 
+
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
 add_subdirectory( contrib )
@@ -102,7 +103,7 @@ add_subdirectory( src )
 add_subdirectory( tests )
 
 ecbuild_add_executable( TARGET infero.x
-    SOURCES   src/infero/infero.cpp
+    SOURCES   src/infero/infero.cc
     CONDITION HAVE_BUILD_TOOLS
     INCLUDES  ${eckit_INCLUDE_DIRS}
     LIBS      infero eckit eckit_option )
