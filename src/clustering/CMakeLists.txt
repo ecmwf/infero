@@ -35,7 +35,8 @@ ecbuild_add_library(
         "${eckit_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
-        ${ZLIB_LIBRARIES}
+        infero
         eckit
         eckit_option
+        ${ZLIB_LIBRARIES}
 )

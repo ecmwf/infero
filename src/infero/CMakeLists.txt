@@ -5,6 +5,8 @@ list(APPEND infero_srcs
     ml_engines/MLEngine.cc
     Prediction.h
     Prediction.cc
+    Tensor.h
+    Tensor.cc
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.h
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.cpp
 )
