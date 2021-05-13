@@ -1,3 +1,5 @@
+add_subdirectory(api)
+
 list(APPEND infero_srcs
     Tensor.h
     Tensor.cc
@@ -53,7 +55,6 @@ if(HAVE_TENSOR_RT)
 endif()
 
 
-# Infero library
 ecbuild_add_library(
 
     TARGET infero

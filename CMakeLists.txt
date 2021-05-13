@@ -28,6 +28,12 @@ ecbuild_add_option( FEATURE BUILD_TOOLS
                     DEFAULT ON
                     DESCRIPTION "Build the command line tools" )
 
+ecbuild_add_option( FEATURE FORTRAN
+                    DESCRIPTION "Provide Fortran bindings" )
+if(HAVE_FORTRAN)
+    ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
+endif()
+
 ecbuild_add_option( FEATURE TF_LITE
                     DESCRIPTION "TensorflowLite engine"
                     REQUIRED_PACKAGES TensorflowLite )
