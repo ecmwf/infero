@@ -33,44 +33,35 @@ public:
 
 private:
 
-
+    // ORT session
     std::unique_ptr<Ort::Session> session;
     Ort::SessionOptions session_options;
 
     // allocator
     Ort::AllocatorWithDefaultOptions allocator;
 
-    // input layer info
-
-    // note: we assume only one input node
+    // NOTE: we assume only one input node
     int input_node_idx;
     size_t num_input_nodes;
     char* input_name;
-    std::vector<int64_t> input_node_dims;
+    std::vector<int64_t> input_layer_shape;
     std::vector<const char*> input_node_names;
 
-    // same as input size, but with "1" as batch dim
-    // this makes sure that it can be used to allocate
-    // the input tensor by the library
-    std::vector<int64_t> input_node_dims_1;
-    size_t input_shape_flat;
-
-    // output layer info
+    // NOTE: we assume only one output node
     int output_node_idx;
     size_t num_output_nodes;
     char* output_name;
+    std::vector<int64_t> output_layer_shape;
     std::vector<const char*> output_node_names;
-    std::vector<int64_t> output_node_dims;
-    std::vector<int64_t> output_node_dims_1;
-    int64_t output_shape_flat;
 
+    // output data
     std::vector<float> data_buffer;
 
 private:
 
-    void input_setup(Ort::Session& session);
+    void query_input_layer();
 
-    void output_setup(Ort::Session& session);
+    void query_output_layer();
 
     void print(std::ostream& os) const;
 
