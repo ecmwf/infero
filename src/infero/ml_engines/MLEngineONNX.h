@@ -27,22 +27,27 @@ public:
 
     ~MLEngineONNX();
 
-    // build the engine
-    virtual int build();
-
     // run the inference
     std::unique_ptr<Tensor> infer(std::unique_ptr<Tensor>& input_sample);
 
 
 private:
 
+
+    std::unique_ptr<Ort::Session> session;
+    Ort::SessionOptions session_options;
+
     // allocator
     Ort::AllocatorWithDefaultOptions allocator;
 
     // input layer info
+
+    // note: we assume only one input node
+    int input_node_idx;
     size_t num_input_nodes;
-    std::vector<const char*> input_node_names;
+    char* input_name;
     std::vector<int64_t> input_node_dims;
+    std::vector<const char*> input_node_names;
 
     // same as input size, but with "1" as batch dim
     // this makes sure that it can be used to allocate
@@ -51,7 +56,9 @@ private:
     size_t input_shape_flat;
 
     // output layer info
+    int output_node_idx;
     size_t num_output_nodes;
+    char* output_name;
     std::vector<const char*> output_node_names;
     std::vector<int64_t> output_node_dims;
     std::vector<int64_t> output_node_dims_1;
@@ -61,9 +68,10 @@ private:
 
 private:
 
-    void _input_info(Ort::Session& session);
-    void _output_info(Ort::Session& session);
-    void _save_prediction(std::vector<Ort::Value>& tensor,
-                          std::string filename);
+    void input_setup(Ort::Session& session);
+
+    void output_setup(Ort::Session& session);
+
+    void print(std::ostream& os) const;
 
 };

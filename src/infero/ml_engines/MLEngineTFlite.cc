@@ -45,11 +45,6 @@ MLEngineTFlite::~MLEngineTFlite()
 
 }
 
-int MLEngineTFlite::build()
-{
-    return 0;
-}
-
 std::unique_ptr<Tensor> MLEngineTFlite::infer(std::unique_ptr<Tensor>& input_sample)
 {
 

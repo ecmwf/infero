@@ -11,6 +11,7 @@
 #pragma once
 
 #include <string>
+#include <ostream>
 #include <memory>
 
 #include "infero/Tensor.h"
@@ -23,10 +24,6 @@ using namespace std;
 class MLEngine
 {
 
-protected:
-
-    std::string mModelFilename;
-
 public:
 
     MLEngine(std::string model_filename):
@@ -35,14 +32,25 @@ public:
 
     virtual ~MLEngine();
 
-    // build the engine
-    virtual int build() = 0;
-
     // run the inference
     virtual std::unique_ptr<Tensor> infer(std::unique_ptr<Tensor>& input_sample) = 0;
 
-    static std::unique_ptr<MLEngine> create(std::string choice,
-                                            std::string model_path);
+    // create concrete engines
+    static std::unique_ptr<MLEngine> create(std::string choice, std::string model_path);
+
+    friend std::ostream& operator<<(std::ostream& os, MLEngine& obj){
+        obj.print(os);
+        return os;
+    }
+
+
+protected:
+
+    virtual void print(std::ostream& os) const {}
+
+protected:
+
+    std::string mModelFilename;
 
 };
 

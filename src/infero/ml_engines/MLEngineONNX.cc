@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -13,6 +13,7 @@
 #include <chrono>
 
 #include "eckit/log/Log.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "infero/ml_engines/MLEngineONNX.h"
 
@@ -26,6 +27,17 @@ MLEngineONNX::MLEngineONNX(std::string model_filename):
     MLEngine(model_filename)
 {
 
+    // Session options
+    Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "onnx_model");
+    session_options.SetIntraOpNumThreads(1);
+    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+
+    Log::debug() << "mModelFilename " << mModelFilename << std::endl;
+    session = std::unique_ptr<Ort::Session>( new Ort::Session(env, mModelFilename.c_str(), session_options));
+
+    // fill in input/output layer
+    input_setup(*session);
+    output_setup(*session);
 }
 
 MLEngineONNX::~MLEngineONNX()
@@ -33,32 +45,28 @@ MLEngineONNX::~MLEngineONNX()
 
 }
 
-int MLEngineONNX::build()
-{
-    return 0;
-}
-
 std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sample)
 {
 
-    Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "onnx_model");
-    Ort::SessionOptions session_options;
-
-    session_options.SetIntraOpNumThreads(1);
-    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-
-    Log::debug() << "mModelFilename " << mModelFilename << std::endl;
-    Ort::Session session(env, mModelFilename.c_str(), session_options);
-
-    // fill in input/output info
-    this->_input_info(session);
-    this->_output_info(session);
+    //---------------- input --------------------
+    input_node_dims_1.resize(input_node_dims.size());
+    for (int i=0; i<input_node_dims.size(); i++)
+        input_node_dims_1[i] = input_node_dims[i];
+    input_node_dims_1[0] = 1;
 
     // make a copy of the input data
     data_buffer.resize(input_sample->size());
     for (int i=0; i<input_sample->size(); i++){
         data_buffer[i] = input_sample->data()[i];
     }
+    // ------------------------------------------
+
+    //---------------- output -------------------
+    output_node_dims_1.resize(output_node_dims.size());
+    for (int i=0; i<output_node_dims.size(); i++)
+        output_node_dims_1[i] = output_node_dims[i];
+    output_node_dims_1[0] = 1;
+    // ------------------------------------------
 
     input_shape_flat = 1;
     for(const auto& i: input_sample->shape())
@@ -84,38 +92,18 @@ std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sampl
 
     Log::debug() << "tensor created " << std::endl;
 
-    // score model & input tensor, get back output tensor
-//    auto start = high_resolution_clock::now();
-
-//    for (int i=0; i<input_node_names.size(); i++)
-//        Log::info() << "input_node_names[i] " << input_node_names[i] << std::endl;
-
-    auto output_tensors = session.Run(Ort::RunOptions{nullptr},
-                                      input_node_names.data(),
-                                      &input_tensor,
-                                      1,
-                                      output_node_names.data(),
-                                      1);        
-
-//    auto stop = high_resolution_clock::now();
-//    auto duration_inference = duration_cast<milliseconds>(stop - start);
+    auto output_tensors = session->Run(Ort::RunOptions{nullptr},
+                                       input_node_names.data(),
+                                       &input_tensor,
+                                       1,
+                                       output_node_names.data(),
+                                       1);
 
     assert(output_tensors.size() == 1 && output_tensors.front().IsTensor());
 
-    Log::debug() << "assertion passed! " << std::endl;
-    Log::debug() << "output_shape_flat " << output_shape_flat << std::endl;
-
-    // Get pointer to output tensor ML_SCALAR values
     float* floatarr = output_tensors.front().GetTensorMutableData<float>();
 
-    Log::debug() << "assertion passed! " << std::endl;
-    Log::debug() << "output_shape_flat " << output_shape_flat << std::endl;
-
-//    for (int i=0; i<input_node_dims_1.size(); i++)
-//        Log::info() << "input_node_dims_1[i] " << input_node_dims_1[i] << std::endl;
-
     std::vector<float> output_data(output_shape_flat);
-//    std::vector<long unsigned int> shape(output_node_dims.size());
 
     for (size_t i=0; i<output_shape_flat; i++){
         output_data[i] = *(floatarr+i);
@@ -126,75 +114,83 @@ std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sampl
 }
 
 
-void MLEngineONNX::_input_info(Ort::Session& session)
+void MLEngineONNX::input_setup(Ort::Session& session)
 {
 
     num_input_nodes = session.GetInputCount();
-    input_node_names.resize(num_input_nodes);
 
-    printf("Number of inputs tensors = %zu\n", num_input_nodes);
+    // note: for now we use the assumption
+    // that there is only one input tensor to the network
+    ASSERT(num_input_nodes == 1);
+    input_node_idx = 0;
 
-    // iterate over all input nodes
-    for (int i = 0; i < num_input_nodes; i++) {
+    // get input name
+    input_name = session.GetInputName(input_node_idx, allocator);
+    input_node_names.push_back(input_name);
 
-        // print input node names
-        char* input_name = session.GetInputName(i, allocator);
-        printf("Input %d : name=%s\n", i, input_name);
-        input_node_names[i] = input_name;
+    Ort::TypeInfo type_info = session.GetInputTypeInfo(input_node_idx);
+    auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
+    ONNXTensorElementDataType type = tensor_info.GetElementType();
 
-        // print input node types
-        Ort::TypeInfo type_info = session.GetInputTypeInfo(i);
-        auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
+    input_node_dims = tensor_info.GetShape();
 
-        ONNXTensorElementDataType type = tensor_info.GetElementType();
-        printf("Input %d : type=%d\n", i, type);
-
-        // print input shapes/dims
-        input_node_dims = tensor_info.GetShape();
-        printf("Input %d : num_dims=%zu\n", i, input_node_dims.size());
-        for (int j = 0; j < input_node_dims.size(); j++)
-            printf("Input %d : dim %d=%jd\n", i, j, input_node_dims[j]);
-    }
-
-    input_node_dims_1.resize(input_node_dims.size());
-    for (int i=0; i<input_node_dims.size(); i++)
-        input_node_dims_1[i] = input_node_dims[i];
-    input_node_dims_1[0] = 1;
 }
 
-void MLEngineONNX::_output_info(Ort::Session& session)
+void MLEngineONNX::output_setup(Ort::Session& session)
 {
+
+    output_node_idx = 0;
+
     // print number of model output nodes
     num_output_nodes = session.GetOutputCount();
-    output_node_names.resize(num_output_nodes);
 
-    printf("Number of output tensors = %zu\n", num_output_nodes);
+    // note: for now we use the assumption
+    // that there is only one input tensor to the network
+    ASSERT(num_output_nodes == 1);
 
-    // iterate over all output nodes
-    for (int i = 0; i < num_output_nodes; i++) {
+    // print output node names
+    output_name = session.GetOutputName(output_node_idx, allocator);
+    output_node_names.push_back(output_name);
 
-        // print output node names
-        char* output_name = session.GetOutputName(i, allocator);
-        printf("Output %d : name=%s\n", i, output_name );
+    // print output node types
+    Ort::TypeInfo type_info = session.GetOutputTypeInfo(output_node_idx);
+    auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
+    ONNXTensorElementDataType type = tensor_info.GetElementType();
 
-        output_node_names[i] = output_name;
-
-        // print output node types
-        Ort::TypeInfo type_info = session.GetOutputTypeInfo(i);
-        auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
-
-        ONNXTensorElementDataType type = tensor_info.GetElementType();
-        printf("Output %d : type=%d\n", i, type);
-
-        // print output shapes/dims
-        output_node_dims = tensor_info.GetShape();
-        printf("Output %d : num_dims=%zu\n", i, output_node_dims.size());
-        for (int j = 0; j < output_node_dims.size(); j++)
-            printf("Output %d : dim %d=%jd\n", i, j, output_node_dims[j]);
-    }
-
-    output_node_dims_1.resize(output_node_dims.size());
-    for (int i=0; i<output_node_dims.size(); i++)
-        output_node_dims_1[i] = output_node_dims[i];
-    output_node_dims_1[0] = 1;
+    // print output shapes/dims
+    output_node_dims = tensor_info.GetShape();
 }
+
+void MLEngineONNX::print(std::ostream& os) const {
+
+    os << "N input tensors: " << num_input_nodes << std::endl;
+    os << "Input layer expects a Tensor with "
+       << input_node_dims.size() << " dimensions" << std::endl;
+
+    for (int j = 0; j < input_node_dims.size(); j++)
+        os << "dim [" << j << "]: " << input_node_dims[j] << std::endl;
+
+    os << "N output tensors: " << num_output_nodes << std::endl;
+    os << "Input layer expects a Tensor with "
+       << output_node_dims.size() << " dimensions" << std::endl;
+
+    for (int j = 0; j < output_node_dims.size(); j++)
+        os << "dim [" << j << "]: " << output_node_dims[j] << std::endl;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

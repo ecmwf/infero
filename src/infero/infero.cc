@@ -76,6 +76,7 @@ int main(int argc, char** argv) {
     }
 
     // Run inference
+    std::cout << *engine << std::endl;
     std::unique_ptr<Tensor> predT = engine->infer(inputT);
 
     // compare against ref values
