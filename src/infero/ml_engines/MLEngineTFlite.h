@@ -12,6 +12,11 @@
 
 #include <string>
 
+#include "tensorflow/lite/interpreter.h"
+#include "tensorflow/lite/kernels/register.h"
+#include "tensorflow/lite/model.h"
+#include "tensorflow/lite/optional_debug_tools.h"
+
 #include "infero/ml_engines/MLEngine.h"
 
 
@@ -26,5 +31,11 @@ public:
 
     // run the inference
     virtual std::unique_ptr<Tensor> infer(std::unique_ptr<Tensor>& input_sample);
+
+private:
+
+    // TFlite model and interpreter
+    std::unique_ptr<tflite::FlatBufferModel> model;
+    std::unique_ptr<tflite::Interpreter> interpreter;
 
 };

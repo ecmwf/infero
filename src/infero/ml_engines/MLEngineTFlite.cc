@@ -10,11 +10,7 @@
 
 #include <chrono>
 #include <cstdio>
-
-#include "tensorflow/lite/interpreter.h"
-#include "tensorflow/lite/kernels/register.h"
-#include "tensorflow/lite/model.h"
-#include "tensorflow/lite/optional_debug_tools.h"
+#include <iostream>
 
 #include "eckit/log/Log.h"
 
@@ -37,6 +33,21 @@ using namespace eckit;
 MLEngineTFlite::MLEngineTFlite(std::string model_filename):
     MLEngine(model_filename)
 {
+    // Load model
+    model = tflite::FlatBufferModel::BuildFromFile(this->mModelFilename.c_str());
+    TFLITE_MINIMAL_CHECK(model != nullptr);
+
+    // Build the interpreter with the InterpreterBuilder.
+    tflite::ops::builtin::BuiltinOpResolver resolver;
+    tflite::InterpreterBuilder builder(*model, resolver);
+    interpreter = std::unique_ptr<tflite::Interpreter>(new tflite::Interpreter);
+
+    builder(&interpreter);
+    TFLITE_MINIMAL_CHECK(interpreter != nullptr);
+
+    // Allocate tensor buffers.
+    TFLITE_MINIMAL_CHECK(interpreter->AllocateTensors() == kTfLiteOk);
+    tflite::PrintInterpreterState(interpreter.get());
 
 }
 
@@ -48,26 +59,7 @@ MLEngineTFlite::~MLEngineTFlite()
 std::unique_ptr<Tensor> MLEngineTFlite::infer(std::unique_ptr<Tensor>& input_sample)
 {
 
-    // =========================== Copy Input =============================
-    // Load model
-    std::unique_ptr<tflite::FlatBufferModel> model =
-        tflite::FlatBufferModel::BuildFromFile(this->mModelFilename.c_str());
-    TFLITE_MINIMAL_CHECK(model != nullptr);
-
-    // Build the interpreter with the InterpreterBuilder.
-    tflite::ops::builtin::BuiltinOpResolver resolver;
-    tflite::InterpreterBuilder builder(*model, resolver);
-    std::unique_ptr<tflite::Interpreter> interpreter;
-
-    builder(&interpreter);
-    TFLITE_MINIMAL_CHECK(interpreter != nullptr);
-
-    // Allocate tensor buffers.
-    TFLITE_MINIMAL_CHECK(interpreter->AllocateTensors() == kTfLiteOk);
-    tflite::PrintInterpreterState(interpreter.get());
-    // ====================================================================
-
-    // ========================== Run inference ===========================
+    // =========================== copy tensor ============================
     float* input = interpreter->typed_input_tensor<float>(0);
     const float* data = input_sample->data();
     size_t data_size = input_sample->size();
@@ -93,6 +85,7 @@ std::unique_ptr<Tensor> MLEngineTFlite::infer(std::unique_ptr<Tensor>& input_sam
     TfLiteTensor* out = interpreter->output_tensor(0);
 
     std::vector<int64_t> out_shape_1(out->dims->size);
+
     for (int i=0; i<out->dims->size; i++){
         out_shape_1[i] = (out->dims->data[i] > 0)? out->dims->data[i] : 1;
         Log::info() << "out->dims = "
@@ -107,7 +100,6 @@ std::unique_ptr<Tensor> MLEngineTFlite::infer(std::unique_ptr<Tensor>& input_sam
                     << out_shape_1[i]
                        << std::endl;
     }
-    Log::info() << "output_shape_flat " << output_shape_flat << std::endl;
 
     std::vector<float> output_data(output_shape_flat);
     for (size_t i=0; i<output_shape_flat; i++){

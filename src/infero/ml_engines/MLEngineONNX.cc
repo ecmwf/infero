@@ -25,13 +25,14 @@ MLEngineONNX::MLEngineONNX(std::string model_filename):
     MLEngine(model_filename)
 {
 
-    // Session options
-    Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "onnx_model");
-    session_options.SetIntraOpNumThreads(1);
-    session_options.SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    // environment
+    env = std::unique_ptr<Ort::Env> (new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "onnx_model"));
 
-    Log::debug() << "mModelFilename " << mModelFilename << std::endl;
-    session = std::unique_ptr<Ort::Session>( new Ort::Session(env, mModelFilename.c_str(), session_options));
+    // Session options
+    session_options = std::unique_ptr<Ort::SessionOptions>(new Ort::SessionOptions);
+    session_options->SetIntraOpNumThreads(1);
+    session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
+    session = std::unique_ptr<Ort::Session>( new Ort::Session(*env, mModelFilename.c_str(), *session_options));
 
     // query input/output layers
     query_input_layer();
@@ -59,6 +60,8 @@ std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sampl
                                                               input_sample->shape().data(),
                                                               input_sample->shape().size());
 
+//    Ort::TensorTypeAndShapeInfo info = input_tensor.GetTensorTypeAndShapeInfo();
+
     ASSERT(input_tensor.IsTensor());
 
     auto output_tensors = session->Run(Ort::RunOptions{nullptr},
@@ -70,10 +73,12 @@ std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sampl
 
     ASSERT(output_tensors.size() == 1 && output_tensors.front().IsTensor());
 
+
     auto out_tensor_info = output_tensors.front().GetTensorTypeAndShapeInfo();
     int out_size = 1;
-    for(auto i: out_tensor_info.GetShape())
+    for(auto i: out_tensor_info.GetShape()){
         out_size *= i;
+    }
 
     // copy output data
     float* floatarr = output_tensors.front().GetTensorMutableData<float>();

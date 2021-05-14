@@ -35,7 +35,8 @@ private:
 
     // ORT session
     std::unique_ptr<Ort::Session> session;
-    Ort::SessionOptions session_options;
+    std::unique_ptr<Ort::SessionOptions> session_options;
+    std::unique_ptr<Ort::Env> env;
 
     // allocator
     Ort::AllocatorWithDefaultOptions allocator;
