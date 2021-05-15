@@ -59,10 +59,13 @@ std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sampl
                                                               input_sample->size(),
                                                               input_sample->shape().data(),
                                                               input_sample->shape().size());
-
-//    Ort::TensorTypeAndShapeInfo info = input_tensor.GetTensorTypeAndShapeInfo();
-
     ASSERT(input_tensor.IsTensor());
+
+    Ort::TensorTypeAndShapeInfo info = input_tensor.GetTensorTypeAndShapeInfo();
+    Log::info() << "Sample tensor shape: ";
+    for(auto i: info.GetShape())
+        Log::info() << i << ", ";
+    Log::info() << std::endl;
 
     auto output_tensors = session->Run(Ort::RunOptions{nullptr},
                                        input_node_names.data(),
@@ -79,6 +82,11 @@ std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sampl
     for(auto i: out_tensor_info.GetShape()){
         out_size *= i;
     }
+
+    Log::info() << "Prediction tensor shape: ";
+    for(auto i: out_tensor_info.GetShape())
+        Log::info() << i << ", ";
+    Log::info() << std::endl;
 
     // copy output data
     float* floatarr = output_tensors.front().GetTensorMutableData<float>();

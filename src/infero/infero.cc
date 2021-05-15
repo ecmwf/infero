@@ -58,7 +58,7 @@ int main(int argc, char** argv) {
     std::string model_path = args.getString("model", "model.onnx");
     std::string engine_type = args.getString("engine", "onnx");
 //    std::string output_path = args.getString("output", "out.npy");
-//    std::string ref_path = args.getString("ref_path");
+    std::string ref_path = args.getString("ref_path");
     float threshold = args.getFloat("threshold", 0.01);
 
     // input data
@@ -79,17 +79,17 @@ int main(int argc, char** argv) {
     std::cout << *engine << std::endl;
     std::unique_ptr<Tensor> predT = engine->infer(inputT);
 
-//    // compare against ref values
-//    if (args.has("ref_path")){
+    // compare against ref values
+    if (args.has("ref_path")){
 
-//        // compare agains ref tensor (from CSV)
-//        std::unique_ptr<Tensor> refT = Tensor::from_file(ref_path);
-//        Tensor::Comparison comparison = predT->compare(*refT, threshold);
+        // compare agains ref tensor (from CSV)
+        std::unique_ptr<Tensor> refT = Tensor::from_file(ref_path);
+        Tensor::Comparison comparison = predT->compare(*refT, threshold);
 
-//        Log::info() << comparison << std::endl;
+        Log::info() << comparison << std::endl;
 
-//        return comparison.ExitCode();
-//    }
+        return comparison.ExitCode();
+    }
 
     // run clustering
     // std::string clustering_type = args.getString("clustering", "dbscan");

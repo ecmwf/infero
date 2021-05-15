@@ -12,7 +12,7 @@ eng_type=tflite
 
 model_path=$datadir/model.tflite
 input_path=$datadir/m36966_input.npy
-ref_pred=$datadir/m36966_prediction_0.csv
+ref_pred=$datadir/ref_pred.csv
 
 output_path=$bindir/prediction_tflite.csv
 
