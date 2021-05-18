@@ -80,7 +80,7 @@ int main(int argc, char** argv) {
     // compare against ref values
     if (args.has("ref_path")){
 
-        std::unique_ptr<infero::MLTensor> refT = infero::MLTensor::from_csv(ref_path);
+        std::unique_ptr<infero::MLTensor> refT = infero::MLTensor::from_file(ref_path);
         float err = predT->compare(*refT);
         Log::info() << "MSE error: " << err << std::endl;
         Log::info() << "threshold: " << threshold << std::endl;
