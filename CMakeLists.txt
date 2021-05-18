@@ -107,12 +107,6 @@ add_subdirectory( contrib )
 add_subdirectory( src )
 add_subdirectory( tests )
 
-ecbuild_add_executable( TARGET infero.x
-    SOURCES   src/infero/infero.cc
-    CONDITION HAVE_BUILD_TOOLS
-    INCLUDES  ${eckit_INCLUDE_DIRS}
-    LIBS      infero eckit eckit_option )
-
 ############################################################################################
 # finalize
 

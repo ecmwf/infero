@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "eckit/log/Log.h"
+#include "eckit/exception/Exceptions.h"
 
 #include "infero/ml_engines/MLEngine.h"
 
@@ -27,6 +28,8 @@
 #endif
 
 using namespace eckit;
+
+namespace infero {
 
 
 MLEngine::~MLEngine(){}
@@ -68,10 +71,8 @@ std::unique_ptr<MLEngine> MLEngine::create(std::string choice,
     }
 #endif
 
-    Log::error() << "Engine type " << choice
-                 << " not supported!"
-                 << std::endl;
-
-    return nullptr;
+    throw BadValue("Engine type " + choice + " not supported!", Here());
 
 }
+
+} // namespace infero

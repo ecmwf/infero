@@ -20,7 +20,7 @@ if __name__ == "__main__":
     
     # it assumes that batch size is the first
     npy_data = load_data(args.input)
-    npy_data = npy_data.reshape((1, -1))
+    #npy_data = npy_data.reshape((1, -1))
     
     out_data = npy_data[:args.channels, :]
     

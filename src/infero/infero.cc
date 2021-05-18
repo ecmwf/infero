@@ -10,18 +10,20 @@
 
 #include <memory>
 
-#include "infero/ml_engines/MLEngine.h"
-// #include "clustering/clustering.h"
-
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/log/Log.h"
 #include "eckit/serialisation/FileStream.h"
 
+#include "infero/ml_engines/MLEngine.h"
+#include "infero/MLTensor.h"
+
 
 using namespace eckit;
 using namespace eckit::option;
+using namespace eckit::linalg;
+using namespace infero;
 
 
 void usage(const std::string&){
@@ -46,9 +48,8 @@ int main(int argc, char** argv) {
     options.push_back(new SimpleOption<std::string>("output", "Path to output file"));
     options.push_back(new SimpleOption<std::string>("model", "Path to ML model"));
     options.push_back(new SimpleOption<std::string>("engine", "ML engine [onnx, tflite, trt]"));
-    options.push_back(new SimpleOption<std::string>("clustering", "Clustering [dbscan, ...]"));
     options.push_back(new SimpleOption<std::string>("ref_path", "Path to Reference prediction"));
-    options.push_back(new SimpleOption<long>("threshold", "Verification threshold"));
+    options.push_back(new SimpleOption<double>("threshold", "Verification threshold"));
 
 
     CmdArgs args(&usage, options, 0, 0, true);
@@ -57,58 +58,35 @@ int main(int argc, char** argv) {
     std::string input_path = args.getString("input","data.npy");
     std::string model_path = args.getString("model", "model.onnx");
     std::string engine_type = args.getString("engine", "onnx");
-//    std::string output_path = args.getString("output", "out.npy");
-    std::string ref_path = args.getString("ref_path");
-    float threshold = args.getFloat("threshold", 0.01);
+    std::string output_path = args.getString("output", "out.csv");
+    std::string ref_path = args.getString("ref_path", "");
+    double threshold = args.getDouble("threshold", 0.001);
 
     // input data
-    std::unique_ptr<Tensor> inputT = Tensor::from_file(input_path);
-    if (!inputT) {
-        Log::error() << "Failed to read data from " << input_path << std::endl;
-        return EXIT_FAILURE;
-    }
+    std::unique_ptr<infero::MLTensor> inputT = infero::MLTensor::from_file(input_path);
 
     // runtime engine
     std::unique_ptr<MLEngine> engine = MLEngine::create( engine_type, model_path);
-    if (!engine) {
-        Log::error() << "Failed to instantiate engine!" << std::endl;
-        return EXIT_FAILURE;
-    }
+    std::cout << *engine << std::endl;
 
     // Run inference
-    std::cout << *engine << std::endl;
-    std::unique_ptr<Tensor> predT = engine->infer(inputT);
+    std::unique_ptr<infero::MLTensor> predT = engine->infer(inputT);
+
+    // save
+    if (args.has("output")){
+        predT->to_file(output_path);
+    }
 
     // compare against ref values
     if (args.has("ref_path")){
 
-        // compare agains ref tensor (from CSV)
-        std::unique_ptr<Tensor> refT = Tensor::from_file(ref_path);
-        Tensor::Comparison comparison = predT->compare(*refT, threshold);
+        std::unique_ptr<infero::MLTensor> refT = infero::MLTensor::from_csv(ref_path);
+        float err = predT->compare(*refT);
+        Log::info() << "MSE error: " << err << std::endl;
+        Log::info() << "threshold: " << threshold << std::endl;
 
-        Log::info() << comparison << std::endl;
-
-        return comparison.ExitCode();
+        return !(err<threshold);
     }
-
-    // run clustering
-    // std::string clustering_type = args.getString("clustering", "dbscan");
-    // ClusteringPtr cluster = Clustering::create(clustering_type);
-    // if (!cluster) {
-    //     Log::error() << "Failed to instantiate clustering!" << std::endl;
-    //     return EXIT_FAILURE;
-    // }
-
-    // int err = cluster->run(predT);
-    // if(err){
-    //     Log::error() << "Clustering Failed!" << std::endl;
-    //     return EXIT_FAILURE;
-    // } else {
-    //     cluster->print_summary();
-
-    //     // write to JSON
-    //     cluster->write_json("out.json");
-    // }
 
     return EXIT_SUCCESS;
 }

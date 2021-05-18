@@ -17,6 +17,7 @@
 #include "infero/ml_engines/MLEngine.h"
 
 
+namespace infero {
 
 class MLEngineONNX: public MLEngine
 {    
@@ -28,7 +29,7 @@ public:
     ~MLEngineONNX();
 
     // run the inference
-    std::unique_ptr<Tensor> infer(std::unique_ptr<Tensor>& input_sample);
+    virtual std::unique_ptr<infero::MLTensor> infer(std::unique_ptr<infero::MLTensor>& input_sample);
 
 
 private:
@@ -67,3 +68,5 @@ private:
     void print(std::ostream& os) const;
 
 };
+
+} // namespace linalg

@@ -13,9 +13,10 @@
 
 #include "eckit/log/JSON.h"
 #include "eckit/log/Log.h"
+#include "eckit/exception/Exceptions.h"
 
-#include "clustering/Clustering.h"
-#include "clustering/ClusteringDBscan.h"
+#include "infero/clustering/Clustering.h"
+#include "infero/clustering/ClusteringDBscan.h"
 
 using namespace eckit;
 
@@ -114,15 +115,10 @@ int Clustering::write_json(std::string filename) {
 
 std::unique_ptr<Clustering> Clustering::create(std::string choice) {
     if (choice.compare("dbscan") == 0) {
-
         Log::info() << "creating ClusteringDBscan.. " << std::endl;
-
         return std::unique_ptr<Clustering>(new ClusteringDBscan);
     }
     else {
-
-        Log::error() << "Invalid Clustering choice " << choice << std::endl;
-
-        return nullptr;
+        throw BadValue("Invalid Clustering choice"+std::string(choice), Here());
     }
 }

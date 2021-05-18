@@ -1,8 +1,9 @@
 add_subdirectory(api)
+add_subdirectory(clustering)
 
 list(APPEND infero_srcs
-    Tensor.h
-    Tensor.cc
+    MLTensor.h
+    MLTensor.cc
     ml_engines/MLEngine.h
     ml_engines/MLEngine.cc
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.h
@@ -88,3 +89,9 @@ ecbuild_add_library(
         "${tensor_rt_libs}"
         "${onnx_libs}"
 )
+
+ecbuild_add_executable( TARGET infero.x
+    SOURCES   infero.cc
+    CONDITION HAVE_BUILD_TOOLS
+    INCLUDES  ${eckit_INCLUDE_DIRS}
+    LIBS      infero eckit eckit_option )

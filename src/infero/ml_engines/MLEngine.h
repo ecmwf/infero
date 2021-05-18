@@ -14,11 +14,13 @@
 #include <ostream>
 #include <memory>
 
-#include "infero/Tensor.h"
+#include "infero/MLTensor.h"
 
 
 using namespace std;
+using namespace eckit::linalg;
 
+namespace infero {
 
 // Minimal interface for a runtime engine
 class MLEngine
@@ -33,7 +35,7 @@ public:
     virtual ~MLEngine();
 
     // run the inference
-    virtual std::unique_ptr<Tensor> infer(std::unique_ptr<Tensor>& input_sample) = 0;
+    virtual std::unique_ptr<infero::MLTensor> infer(std::unique_ptr<infero::MLTensor>& input_sample) = 0;
 
     // create concrete engines
     static std::unique_ptr<MLEngine> create(std::string choice, std::string model_path);
@@ -54,3 +56,4 @@ protected:
 
 };
 
+}

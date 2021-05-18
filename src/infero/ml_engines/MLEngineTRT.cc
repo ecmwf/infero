@@ -17,6 +17,8 @@
 
 using namespace eckit;
 
+namespace infero {
+
 
 MLEngineTRT::MLEngineTRT(std::string model_filename):    
     MLEngine(model_filename),
@@ -260,3 +262,6 @@ Dims MLEngineTRT::Vector2Dims(std::vector<int>& vecdims){
 
     return dims;
 }
+
+
+} // namespace infero

@@ -19,6 +19,7 @@ if __name__ == "__main__":
 
     # load the keras model
     model = keras.models.load_model(args.keras_model_path)
+    model.summary()
 
     # do the conversion
     onnx_model = keras2onnx.convert_keras(model, model.name)

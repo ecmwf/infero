@@ -18,7 +18,10 @@
 
 #include "infero/ml_engines/MLEngineONNX.h"
 
+
 using namespace eckit;
+
+namespace infero {
 
 
 MLEngineONNX::MLEngineONNX(std::string model_filename):
@@ -44,7 +47,7 @@ MLEngineONNX::~MLEngineONNX()
 
 }
 
-std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sample)
+std::unique_ptr<infero::MLTensor> MLEngineONNX::infer(std::unique_ptr<infero::MLTensor>& input_sample)
 {
 
     // make a copy of the input data
@@ -54,11 +57,13 @@ std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sampl
     }
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+
+    auto shape_64 = infero::MLTensor::convert_shape<size_t, int64_t>(input_sample->shape());
     Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info,
                                                               data_buffer.data(),
                                                               input_sample->size(),
-                                                              input_sample->shape().data(),
-                                                              input_sample->shape().size());
+                                                              shape_64.data(),
+                                                              shape_64.size());
     ASSERT(input_tensor.IsTensor());
 
     Ort::TensorTypeAndShapeInfo info = input_tensor.GetTensorTypeAndShapeInfo();
@@ -86,17 +91,19 @@ std::unique_ptr<Tensor> MLEngineONNX::infer(std::unique_ptr<Tensor>& input_sampl
     Log::info() << "Prediction tensor shape: ";
     for(auto i: out_tensor_info.GetShape())
         Log::info() << i << ", ";
-    Log::info() << std::endl;
+    Log::info() << std::endl;   
+
+    auto shape_ = infero::MLTensor::convert_shape<int64_t, size_t>(out_tensor_info.GetShape());
+    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(shape_));
 
     // copy output data
     float* floatarr = output_tensors.front().GetTensorMutableData<float>();
     std::vector<float> output_data(out_size);
     for (size_t i=0; i<out_size; i++){
-        output_data[i] = *(floatarr+i);
+        *(pred_ptr->data()+i) = *(floatarr+i);
     }
 
-    // return a Tensor
-    return std::unique_ptr<Tensor>(new Tensor(output_data, out_tensor_info.GetShape()));
+    return pred_ptr;
 }
 
 
@@ -160,5 +167,5 @@ void MLEngineONNX::print(std::ostream& os) const {
         os << "dim [" << j << "]: " << output_layer_shape[j] << std::endl;
 }
 
-
+} // namespace infero
 

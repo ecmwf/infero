@@ -20,6 +20,8 @@
 #include "infero/ml_engines/MLEngine.h"
 
 
+namespace infero {
+
 class MLEngineTFlite: public MLEngine
 {
 
@@ -30,7 +32,7 @@ public:
     virtual ~MLEngineTFlite();
 
     // run the inference
-    virtual std::unique_ptr<Tensor> infer(std::unique_ptr<Tensor>& input_sample);
+    virtual std::unique_ptr<infero::MLTensor> infer(std::unique_ptr<infero::MLTensor>& input_sample);
 
 private:
 
@@ -39,3 +41,5 @@ private:
     std::unique_ptr<tflite::Interpreter> interpreter;
 
 };
+
+} // namespace infero

@@ -9,7 +9,7 @@
  */
 
 
-#include "clustering/ClusteringDBscan.h"
+#include "infero/clustering/ClusteringDBscan.h"
 #include "eckit/exception/Exceptions.h"
 
 
@@ -19,7 +19,7 @@ ClusteringDBscan::ClusteringDBscan():
 
 }
 
-int ClusteringDBscan::run(std::unique_ptr<Tensor>& prediction)
+int ClusteringDBscan::run(std::unique_ptr<MLTensor>& prediction)
 {
 
     // read point data
@@ -54,20 +54,22 @@ int ClusteringDBscan::run(std::unique_ptr<Tensor>& prediction)
 
 
 //read and ingest the prediction
-std::vector<Point> ClusteringDBscan::readPrediction(std::unique_ptr<Tensor>& prediction)
+std::vector<Point> ClusteringDBscan::readPrediction(std::unique_ptr<MLTensor>& prediction)
 {
 
     std::vector<Point> _points;
 
     // we run clustering only if the prediction is an image
-    // so, here we assume tha:
+    // so, here we assume the following shape of the prediction:
     // dim-0 is batch dimension
     // dim-1 is image_rows
     // dim-2 is image_columns
-    ASSERT(prediction->nbDims() >= 3);
+    // dim-3 is image_channels (must be equal to 1)
+    ASSERT(prediction->shape().size() >= 3);
+    ASSERT(prediction->shape()[3] == 1);
 
-    size_t nrows = prediction->shape(1);
-    size_t ncols = prediction->shape(2);
+    size_t nrows = prediction->shape()[1];
+    size_t ncols = prediction->shape()[2];
 
     int val_count = 0;
     for (int irow=0; irow<nrows; irow++){

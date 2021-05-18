@@ -23,6 +23,8 @@ if __name__ == "__main__":
     
     # Load the model
     keras_model = keras.models.load_model(args.keras_model_path)
+    keras_model.summary();
+    keras_model.save("kmod")
     
     # Convert the model
     converter = tf.lite.TFLiteConverter.from_keras_model(keras_model)

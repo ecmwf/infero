@@ -14,6 +14,7 @@
 
 #include "eckit/log/Log.h"
 
+#include "infero/MLTensor.h"
 #include "infero/ml_engines/MLEngineTFlite.h"
 
 
@@ -28,6 +29,8 @@
     }
 
 using namespace eckit;
+
+namespace infero {
 
 
 MLEngineTFlite::MLEngineTFlite(std::string model_filename):
@@ -56,7 +59,7 @@ MLEngineTFlite::~MLEngineTFlite()
 
 }
 
-std::unique_ptr<Tensor> MLEngineTFlite::infer(std::unique_ptr<Tensor>& input_sample)
+std::unique_ptr<infero::MLTensor> MLEngineTFlite::infer(std::unique_ptr<infero::MLTensor>& input_sample)
 {
 
     Log::info() << "Sample tensor shape: ";
@@ -92,7 +95,7 @@ std::unique_ptr<Tensor> MLEngineTFlite::infer(std::unique_ptr<Tensor>& input_sam
     float* output = interpreter->typed_output_tensor<float>(0);
     TfLiteTensor* out = interpreter->output_tensor(0);
 
-    std::vector<int64_t> out_shape(out->dims->size);
+    std::vector<size_t> out_shape(out->dims->size);
     for (int i=0; i<out->dims->size; i++)
         out_shape[i] = out->dims->data[i];
 
@@ -101,16 +104,15 @@ std::unique_ptr<Tensor> MLEngineTFlite::infer(std::unique_ptr<Tensor>& input_sam
         Log::info() << i << ", ";
     Log::info() << std::endl;
 
-    int output_shape_flat = 1;
-    for (int i=0; i<out->dims->size; i++)
-        output_shape_flat *= out->dims->data[i];
+    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(out_shape));
 
-    std::vector<float> output_data(output_shape_flat);
-    for (size_t i=0; i<output_shape_flat; i++)
-        output_data[i] = *(output+i);
-
+    // copy output data
+    for (size_t i=0; i<pred_ptr->size(); i++){
+        *(pred_ptr->data()+i) = *(output+i);
+    }
     // ====================================================================
 
-    return std::unique_ptr<Tensor>(new Tensor(output_data, out_shape));
-
+    return pred_ptr;
 }
+
+} // namespace infero

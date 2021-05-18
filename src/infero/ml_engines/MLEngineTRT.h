@@ -27,6 +27,9 @@
 #include "infero/ml_engines/MLEngine.h"
 
 
+namespace infero {
+
+
 class MLEngineTRT;
 
 typedef std::unique_ptr<MLEngineTRT> MLEngineTRTPtr;
@@ -93,3 +96,5 @@ private:
     SampleUniquePtr<nvinfer1::INetworkDefinition> network;
 
 };
+
+} // namespace infero
