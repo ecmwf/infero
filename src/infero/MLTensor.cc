@@ -7,13 +7,16 @@
 #include <iomanip>
 
 #include "cnpy/cnpy.h"
+#include "eckit/log/Log.h"
 #include "eckit/exception/Exceptions.h"
 
 #include "MLTensor.h"
 #define CSV_FLOAT_PRECISION 16
 
 
+using namespace eckit;
 using namespace eckit::linalg;
+
 
 namespace infero {
 
@@ -195,6 +198,7 @@ float MLTensor::compare(MLTensor &other, MLTensor::ErrorType mes) const
 
 std::unique_ptr<MLTensor> MLTensor::from_csv(const std::string &filename)
 {
+    Log::info() << "Reading CSV file " << filename << std::endl;
 
     // read nbdims
     std::ifstream file(filename);
@@ -230,6 +234,9 @@ std::unique_ptr<MLTensor> MLTensor::from_csv(const std::string &filename)
 
 void MLTensor::to_csv(const std::string &filename)
 {
+
+    Log::info() << "Writing CSV file " << filename << std::endl;
+
     std::ofstream of(filename);
 
     // dims
@@ -252,6 +259,9 @@ void MLTensor::to_csv(const std::string &filename)
 
 std::unique_ptr<MLTensor> MLTensor::from_numpy(const std::string &filename)
 {
+
+    Log::info() << "Reading numpy file " << filename << std::endl;
+
     // read the numpy
     cnpy::NpyArray arr = cnpy::npy_load(filename);
 
@@ -264,16 +274,19 @@ std::unique_ptr<MLTensor> MLTensor::from_numpy(const std::string &filename)
 
     // fill the tensor (which has now ownership of allocated memory)
     auto tensor_ptr = std::unique_ptr<MLTensor>(new MLTensor(local_shape));
-    for (size_t i = 0; i<arr.as_vec<float>().size(); i++){
-        *(tensor_ptr->data()+i) = arr.as_vec<float>()[i];
+
+    std::vector<float> vv = arr.as_vec<float>();
+    for (size_t i = 0; i<vv.size(); i++){
+        *(tensor_ptr->data()+i) = vv[i];
     }
 
     return tensor_ptr;
-
 }
 
 void MLTensor::to_numpy(const std::string &filename)
 {
+    Log::info() << "Writing numpy file " << filename << std::endl;
+
     cnpy::npy_save(filename, data(), shape());
 }
 
