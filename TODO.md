@@ -7,12 +7,8 @@ Infero TODO
 
 * improve the factory code in engine.cpp
 
-* create unit tests under tests/
 * create regression test with inputs from:
   - tcylc
-
-* follow eckit style guide
-  - namespace for all infero code
 
 * need to define interoperability models/engines
 
