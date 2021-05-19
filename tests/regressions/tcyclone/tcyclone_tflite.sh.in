@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+set -eux
+
+srcdir=@CMAKE_CURRENT_SOURCE_DIR@
+bindir=@CMAKE_CURRENT_BINARY_DIR@
+datadir=@CMAKE_SOURCE_DIR@/tests/data/cyclone
+exedir=@CMAKE_BINARY_DIR@/bin
+
+
+eng_type=tflite
+
+model_path=$datadir/cyclone_model_200x200.tflite
+input_path=$datadir/cyclone_input_200x200.npy
+ref_pred=$datadir/cyclone_output_200x200.npy
+
+output_path=$bindir/cyclone_output_200x200_tflite.npy
+
+
+# run inference
+$exedir/infero.x \
+--model=$model_path \
+--input=$input_path \
+--engine=$eng_type \
+--output=$output_path \
+--ref_path=$ref_pred
+
+

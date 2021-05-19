@@ -7,9 +7,6 @@ Infero TODO
 
 * improve the factory code in engine.cpp
 
-* create regression test with inputs from:
-  - tcylc
-
 * need to define interoperability models/engines
 
 * use csv rather than .npy  ???
