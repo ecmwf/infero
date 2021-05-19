@@ -25,9 +25,17 @@ public:
         return vec_new;
     }
 
+    // error type for tensor comparison
     enum ErrorType {
         MSE
     };
+
+    // element ordering type
+    enum Ordering {
+        ROW_MAJOR,
+        COL_MAJOR,
+    };
+
 
 public:
 
@@ -42,12 +50,16 @@ public:
     // shape as std::vector<size_t>
     std::vector<Size> shape() const { return shape_; }
 
+    // returns a copy (with either COL_MAJOR or ROW_MAJOR ordering)
+    std::unique_ptr<MLTensor> copy_as(Ordering new_order) const;
+
     // from/to file
     static std::unique_ptr<MLTensor> from_file(const std::string& filename);
     void to_file(const std::string& filename);
 
     // compare against another tensor
     float compare(MLTensor& other, ErrorType mes = MSE) const;
+
 
 private:
 
@@ -58,6 +70,8 @@ private:
     // from numpy saved as npy
     static std::unique_ptr<MLTensor> from_numpy(const std::string& filename);
     void to_numpy(const std::string& filename);
+
+    Ordering CurrentOrdering;
 };
 
 } // namespace infero

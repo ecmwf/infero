@@ -17,22 +17,175 @@ using namespace eckit::linalg;
 
 namespace infero {
 
-MLTensor::MLTensor()
+MLTensor::MLTensor() :
+    TensorFloat(),
+    CurrentOrdering(Ordering::ROW_MAJOR)
 {
 
 }
+
 
 MLTensor::MLTensor(const float *array, const std::vector<Size> &shape) :
-    TensorFloat(array, shape)
+    TensorFloat(array, shape),
+    CurrentOrdering(Ordering::ROW_MAJOR)
 {
 
 }
+
 
 MLTensor::MLTensor(const std::vector<Tensor::Size> &shape) :
-    TensorFloat(shape)
+    TensorFloat(shape),
+    CurrentOrdering(Ordering::ROW_MAJOR)
 {
 
 }
+
+
+std::unique_ptr<MLTensor> MLTensor::copy_as(MLTensor::Ordering new_order) const
+{
+
+    std::unique_ptr<MLTensor> Tptr;
+    Tptr = std::unique_ptr<MLTensor>(new MLTensor(*this));
+
+    // shape cumulative
+    std::vector<int> shape_cumul;
+    shape_cumul.push_back(1);
+    int tmp=1;
+    for (int i=0; i<shape().size()-1; i++){
+        tmp *= shape()[i];
+        shape_cumul.push_back(tmp);
+    }
+
+    // shape cumulative reverse
+    std::vector<int> shape_cumul_reverse(shape().size());
+    tmp=1;
+    for (int i=shape().size()-1; i>=1; i--){
+        tmp *= shape()[i];
+        shape_cumul_reverse[i-1] = tmp;
+    }
+    shape_cumul_reverse[shape().size()-1] = 1;
+
+
+    if(CurrentOrdering==Ordering::ROW_MAJOR && new_order == Ordering::COL_MAJOR){
+
+        std::vector<int> row_major_indexes(shape().size());
+        int gidx_cm;
+        for (int gidx_rm=0; gidx_rm<size(); gidx_rm++){
+
+            // find the tensor indexes from the global index for a RM order
+            row_major_indexes[0] = gidx_rm / shape_cumul_reverse[0];
+            for (int idx=1; idx<row_major_indexes.size(); idx++){
+                row_major_indexes[idx] = gidx_rm % shape_cumul_reverse[idx-1] / shape_cumul_reverse[idx];
+            }
+
+            // from the tensor indexes, work out the CM global index
+            gidx_cm = 0;
+            for (int idx=0; idx<row_major_indexes.size(); idx++){
+                gidx_cm += row_major_indexes[idx] * shape_cumul[idx];
+            }
+
+            // assign the corresponding tensor value
+            *(Tptr->data()+gidx_cm) = *(data()+gidx_rm);
+        }
+
+
+    // col-major to row-major
+    } else if(CurrentOrdering==Ordering::COL_MAJOR && new_order == Ordering::ROW_MAJOR){
+
+        std::vector<int> col_major_indexes(shape().size());
+
+        int gidx_rm;
+        for (int gidx_cm=0; gidx_cm<size(); gidx_cm++){
+
+            // find the tensor indexes from the global index for a CM order
+            for (int idx=0; idx<col_major_indexes.size()-1; idx++){
+                col_major_indexes[idx] = (gidx_cm % shape_cumul[idx+1])/shape_cumul[idx];
+            }
+            col_major_indexes[col_major_indexes.size()-1] = gidx_cm / shape_cumul[shape_cumul.size()-1];
+
+            // from the tensor indexes, work out the RM global index
+            gidx_rm = 0;
+            for(int idx=0; idx<col_major_indexes.size(); idx++){
+                gidx_rm += col_major_indexes[idx] * shape_cumul_reverse[idx];
+            }
+
+            // assign the corresponding tensor value
+            *(Tptr->data()+gidx_rm) = *(data()+gidx_cm);
+
+        }
+
+
+    // no conversion required
+    } else {
+
+        // nothing to do
+        ASSERT(CurrentOrdering == new_order);
+    }
+
+    return Tptr;
+
+}
+
+
+std::unique_ptr<MLTensor> MLTensor::from_file(const std::string &filename)
+{
+    std::unique_ptr<MLTensor> Tptr;
+
+    std::string ext = filename.substr(filename.find_last_of("."));
+    if (!ext.compare(".csv")){
+        Tptr = from_csv(filename);
+    } else if (!ext.compare(".npy")){
+        Tptr = from_numpy(filename);
+    } else {
+        throw eckit::BadValue("File format "+ext+" not supported!", Here());
+    }
+
+    return Tptr;
+}
+
+
+void MLTensor::to_file(const std::string &filename)
+{
+    std::string ext = filename.substr(filename.find_last_of("."));
+    if (!ext.compare(".csv")){
+        to_csv(filename);
+    } else if (!ext.compare(".npy")){
+        to_numpy(filename);
+    } else {
+        throw eckit::BadValue("File format "+ext+" not supported!", Here());
+    }
+
+}
+
+
+float MLTensor::compare(MLTensor &other, MLTensor::ErrorType mes) const
+{
+
+    ASSERT(size() == other.size());
+
+    float err=0;
+
+    switch(mes){
+
+    case ErrorType::MSE:
+
+        float val_tmp;
+        for (int i=0; i<size(); i++){
+            val_tmp = *(data()+i) - *(other.data()+i);
+            err += val_tmp * val_tmp ;
+        }
+        err /= size();
+        break;
+
+    default:
+
+        throw eckit::BadValue("Error measure not recognised!", Here());
+
+    }
+
+    return err;
+}
+
 
 std::unique_ptr<MLTensor> MLTensor::from_csv(const std::string &filename)
 {
@@ -48,7 +201,7 @@ std::unique_ptr<MLTensor> MLTensor::from_csv(const std::string &filename)
     for (int i=0; i<ndims; i++){
         file >> local_shape[i];
         file.get();
-    }        
+    }
 
     // read data
     size_t sz=1;
@@ -117,64 +270,6 @@ void MLTensor::to_numpy(const std::string &filename)
 {
     cnpy::npy_save(filename, data(), shape());
 }
-
-std::unique_ptr<MLTensor> MLTensor::from_file(const std::string &filename)
-{
-    std::unique_ptr<MLTensor> Tptr;
-
-    std::string ext = filename.substr(filename.find_last_of("."));
-    if (!ext.compare(".csv")){
-        Tptr = from_csv(filename);
-    } else if (!ext.compare(".npy")){
-        Tptr = from_numpy(filename);
-    } else {
-        throw eckit::BadValue("File format "+ext+" not supported!", Here());
-    }
-
-    return Tptr;
-}
-
-void MLTensor::to_file(const std::string &filename)
-{
-    std::string ext = filename.substr(filename.find_last_of("."));
-    if (!ext.compare(".csv")){
-        to_csv(filename);
-    } else if (!ext.compare(".npy")){
-        to_numpy(filename);
-    } else {
-        throw eckit::BadValue("File format "+ext+" not supported!", Here());
-    }
-
-}
-
-float MLTensor::compare(MLTensor &other, MLTensor::ErrorType mes) const
-{
-
-    ASSERT(size() == other.size());
-
-    float err=0;
-
-    switch(mes){
-
-    case ErrorType::MSE:
-
-        float val_tmp;
-        for (int i=0; i<size(); i++){
-            val_tmp = *(data()+i) - *(other.data()+i);
-            err += val_tmp * val_tmp ;
-        }
-        err /= size();
-        break;
-
-    default:
-
-        throw eckit::BadValue("Error measure not recognised!", Here());
-
-    }
-
-    return err;
-}
-
 
 
 } // namespace infero
