@@ -7,7 +7,11 @@
 # nor does it submit to any jurisdiction.
 
 # unit tests
-# todo add here..
+ecbuild_add_test(TARGET        test_mltensor
+                 INCLUDES      ${eckit_INCLUDE_DIRS}
+                 SOURCES       test_mltensor.cc
+                 LIBS          infero eckit
+)
 
 # regression tests
 add_subdirectory(regressions)

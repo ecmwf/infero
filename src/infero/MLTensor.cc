@@ -88,6 +88,9 @@ std::unique_ptr<MLTensor> MLTensor::copy_as(MLTensor::Ordering new_order) const
             *(Tptr->data()+gidx_cm) = *(data()+gidx_rm);
         }
 
+        // reset the ordering
+        Tptr->CurrentOrdering = COL_MAJOR;
+
 
     // col-major to row-major
     } else if(CurrentOrdering==Ordering::COL_MAJOR && new_order == Ordering::ROW_MAJOR){
@@ -113,6 +116,9 @@ std::unique_ptr<MLTensor> MLTensor::copy_as(MLTensor::Ordering new_order) const
             *(Tptr->data()+gidx_rm) = *(data()+gidx_cm);
 
         }
+
+        // reset the ordering
+        Tptr->CurrentOrdering = ROW_MAJOR;
 
 
     // no conversion required
