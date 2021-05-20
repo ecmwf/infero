@@ -1,17 +1,28 @@
 program my_program
 use inferof
-use iso_c_binding, only : c_double
+use iso_c_binding, only : c_double, c_float
 implicit none
-real(c_double), allocatable :: array_3d(:,:,:)
-real(c_double), allocatable :: array_2d(:,:)
 
-allocate( array_3d(4,3,2) )
-allocate( array_2d(4,3) )
+real(c_float), allocatable :: tensor3f(:,:,:)
+real(c_float), allocatable :: tensor2f(:,:)
+real(c_double), allocatable :: tensor3d(:,:,:)
+real(c_double), allocatable :: tensor2d(:,:)
 
-array_3d(:,:,:) = 2._c_double
-array_2d(:,:)   = 1._c_double
+allocate( tensor3f(4,3,2) )
+allocate( tensor2f(4,3) )
 
-call infero_inference( array_3d, array_2d )
+tensor3f(:,:,:) = 2._c_float
+tensor2f(:,:)   = 1._c_float
+
+call infero_inference( tensor3f, tensor2f )
+
+allocate( tensor3d(4,3,2) )
+allocate( tensor2d(4,3) )
+
+tensor3d(:,:,:) = 2._c_double
+tensor2d(:,:)   = 1._c_double
+
+call infero_inference( tensor3d, tensor2d )
 
 end program
 

@@ -12,7 +12,9 @@
 extern "C" {
 #endif
 
-void infero_infer_real64(double data1[], int rank1, int shape1[], double data2[], int rank2, int shape2[]);
+void infero_inference_double(double data1[], int rank1, int shape1[], double data2[], int rank2, int shape2[]);
+
+void infero_inference_float(float data1[], int rank1, int shape1[], float data2[], int rank2, int shape2[]);
 
 #if defined(__cplusplus)
 } // extern "C"
