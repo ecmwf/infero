@@ -5,6 +5,8 @@ implicit none
 
 real(c_float), allocatable :: tensor3f(:,:,:)
 real(c_float), allocatable :: tensor2f(:,:)
+real(c_float), allocatable :: it2f(:,:)
+real(c_float), allocatable :: ot2f(:,:)
 real(c_double), allocatable :: tensor3d(:,:,:)
 real(c_double), allocatable :: tensor2d(:,:)
 
@@ -23,6 +25,15 @@ tensor3d(:,:,:) = 2._c_double
 tensor2d(:,:)   = 1._c_double
 
 call infero_inference( tensor3d, tensor2d )
+
+! float
+allocate( it2f(8,191) ) ! input  [ 8, 191 ]
+allocate( ot2f(8,126) ) ! output [ 8 , 126 ]
+
+it2f(:,:) = 7._c_float
+ot2f(:,:) = 0._c_float
+
+call infero_inference( it2f, ot2f )
 
 end program
 

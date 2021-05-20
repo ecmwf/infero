@@ -46,6 +46,9 @@ end interface
 ! Inference API
 
 interface infero_inference ! function overloading
+  module procedure infero_inference_real64_rank2_rank2
+  module procedure infero_inference_real32_rank2_rank2
+
   module procedure infero_inference_real64_rank3_rank2
   module procedure infero_inference_real32_rank3_rank2
 end interface
@@ -117,6 +120,40 @@ end function
 !-----------------------------------------------------------------------------------------------------------------------
 
 !!! Inference
+
+subroutine infero_inference_real32_rank2_rank2( array1, array2 )
+  use, intrinsic :: iso_c_binding
+  real(c_float), intent(inout) :: array1(:,:)
+  real(c_float), intent(inout) :: array2(:,:)
+  integer(c_int) :: shape1(2)
+  integer(c_int) :: shape2(2)
+  real(c_float), pointer :: data1(:)
+  real(c_float), pointer :: data2(:)
+
+  shape1 = shape(array1)
+  data1  => array_view1d( array1 )
+  shape2 = shape(array2)
+  data2  => array_view1d( array2 )
+
+  call infero_inference_real32(data1, size(shape1), shape1, data2, size(shape2), shape2 )
+end subroutine
+
+subroutine infero_inference_real64_rank2_rank2( array1, array2 )
+  use, intrinsic :: iso_c_binding
+  real(c_double), intent(inout) :: array1(:,:)
+  real(c_double), intent(inout) :: array2(:,:)
+  integer(c_int) :: shape1(2)
+  integer(c_int) :: shape2(2)
+  real(c_double), pointer :: data1(:)
+  real(c_double), pointer :: data2(:)
+
+  shape1 = shape(array1)
+  data1  => array_view1d( array1 )
+  shape2 = shape(array2)
+  data2  => array_view1d( array2 )
+
+  call infero_inference_real64(data1, size(shape1), shape1, data2, size(shape2), shape2 )
+end subroutine
 
 subroutine infero_inference_real32_rank3_rank2( array1, array2 )
   use, intrinsic :: iso_c_binding
