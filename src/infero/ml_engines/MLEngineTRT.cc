@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -25,18 +25,6 @@ MLEngineTRT::MLEngineTRT(std::string model_filename):
     mEngine(nullptr),
     network(nullptr){
 
-    this->build();
-
-}
-
-MLEngineTRT::~MLEngineTRT()
-{
-
-}
-
-int MLEngineTRT::build()
-{
-
     // Resurrect the TRF model..
     std::stringstream gieModelStream;
     ifstream en(mModelFilename.c_str());
@@ -58,7 +46,6 @@ int MLEngineTRT::build()
         std::cerr << "failed to allocate "
                   << modelSize
                   << " bytes to deserialize model" << std::endl;
-        return -1;
     }
 
     gieModelStream.read((char*)modelMem, modelSize);
@@ -69,13 +56,17 @@ int MLEngineTRT::build()
 
     free(modelMem);
 
-    return 0;
+}
+
+MLEngineTRT::~MLEngineTRT()
+{
+
 }
 
 
-MLEngineTRTPtr MLEngineTRT::from_onnx(std::string onnx_path,
-                                      TRTOptions& options,
-                                      std::string trt_path){
+std::unique_ptr<MLEngineTRT> MLEngineTRT::from_onnx(std::string onnx_path,
+                                                    TRTOptions& options,
+                                                    std::string trt_path){
 
     auto builder = SampleUniquePtr<nvinfer1::IBuilder>(nvinfer1::createInferBuilder(sample::gLogger.getTRTLogger()));
     if (!builder)
@@ -143,24 +134,23 @@ MLEngineTRTPtr MLEngineTRT::from_onnx(std::string onnx_path,
     p.write((const char*)trtModelStream->data(),trtModelStream->size());
     p.close();
 
-    return MLEngineTRTPtr(new MLEngineTRT("model.trt"));
+    return std::unique_ptr<MLEngineTRT>(new MLEngineTRT("model.trt"));
 }
 
 
 // TODO still work in progress
-std::unique_ptr<Tensor> MLEngineTRT::infer(InputDataPtr& input_sample)
+std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLTensor>& input_sample)
 {
 
-#if 0
 
     std::stringstream gieModelStream;
     ifstream en("model.trt");
     gieModelStream << en.rdbuf();
     en.close();
 
-//    nvinfer1::ICudaEngine* mEngine = IRuntime::deserializeCudaEngine();
+    //    nvinfer1::ICudaEngine* mEngine = IRuntime::deserializeCudaEngine();
     nvinfer1::IRuntime* infer = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
-//    mEngine = infer->deserializeCudaEngine(gieModelStream);
+    //    mEngine = infer->deserializeCudaEngine(gieModelStream);
     // support for stringstream deserialization was deprecated in TensorRT v2
     // instead, read the stringstream into a memory buffer and pass that to TRT.
     gieModelStream.seekg(0, std::ios::end);
@@ -188,20 +178,20 @@ std::unique_ptr<Tensor> MLEngineTRT::infer(InputDataPtr& input_sample)
 
     SampleUniquePtr<nvinfer1::IExecutionContext> context = SampleUniquePtr<nvinfer1::IExecutionContext>(mEngine->createExecutionContext());
 
-//    Log::debug() << "context completed!  " << mParams.inputTensorNames.size() << std::endl;
+    //    Log::debug() << "context completed!  " << mParams.inputTensorNames.size() << std::endl;
 
     // Read the input data into the managed buffers
-//    ASSERT(mParams.inputTensorNames.size() == 1);
+    //    ASSERT(mParams.inputTensorNames.size() == 1);
 
     std::cout << "calling processInput.." << std::endl;
 
-//    auto output_tensor_name = network->getOutput(0)->getName();
-//    std::cout << "output_tensor_name " << output_tensor_name << std::endl;
+    //    auto output_tensor_name = network->getOutput(0)->getName();
+    //    std::cout << "output_tensor_name " << output_tensor_name << std::endl;
 
     // TODO: how do we know output shape after loading up engine from model.trt??
     float* hostDataBuffer = static_cast<float*>(buffers.getHostBuffer("conv2d_17"));
-    float* data = input_sample->get_data();
-    size_t data_size = input_sample->get_size();
+    float* data = input_sample->data();
+    size_t data_size = input_sample->size();
     std::cout << "Input data_size " << data_size << std::endl;
     for (size_t i = 0; i<data_size; i++){
         hostDataBuffer[i] = *(data+i);
@@ -243,9 +233,8 @@ std::unique_ptr<Tensor> MLEngineTRT::infer(InputDataPtr& input_sample)
         output_data[i] = *(output+i);
     }
 
-    return PredictionPtr(new Prediction(output_data, shape));
-
-#endif
+    auto shape_ = infero::MLTensor::convert_shape<int64_t, size_t>(shape);
+    return std::unique_ptr<infero::MLTensor>(new infero::MLTensor(output_data.data(), shape_));
 
     Log::warning() << "NOT YET IMPLEMENTED.. WORK IN PROGRESS.." << std::endl;
 

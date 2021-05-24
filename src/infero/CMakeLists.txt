@@ -33,26 +33,19 @@ endif()
 
 
 ### support for TensorRT
-if(HAVE_TENSOR_RT)
+if(HAVE_TENSORRT)
     list(APPEND infero_srcs
         ml_engines/MLEngineTRT.h
         ml_engines/MLEngineTRT.cc
     )
 
-    list(APPEND tensor_rt_libs 
-        nvinfer
-        nvonnxparser
-        nvparsers
-        nvinfer_plugin
-        nvrtc
-        cudart
-    )
+    set(tensor_rt_libs ${TENSORRT_LIBRARIES})
 
-    # # TODO check this...
-    # list(APPEND SOURCE_FILES
-    #     ${TRT_COM}/logger.h
-    #     ${TRT_COM}/logger.cpp
-    #     )
+    # TODO check this...
+    list(APPEND infero_srcs
+        ${TENSORRT_INCLUDE_COMMON_DIR}/logger.h
+        ${TENSORRT_INCLUDE_COMMON_DIR}/logger.cpp
+        )
 endif()
 
 
@@ -80,14 +73,17 @@ ecbuild_add_library(
         "${eckit_INCLUDE_DIRS}"
         "${TENSORFLOWLITE_INCLUDE_DIRS}"
         "${ONNX_INCLUDE_DIRS}"
+        "${CUDA_INCLUDE_DIRS}"
+        "${TENSORRT_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
         ${ZLIB_LIBRARIES}
         eckit
         eckit_option
-        "${tensorflow_lite_libs}"
-        "${tensor_rt_libs}"
+        "${tensorflow_lite_libs}"        
         "${onnx_libs}"
+        ${CUDA_LIBRARIES}
+        "${tensor_rt_libs}"
 )
 
 ecbuild_add_executable( TARGET infero.x

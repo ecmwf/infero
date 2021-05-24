@@ -29,12 +29,6 @@
 
 namespace infero {
 
-
-class MLEngineTRT;
-
-typedef std::unique_ptr<MLEngineTRT> MLEngineTRTPtr;
-
-
 class MLEngineTRT: public MLEngine
 {
 
@@ -60,15 +54,12 @@ public:
 
     virtual ~MLEngineTRT();
 
-    // build the engine
-    virtual int build();
-
     // run the inference
-    virtual std::unique_ptr<Tensor> infer(InputDataPtr& input_sample);
+    virtual std::unique_ptr<infero::MLTensor> infer(std::unique_ptr<infero::MLTensor>& input_sample);
 
-    static MLEngineTRTPtr from_onnx(std::string onnx_path,
-                                    TRTOptions& options,
-                                    std::string trt_path = "model.trt");
+    static std::unique_ptr<MLEngineTRT> from_onnx(std::string onnx_path,
+                                                  TRTOptions& options,
+                                                  std::string trt_path = "model.trt");
 
 private:
 

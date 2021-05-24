@@ -34,64 +34,28 @@ if(HAVE_FORTRAN)
     ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
 endif()
 
+############## TFlite
 ecbuild_add_option( FEATURE TF_LITE
                     DESCRIPTION "TensorflowLite engine"
                     REQUIRED_PACKAGES TensorflowLite )
 
+############## ONNX
 ecbuild_add_option( FEATURE ONNX
                     DESCRIPTION "ONNX engine"
                     REQUIRED_PACKAGES ONNX )
 
+############## CUDA
+ecbuild_add_option( FEATURE CUDA
+                    DESCRIPTION "CUDA GPU linear algebra operations"
+                    REQUIRED_PACKAGES CUDA )
+
+############## TensorRT
+ecbuild_add_option( FEATURE TENSORRT
+                    DESCRIPTION "TensorRT engine"
+                    REQUIRED_PACKAGES TensorRT )
+
 find_package(ZLIB REQUIRED) # for cnpy
 
-
-# ecbuild_add_option( FEATURE ONNX
-#                     DESCRIPTION "ONNX engine"
-#                     REQUIRED_PACKAGES ONNX )
-
-# ecbuild_add_option( FEATURE TENSOR_RT
-#                     DESCRIPTION "TensorRT engine"
-#                     REQUIRED_PACKAGES TensorRT )
-
-# ONNX
-# if(${WITH_ONNX_RUNTIME})
-#     set(HAVE_ONNX ON)
-#     set(INCL_REL include/onnxruntime/core/session)
-#     set(ONNX_INCLUDE_DIR ${ONNXRT_SOURCE_DIR}/${INCL_REL})
-#     set(ONNX_LIB_DIR ${ONNXRT_BUILD_DIR}/Linux/Release)
-#     list(APPEND INCLUDE_DIRS_ALL ${ONNX_INCLUDE_DIR})
-#     list(APPEND LINK_DIRS_ALL ${ONNX_LIB_DIR})
-#     add_definitions(-DHAVE_ONNX)
-# endif()
-
-
-# # TFLITE
-# if(${WITH_TFLITE_RUNTIME})
-#     set(HAVE_TFLITE ON)
-#     set(TFLITE_SCHEMA_DIR "${TFLITE_SOURCE_DIR}/schema")
-#     set(TFLITE_FLATBUFFERS_DIR "${TFLITE_BUILD_DIR}/flatbuffers/include")
-#     list(APPEND INCLUDE_DIRS_ALL ${TFLITE_SOURCE_DIR})
-#     list(APPEND INCLUDE_DIRS_ALL ${TFLITE_SCHEMA_DIR})
-#     list(APPEND INCLUDE_DIRS_ALL ${TFLITE_FLATBUFFERS_DIR})
-#     list(APPEND LINK_DIRS_ALL ${TFLITE_BUILD_DIR})
-#     add_definitions(-DHAVE_TFLITE)
-# endif()
-
-
-# # TRT
-# if(${WITH_TRT})
-#     set(HAVE_TRT ON)
-#     set(TRT_TRG "x86_64-linux-gnu")
-#     set(TRT_COM ${TRT_SOURCE_DIR}/targets/${TRT_TRG}/samples/common)
-#     set(CUDA_INCLUDE_DIR /usr/local/cuda/include)
-#     set(CUDA_LIB_DIR /usr/local/cuda-10.2/targets/x86_64-linux/lib)
-#     list(APPEND INCLUDE_DIRS_ALL ${TRT_SOURCE_DIR}/include)
-#     list(APPEND INCLUDE_DIRS_ALL ${TRT_COM})
-#     list(APPEND INCLUDE_DIRS_ALL ${CUDA_INCLUDE_DIR})
-#     list(APPEND LINK_DIRS_ALL ${TRT_BUILD_DIR}/lib)
-#     list(APPEND LINK_DIRS_ALL ${CUDA_LIB_DIR})
-#     add_definitions(-DHAVE_TRT)
-# endif()
 
 ecbuild_info("TENSORFLOWLITE_FOUND ${TENSORFLOWLITE_FOUND}")
 ecbuild_info("TENSORFLOWLITE_LIBRARIES ${TENSORFLOWLITE_LIBRARIES}")
@@ -100,6 +64,14 @@ ecbuild_info("TENSORFLOWLITE_INCLUDE_DIRS ${TENSORFLOWLITE_INCLUDE_DIRS}")
 ecbuild_info("ONNX_FOUND ${ONNX_FOUND}")
 ecbuild_info("ONNX_LIBRARIES ${ONNX_LIBRARIES}")
 ecbuild_info("ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIRS}")
+
+ecbuild_info("CUDA_FOUND ${CUDA_FOUND}")
+ecbuild_info("CUDA_LIBRARIES ${CUDA_LIBRARIES}")
+ecbuild_info("CUDA_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS}")
+
+ecbuild_info("TENSORRT_FOUND ${TENSORRT_FOUND}")
+ecbuild_info("TENSORRT_LIBRARIES ${TENSORRT_LIBRARIES}")
+ecbuild_info("TENSORRT_INCLUDE_DIRS ${TENSORRT_INCLUDE_DIRS}")
 
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
