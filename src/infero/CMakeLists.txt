@@ -46,6 +46,8 @@ if(HAVE_TENSORRT)
         ${TENSORRT_INCLUDE_COMMON_DIR}/logger.h
         ${TENSORRT_INCLUDE_COMMON_DIR}/logger.cpp
         )
+
+    add_definitions(-DHAVE_TENSORRT)
 endif()
 
 

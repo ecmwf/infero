@@ -63,10 +63,6 @@ public:
 
 private:
 
-//    bool constructNetwork(SampleUniquePtr<nvinfer1::IBuilder>& builder,
-//                          SampleUniquePtr<nvinfer1::IBuilderConfig>& config,
-//                          SampleUniquePtr<nvonnxparser::IParser>& parser);
-
     class Logger : public ILogger
     {
         void log(Severity severity, const char* msg) throw()
@@ -81,6 +77,8 @@ private:
     static Dims Vector2Dims(std::vector<int>& vecdims);
 
 private:
+
+    nvinfer1::IRuntime* infer_runtime;
 
     std::shared_ptr<nvinfer1::ICudaEngine> mEngine; //!< The TensorRT engine used to run the network
 

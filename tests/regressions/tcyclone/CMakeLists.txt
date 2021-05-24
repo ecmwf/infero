@@ -9,6 +9,7 @@ if (HAVE_ONNX)
         COMMAND  tcyclone_onnx.sh )
 endif()
 
+
 if (HAVE_TF_LITE)
 
     ecbuild_configure_file(tcyclone_tflite.sh.in
@@ -17,4 +18,15 @@ if (HAVE_TF_LITE)
     ecbuild_add_test(
         TYPE     SCRIPT
         COMMAND  tcyclone_tflite.sh )
+endif()
+
+
+if (HAVE_TENSORRT)
+
+    ecbuild_configure_file(tcyclone_trt.sh.in
+        tcyclone_trt.sh @ONLY )
+
+    ecbuild_add_test(
+        TYPE     SCRIPT
+        COMMAND  tcyclone_trt.sh )
 endif()

@@ -153,14 +153,14 @@ void MLEngineONNX::query_output_layer()
 void MLEngineONNX::print(std::ostream& os) const {
 
     os << "N input tensors: " << num_input_nodes << std::endl;
-    os << "Input layer expects a Tensor with "
+    os << "Input layer " << input_node_names[0] << " expects a Tensor with "
        << input_layer_shape.size() << " dimensions" << std::endl;
 
     for (int j = 0; j < input_layer_shape.size(); j++)
         os << "dim [" << j << "]: " << input_layer_shape[j] << std::endl;
 
     os << "N output tensors: " << num_output_nodes << std::endl;
-    os << "Input layer expects a Tensor with "
+    os << "Output layer " << output_node_names[0] << " expects a Tensor with "
        << output_layer_shape.size() << " dimensions" << std::endl;
 
     for (int j = 0; j < output_layer_shape.size(); j++)

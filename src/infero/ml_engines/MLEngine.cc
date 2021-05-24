@@ -23,7 +23,7 @@
 #include "infero/ml_engines/MLEngineTFlite.h"
 #endif
 
-#ifdef HAVE_TRT
+#ifdef HAVE_TENSORRT
 #include "infero/ml_engines/MLEngineTRT.h"
 #endif
 
@@ -61,8 +61,8 @@ std::unique_ptr<MLEngine> MLEngine::create(std::string choice,
     }
 #endif
 
-#ifdef HAVE_TRT
-    if (choice.compare("trt") == 0){
+#ifdef HAVE_TENSORRT
+    if (choice.compare("tensorrt") == 0){
 
         Log::info() << "creating MLEngineTRT.. "
                     << std::endl;

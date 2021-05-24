@@ -18,3 +18,13 @@ if (HAVE_TF_LITE)
         TYPE     SCRIPT
         COMMAND  orographic_drag_tflite.sh )
 endif()
+
+if (HAVE_TENSORRT)
+
+    ecbuild_configure_file(orographic_drag_trt.sh.in
+        orographic_drag_trt.sh @ONLY )
+
+    ecbuild_add_test(
+        TYPE     SCRIPT
+        COMMAND  orographic_drag_trt.sh )
+endif()
