@@ -11,5 +11,3 @@ Infero TODO
 
 * use csv rather than .npy  ???
 * use hdf5 rather than .npy ???
-
-* improve the README

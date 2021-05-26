@@ -47,11 +47,11 @@ make install
 Useful cmake arguments:
  - -DENABLE_TF_LITE=ON
  - -DTENSORFLOWLITE_PATH=</path/to/tensorflow/sources>
- - -DTENSORFLOWLITE_ROOT=</path/to/tflite/build/dir>
+ - -DTENSORFLOWLITE_ROOT=</path/to/tflite/root/dir>
  - -DENABLE_ONNX=ON
- - -DONNX_ROOT=</path/to/onnxruntime/sources>
+ - -DONNX_ROOT=</path/to/onnxruntime/root/dir>
  - -DENABLE_TENSORRT=ON
- - -DTENSORRT_ROOT=</path/to/tensorRT/package>
+ - -DTENSORRT_ROOT=</path/to/tensorRT/root/dir>
 
 ### Installation (python scripts)
 Create and source a conda environment containing all the required dependencies:
