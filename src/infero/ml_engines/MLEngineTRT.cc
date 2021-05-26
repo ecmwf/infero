@@ -8,12 +8,12 @@
  * nor does it submit to any jurisdiction.
  */
 
-#include <iostream>
 #include <functional>
+#include <iostream>
 #include <numeric>
 
-#include "eckit/log/Log.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/log/Log.h"
 
 #include "infero/ml_engines/MLEngineTRT.h"
 
@@ -23,10 +23,7 @@ using namespace eckit;
 namespace infero {
 
 
-MLEngineTRT::MLEngineTRT(std::string model_filename):    
-    MLEngine(model_filename),
-    mEngine(nullptr),
-    network(nullptr){
+MLEngineTRT::MLEngineTRT(std::string model_filename) : MLEngine(model_filename), mEngine(nullptr), network(nullptr) {
 
     // Resurrect the TRF model..
     std::stringstream gieModelStream;
@@ -43,29 +40,26 @@ MLEngineTRT::MLEngineTRT(std::string model_filename):
     gieModelStream.seekg(0, std::ios::beg);
 
     void* modelMem = malloc(modelSize);
-    if( !modelMem ) {
+    if (!modelMem) {
         std::string err = "failed to allocate " + std::to_string(modelSize) + " bytes";
-        throw  eckit::FailedSystemCall(err, Here());
+        throw eckit::FailedSystemCall(err, Here());
     }
 
     gieModelStream.read((char*)modelMem, modelSize);
     infer_runtime = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
     mEngine.reset(infer_runtime->deserializeCudaEngine(modelMem, modelSize, NULL));
-    if( !mEngine ) {
+    if (!mEngine) {
         std::string err = "failed to read the TRT engine!";
-        throw  eckit::FailedSystemCall(err, Here());
+        throw eckit::FailedSystemCall(err, Here());
     }
 
     Log::info() << "modelSize " << modelSize << std::endl;
 }
 
-MLEngineTRT::~MLEngineTRT()
-{
-}
+MLEngineTRT::~MLEngineTRT() {}
 
 
-std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLTensor>& input_sample)
-{
+std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLTensor>& input_sample) {
 
     // =================== prediction ======================
     // Create RAII buffer manager object
@@ -79,19 +73,19 @@ std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLT
     Log::info() << "mEngine->getBindingName(1) " << mEngine->getBindingName(1) << std::endl;
     Log::info() << "mEngine->getBindingDimensions(1) " << mEngine->getBindingDimensions(1) << std::endl;
 
-    std::string input_tensor_name = mEngine->getBindingName(0);
+    std::string input_tensor_name  = mEngine->getBindingName(0);
     std::string output_tensor_name = mEngine->getBindingName(1);
-//    Dims input_dims = mEngine->getBindingDimensions(0);
+    //    Dims input_dims = mEngine->getBindingDimensions(0);
     Dims output_dims = mEngine->getBindingDimensions(1);
 
     //    auto output_tensor_name = network->getOutput(0)->getName();
     //    Log::info() << "output_tensor_name " << output_tensor_name << std::endl;
 
     float* hostDataBuffer = static_cast<float*>(buffers.getHostBuffer(input_tensor_name));
-    float* data = input_sample->data();
-    size_t data_size = input_sample->size();
-    for (size_t i = 0; i<data_size; i++){
-        hostDataBuffer[i] = *(data+i);
+    float* data           = input_sample->data();
+    size_t data_size      = input_sample->size();
+    for (size_t i = 0; i < data_size; i++) {
+        hostDataBuffer[i] = *(data + i);
     }
     // ======================================================
 
@@ -101,7 +95,7 @@ std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLT
     Log::info() << "executing inference.." << std::endl;
     bool status = context->executeV2(buffers.getDeviceBindings().data());
     if (!status) {
-        throw  eckit::SeriousBug("inference FAILED!", Here());
+        throw eckit::SeriousBug("inference FAILED!", Here());
     }
 
     // Memcpy from device output buffers to host output buffers
@@ -111,7 +105,7 @@ std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLT
     // ======================= output =======================
     int shape_flat = 1;
     std::vector<size_t> shape(output_dims.nbDims);
-    for(int i=0; i<output_dims.nbDims; i++) {
+    for (int i = 0; i < output_dims.nbDims; i++) {
         shape[i] = output_dims.d[i];
         shape_flat *= output_dims.d[i];
         Log::info() << "output_dims.d[i] " << output_dims.d[i] << std::endl;
@@ -120,12 +114,12 @@ std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLT
     // copy output data
     float* output = static_cast<float*>(buffers.getHostBuffer(output_tensor_name));
     auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(shape));
-    for(int i=0; i<shape_flat; i++) {
-        *(pred_ptr->data()+i) = *(output+i);
+    for (int i = 0; i < shape_flat; i++) {
+        *(pred_ptr->data() + i) = *(output + i);
     }
 
     return pred_ptr;
     // ======================================================
 }
 
-} // namespace infero
+}  // namespace infero

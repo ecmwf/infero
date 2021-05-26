@@ -8,10 +8,10 @@
  * nor does it submit to any jurisdiction.
  */
 
+#include "eckit/log/Log.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 #include "eckit/runtime/Main.h"
-#include "eckit/log/Log.h"
 
 #include "infero/MLTensor.h"
 #include "infero/clustering/Clustering.h"
@@ -23,15 +23,14 @@ using namespace eckit::option;
 using namespace infero;
 
 
-void usage(const std::string&){
+void usage(const std::string&) {
 
     Log::info() << std::endl
                 << "-------------------------------" << std::endl
                 << "Machine Learning clustering tool" << std::endl
                 << "-------------------------------" << std::endl
                 << std::endl
-                << "Runs a clustering algorithm on a ML prediction"
-                << std::endl;
+                << "Runs a clustering algorithm on a ML prediction" << std::endl;
 }
 
 
@@ -46,9 +45,9 @@ int main(int argc, char** argv) {
     CmdArgs args(&usage, options, 0, 0, true);
 
     // input path
-    std::string input_path = args.getString("input","data.npy");
-    std::string clustering = args.getString("clustering","dbscan");
-    std::string output_path = args.getString("output","clusters.json");
+    std::string input_path  = args.getString("input", "data.npy");
+    std::string clustering  = args.getString("clustering", "dbscan");
+    std::string output_path = args.getString("output", "clusters.json");
 
     // input data
     std::unique_ptr<infero::MLTensor> inputT = infero::MLTensor::from_file(input_path);
@@ -57,10 +56,11 @@ int main(int argc, char** argv) {
     std::unique_ptr<Clustering> cluster = Clustering::create(clustering);
 
     int err = cluster->run(inputT);
-    if(err){
+    if (err) {
         Log::error() << "Clustering Failed!" << std::endl;
         return EXIT_FAILURE;
-    } else {
+    }
+    else {
         cluster->print_summary();
 
         // write to JSON

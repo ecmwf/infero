@@ -10,14 +10,14 @@
 
 #include <memory>
 
+#include "eckit/log/Log.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
 #include "eckit/runtime/Main.h"
-#include "eckit/log/Log.h"
 #include "eckit/serialisation/FileStream.h"
 
-#include "infero/ml_engines/MLEngine.h"
 #include "infero/MLTensor.h"
+#include "infero/ml_engines/MLEngine.h"
 
 
 using namespace eckit;
@@ -26,7 +26,7 @@ using namespace eckit::linalg;
 using namespace infero;
 
 
-void usage(const std::string&){
+void usage(const std::string&) {
 
     Log::info() << std::endl
                 << "-------------------------------" << std::endl
@@ -55,37 +55,37 @@ int main(int argc, char** argv) {
     CmdArgs args(&usage, options, 0, 0, true);
 
     // input path
-    std::string input_path = args.getString("input","data.npy");
-    std::string model_path = args.getString("model", "model.onnx");
+    std::string input_path  = args.getString("input", "data.npy");
+    std::string model_path  = args.getString("model", "model.onnx");
     std::string engine_type = args.getString("engine", "onnx");
     std::string output_path = args.getString("output", "out.csv");
-    std::string ref_path = args.getString("ref_path", "");
-    double threshold = args.getDouble("threshold", 0.001);
+    std::string ref_path    = args.getString("ref_path", "");
+    double threshold        = args.getDouble("threshold", 0.001);
 
     // input data
     std::unique_ptr<infero::MLTensor> inputT = infero::MLTensor::from_file(input_path);
 
     // runtime engine
-    std::unique_ptr<MLEngine> engine = MLEngine::create( engine_type, model_path);
+    std::unique_ptr<MLEngine> engine = MLEngine::create(engine_type, model_path);
     std::cout << *engine << std::endl;
 
     // Run inference
     std::unique_ptr<infero::MLTensor> predT = engine->infer(inputT);
 
     // save
-    if (args.has("output")){
+    if (args.has("output")) {
         predT->to_file(output_path);
     }
 
     // compare against ref values
-    if (args.has("ref_path")){
+    if (args.has("ref_path")) {
 
         std::unique_ptr<infero::MLTensor> refT = infero::MLTensor::from_file(ref_path);
-        float err = predT->compare(*refT);
+        float err                              = predT->compare(*refT);
         Log::info() << "MSE error: " << err << std::endl;
         Log::info() << "threshold: " << threshold << std::endl;
 
-        return !(err<threshold);
+        return !(err < threshold);
     }
 
     return EXIT_SUCCESS;

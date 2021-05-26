@@ -22,10 +22,10 @@
 #define OUTPUT_SCALAR_TYPE float
 
 
-#define TFLITE_MINIMAL_CHECK(x)                              \
-    if (!(x)) {                                                \
-    fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); \
-    exit(1);                                                 \
+#define TFLITE_MINIMAL_CHECK(x)                                  \
+    if (!(x)) {                                                  \
+        fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); \
+        exit(1);                                                 \
     }
 
 using namespace eckit;
@@ -33,9 +33,7 @@ using namespace eckit;
 namespace infero {
 
 
-MLEngineTFlite::MLEngineTFlite(std::string model_filename):
-    MLEngine(model_filename)
-{
+MLEngineTFlite::MLEngineTFlite(std::string model_filename) : MLEngine(model_filename) {
     // Load model
     model = tflite::FlatBufferModel::BuildFromFile(this->mModelFilename.c_str());
     TFLITE_MINIMAL_CHECK(model != nullptr);
@@ -51,36 +49,31 @@ MLEngineTFlite::MLEngineTFlite(std::string model_filename):
     // Allocate tensor buffers.
     TFLITE_MINIMAL_CHECK(interpreter->AllocateTensors() == kTfLiteOk);
     tflite::PrintInterpreterState(interpreter.get());
-
 }
 
-MLEngineTFlite::~MLEngineTFlite()
-{
+MLEngineTFlite::~MLEngineTFlite() {}
 
-}
-
-std::unique_ptr<infero::MLTensor> MLEngineTFlite::infer(std::unique_ptr<infero::MLTensor>& input_sample)
-{
+std::unique_ptr<infero::MLTensor> MLEngineTFlite::infer(std::unique_ptr<infero::MLTensor>& input_sample) {
 
     Log::info() << "Sample tensor shape: ";
-    for(auto i: input_sample->shape())
+    for (auto i : input_sample->shape())
         Log::info() << i << ", ";
     Log::info() << std::endl;
 
     // reshape the internal input tensor to accept the user passed input
     std::vector<int> sh_(input_sample->shape().size());
-    for (int i=0; i<input_sample->shape().size(); i++)
+    for (int i = 0; i < input_sample->shape().size(); i++)
         sh_[i] = input_sample->shape()[i];
 
     interpreter->ResizeInputTensor(interpreter->inputs()[0], sh_);
     interpreter->AllocateTensors();
 
     // =========================== copy tensor ============================
-    float* input = interpreter->typed_input_tensor<float>(0);
+    float* input      = interpreter->typed_input_tensor<float>(0);
     const float* data = input_sample->data();
-    size_t data_size = input_sample->size();
-    for (size_t i = 0; i<data_size; i++){
-        *(input+i) = *(data+i);
+    size_t data_size  = input_sample->size();
+    for (size_t i = 0; i < data_size; i++) {
+        *(input + i) = *(data + i);
     }
     // ====================================================================
 
@@ -92,27 +85,27 @@ std::unique_ptr<infero::MLTensor> MLEngineTFlite::infer(std::unique_ptr<infero::
     // ====================================================================
 
     // ========================== Get output ==============================
-    float* output = interpreter->typed_output_tensor<float>(0);
+    float* output     = interpreter->typed_output_tensor<float>(0);
     TfLiteTensor* out = interpreter->output_tensor(0);
 
     std::vector<size_t> out_shape(out->dims->size);
-    for (int i=0; i<out->dims->size; i++)
+    for (int i = 0; i < out->dims->size; i++)
         out_shape[i] = out->dims->data[i];
 
     Log::info() << "Output tensor shape: ";
-    for(auto i: out_shape)
+    for (auto i : out_shape)
         Log::info() << i << ", ";
     Log::info() << std::endl;
 
     auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(out_shape));
 
     // copy output data
-    for (size_t i=0; i<pred_ptr->size(); i++){
-        *(pred_ptr->data()+i) = *(output+i);
+    for (size_t i = 0; i < pred_ptr->size(); i++) {
+        *(pred_ptr->data() + i) = *(output + i);
     }
     // ====================================================================
 
     return pred_ptr;
 }
 
-} // namespace infero
+}  // namespace infero

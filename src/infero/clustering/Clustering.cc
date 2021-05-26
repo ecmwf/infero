@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -11,9 +11,9 @@
 #include <fstream>
 #include <sstream>
 
+#include "eckit/exception/Exceptions.h"
 #include "eckit/log/JSON.h"
 #include "eckit/log/Log.h"
-#include "eckit/exception/Exceptions.h"
 
 #include "infero/clustering/Clustering.h"
 #include "infero/clustering/ClusteringDBscan.h"
@@ -21,8 +21,7 @@
 using namespace eckit;
 
 
-Clustering::Clustering()
-{
+Clustering::Clustering() {
     cluster_centers.resize(0);
     points.resize(0);
 }
@@ -119,6 +118,6 @@ std::unique_ptr<Clustering> Clustering::create(std::string choice) {
         return std::unique_ptr<Clustering>(new ClusteringDBscan);
     }
     else {
-        throw BadValue("Invalid Clustering choice"+std::string(choice), Here());
+        throw BadValue("Invalid Clustering choice" + std::string(choice), Here());
     }
 }

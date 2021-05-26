@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -10,8 +10,8 @@
 
 #include <vector>
 
-#include "eckit/log/Log.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/log/Log.h"
 
 #include "infero/ml_engines/MLEngine.h"
 
@@ -32,47 +32,39 @@ using namespace eckit;
 namespace infero {
 
 
-MLEngine::~MLEngine(){}
+MLEngine::~MLEngine() {}
 
-std::unique_ptr<MLEngine> MLEngine::create(std::string choice,
-                                           std::string model_path)
-{
-    Log::info() << "Loading model "
-                << model_path
-                << std::endl;
+std::unique_ptr<MLEngine> MLEngine::create(std::string choice, std::string model_path) {
+    Log::info() << "Loading model " << model_path << std::endl;
 
 #ifdef HAVE_ONNX
-    if (choice.compare("onnx") == 0){
+    if (choice.compare("onnx") == 0) {
 
-        Log::info() << "creating RTEngineONNX.. "
-                    << std::endl;
+        Log::info() << "creating RTEngineONNX.. " << std::endl;
 
         return std::unique_ptr<MLEngine>(new MLEngineONNX(model_path));
     }
 #endif
 
 #ifdef HAVE_TFLITE
-    if (choice.compare("tflite") == 0){
+    if (choice.compare("tflite") == 0) {
 
-        Log::info() << "creating RTEngineTFlite.. "
-                    << std::endl;
+        Log::info() << "creating RTEngineTFlite.. " << std::endl;
 
         return std::unique_ptr<MLEngine>(new MLEngineTFlite(model_path));
     }
 #endif
 
 #ifdef HAVE_TENSORRT
-    if (choice.compare("tensorrt") == 0){
+    if (choice.compare("tensorrt") == 0) {
 
-        Log::info() << "creating MLEngineTRT.. "
-                    << std::endl;
+        Log::info() << "creating MLEngineTRT.. " << std::endl;
 
         return std::unique_ptr<MLEngine>(new MLEngineTRT(model_path));
     }
 #endif
 
     throw BadValue("Engine type " + choice + " not supported!", Here());
-
 }
 
-} // namespace infero
+}  // namespace infero

@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -22,11 +22,9 @@
 
 namespace infero {
 
-class MLEngineTFlite: public MLEngine
-{
+class MLEngineTFlite : public MLEngine {
 
-public:    
-
+public:
     MLEngineTFlite(std::string model_filename);
 
     virtual ~MLEngineTFlite();
@@ -35,11 +33,9 @@ public:
     virtual std::unique_ptr<infero::MLTensor> infer(std::unique_ptr<infero::MLTensor>& input_sample);
 
 private:
-
     // TFlite model and interpreter
     std::unique_ptr<tflite::FlatBufferModel> model;
     std::unique_ptr<tflite::Interpreter> interpreter;
-
 };
 
-} // namespace infero
+}  // namespace infero

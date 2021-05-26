@@ -17,7 +17,5 @@ void infero_inference_double(double data1[], int rank1, int shape1[], double dat
 void infero_inference_float(float data1[], int rank1, int shape1[], float data2[], int rank2, int shape2[]);
 
 #if defined(__cplusplus)
-} // extern "C"
+}  // extern "C"
 #endif
-
-

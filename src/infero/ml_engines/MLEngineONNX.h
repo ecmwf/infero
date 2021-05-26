@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -19,11 +19,9 @@
 
 namespace infero {
 
-class MLEngineONNX: public MLEngine
-{    
+class MLEngineONNX : public MLEngine {
 
-public:    
-
+public:
     MLEngineONNX(std::string model_filename);
 
     ~MLEngineONNX();
@@ -33,7 +31,6 @@ public:
 
 
 private:
-
     // ORT session
     std::unique_ptr<Ort::Session> session;
     std::unique_ptr<Ort::SessionOptions> session_options;
@@ -60,13 +57,11 @@ private:
     std::vector<float> data_buffer;
 
 private:
-
     void query_input_layer();
 
     void query_output_layer();
 
     void print(std::ostream& os) const;
-
 };
 
-} // namespace linalg
+}  // namespace infero

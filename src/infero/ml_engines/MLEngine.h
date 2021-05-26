@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include <string>
-#include <ostream>
 #include <memory>
+#include <ostream>
+#include <string>
 
 #include "infero/MLTensor.h"
 
@@ -23,14 +23,10 @@ using namespace eckit::linalg;
 namespace infero {
 
 // Minimal interface for a runtime engine
-class MLEngine
-{
+class MLEngine {
 
 public:
-
-    MLEngine(std::string model_filename):
-        mModelFilename(model_filename){
-    }
+    MLEngine(std::string model_filename) : mModelFilename(model_filename) {}
 
     virtual ~MLEngine();
 
@@ -40,20 +36,17 @@ public:
     // create concrete engines
     static std::unique_ptr<MLEngine> create(std::string choice, std::string model_path);
 
-    friend std::ostream& operator<<(std::ostream& os, MLEngine& obj){
+    friend std::ostream& operator<<(std::ostream& os, MLEngine& obj) {
         obj.print(os);
         return os;
     }
 
 
 protected:
-
     virtual void print(std::ostream& os) const {}
 
 protected:
-
     std::string mModelFilename;
-
 };
 
-}
+}  // namespace infero

@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -13,49 +13,38 @@
 #include "eckit/exception/Exceptions.h"
 
 
-ClusteringDBscan::ClusteringDBscan():
-    min_threshold(DBSCAN_MIN_VAL)
-{
+ClusteringDBscan::ClusteringDBscan() : min_threshold(DBSCAN_MIN_VAL) {}
 
-}
-
-int ClusteringDBscan::run(std::unique_ptr<MLTensor>& prediction)
-{
+int ClusteringDBscan::run(std::unique_ptr<MLTensor>& prediction) {
 
     // read point data
     vector<Point> _points = readPrediction(prediction);
 
     // constructor
-    DBSCAN ds(DBSCAN_MIN_N_CLUSTERS,
-              DBSCAN_EPS,
-              _points);
+    DBSCAN ds(DBSCAN_MIN_N_CLUSTERS, DBSCAN_EPS, _points);
 
     // main loop
     ds.run();
 
     // fill up the cluster vector structure
-    for(int i=0; i < ds.getTotalPointSize(); i++)
-    {
+    for (int i = 0; i < ds.getTotalPointSize(); i++) {
 
         int cid = ds.m_points[i].clusterID;
         float x = ds.m_points[i].x;
         float y = ds.m_points[i].y;
 
-        this->points.push_back(ClusterPoint(x,y,cid));
+        this->points.push_back(ClusterPoint(x, y, cid));
     }
 
     // calc cluster centers
     this->calculate_cluster_centers();
 
     return 0;
-
 }
 
 
-
-//read and ingest the prediction
-std::vector<Point> ClusteringDBscan::readPrediction(std::unique_ptr<MLTensor>& prediction)
-{
+// read and ingest the prediction
+std::vector<Point> ClusteringDBscan::readPrediction(std::unique_ptr<MLTensor>& prediction) {
 
     std::vector<Point> _points;
 
@@ -72,15 +61,15 @@ std::vector<Point> ClusteringDBscan::readPrediction(std::unique_ptr<MLTensor>& p
     size_t ncols = prediction->shape()[2];
 
     int val_count = 0;
-    for (int irow=0; irow<nrows; irow++){
-        for (int icol=0; icol<ncols; icol++){
+    for (int irow = 0; irow < nrows; irow++) {
+        for (int icol = 0; icol < ncols; icol++) {
 
-            if (prediction->data()[val_count] > min_threshold){
+            if (prediction->data()[val_count] > min_threshold) {
                 Point p;
                 p.clusterID = UNCLASSIFIED;
-                p.x = irow;
-                p.y = icol;
-                p.z = 0;
+                p.x         = irow;
+                p.y         = icol;
+                p.z         = 0;
                 _points.push_back(p);
             }
 

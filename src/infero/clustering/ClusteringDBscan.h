@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -28,11 +28,9 @@ using namespace infero;
 
 
 // runs a DBScan algorithm
-class ClusteringDBscan: public Clustering
-{
+class ClusteringDBscan : public Clustering {
 
 public:
-
     ClusteringDBscan();
 
     // run clustering
@@ -40,13 +38,10 @@ public:
 
 
 private:
-
     // read the prediction
     virtual std::vector<Point> readPrediction(std::unique_ptr<MLTensor>& prediction);
 
 
 private:
-
     float min_threshold;
-
 };

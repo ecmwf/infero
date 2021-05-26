@@ -1,6 +1,6 @@
 /*
  * (C) Copyright 1996- ECMWF.
- * 
+ *
  * This software is licensed under the terms of the Apache Licence Version 2.0
  * which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
  * In applying this licence, ECMWF does not waive the privileges and immunities
@@ -21,16 +21,15 @@
 using namespace infero;
 
 // a cluster point
-struct ClusterPoint{
+struct ClusterPoint {
 
     float x;
     float y;
     int cid;
 
-    ClusterPoint(){}
+    ClusterPoint() {}
 
-    ClusterPoint(float x, float y, int cid):
-        x(x), y(y), cid(cid){}
+    ClusterPoint(float x, float y, int cid) : x(x), y(y), cid(cid) {}
 };
 
 
@@ -41,11 +40,9 @@ typedef std::pair<int, ClusterPoints> ClusterPair;
 
 
 // generic clustering algorithm
-class Clustering
-{
+class Clustering {
 
 public:
-
     Clustering();
 
     virtual ~Clustering();
@@ -62,12 +59,10 @@ public:
     static std::unique_ptr<Clustering> create(std::string choice);
 
 public:
-
     // cluster centers
     std::vector<ClusterPoint> cluster_centers;
 
 protected:
-
     // labelled points
     //   - x1,y1,cid1
     //   - x2,y2,cid1
@@ -77,5 +72,4 @@ protected:
 
     // cluster centers
     virtual void calculate_cluster_centers();
-
 };
