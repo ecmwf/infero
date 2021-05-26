@@ -36,21 +36,19 @@ endif()
 
 ############## TFlite
 ecbuild_add_option( FEATURE TF_LITE
+                    DEFAULT OFF
                     DESCRIPTION "TensorflowLite engine"
                     REQUIRED_PACKAGES TensorflowLite )
 
 ############## ONNX
 ecbuild_add_option( FEATURE ONNX
+                    DEFAULT OFF
                     DESCRIPTION "ONNX engine"
                     REQUIRED_PACKAGES ONNX )
 
-############## CUDA
-ecbuild_add_option( FEATURE CUDA
-                    DESCRIPTION "CUDA GPU linear algebra operations"
-                    REQUIRED_PACKAGES CUDA )
-
 ############## TensorRT
 ecbuild_add_option( FEATURE TENSORRT
+                    DEFAULT OFF
                     DESCRIPTION "TensorRT engine"
                     REQUIRED_PACKAGES TensorRT )
 
@@ -64,10 +62,6 @@ ecbuild_info("TENSORFLOWLITE_INCLUDE_DIRS ${TENSORFLOWLITE_INCLUDE_DIRS}")
 ecbuild_info("ONNX_FOUND ${ONNX_FOUND}")
 ecbuild_info("ONNX_LIBRARIES ${ONNX_LIBRARIES}")
 ecbuild_info("ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIRS}")
-
-ecbuild_info("CUDA_FOUND ${CUDA_FOUND}")
-ecbuild_info("CUDA_LIBRARIES ${CUDA_LIBRARIES}")
-ecbuild_info("CUDA_INCLUDE_DIRS ${CUDA_INCLUDE_DIRS}")
 
 ecbuild_info("TENSORRT_FOUND ${TENSORRT_FOUND}")
 ecbuild_info("TENSORRT_LIBRARIES ${TENSORRT_LIBRARIES}")

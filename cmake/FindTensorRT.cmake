@@ -57,6 +57,9 @@ find_library(TENSORRT_LIB_nvinfer_plugin
             PATHS ${TENSORRT_PATH} ENV TENSORRT_PATH
             PATH_SUFFIXES lib64 lib NO_DEFAULT_PATH)
 
+
+find_package(CUDA)
+
 set(TENSORRT_LIB
     ${TENSORRT_LIB_infer}
     ${TENSORRT_LIB_nvonnxparser}
@@ -64,9 +67,13 @@ set(TENSORRT_LIB
     ${TENSORRT_LIB_nvinfer_plugin}
 )
 
-set(TENSORRT_LIBRARIES ${TENSORRT_LIB})
+set(TENSORRT_LIBRARIES
+    ${CUDA_LIBRARIES}
+    ${TENSORRT_LIB}
+    )
 
 set(TENSORRT_INCLUDE_DIRS
+    ${CUDA_INCLUDE_DIRS}
     ${TENSORRT_INCLUDE_DIR}
     ${TENSORRT_INCLUDE_COMMON_DIR}
 )

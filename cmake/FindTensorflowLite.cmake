@@ -28,28 +28,32 @@ find_path(TENSORFLOWLITE_INCLUDE_DIR tensorflow/lite/model.h
 find_path(TENSORFLOWLITE_INCLUDE_DIR tensorflow/lite/model.h PATH_SUFFIXES include )
 
 find_path(TENSORFLOWLITE_FLATBUFFERS_DIR flatbuffers/flatbuffers.h
-          HINTS $ENV{TENSORFLOWLITE_ROOT} ${TENSORFLOWLITE_ROOT}
+          HINTS $ENV{TENSORFLOWLITE_ROOT}/flatbuffers/include ${TENSORFLOWLITE_ROOT}/flatbuffers/include
           PATHS ${TENSORFLOWLITE_PATH} ENV TENSORFLOWLITE_PATH
           PATH_SUFFIXES include NO_DEFAULT_PATH)
 
 find_path(TENSORFLOWLITE_FLATBUFFERS_DIR flatbuffers/flatbuffers.h PATH_SUFFIXES include )
 
 # Search with priority for TENSORFLOWLITE_PATH if given as CMake or env var
-find_library(TENSORFLOW_LITE_LIB tensorflow-lite
+find_library(TENSORFLOWLITE_LIB tensorflow-lite
             HINTS $ENV{TENSORFLOWLITE_ROOT} ${TENSORFLOWLITE_ROOT}
             PATHS ${TENSORFLOWLITE_PATH} ENV TENSORFLOWLITE_PATH
             PATH_SUFFIXES lib64 lib NO_DEFAULT_PATH)
 
-find_library( TENSORFLOW_LITE_LIB tensorflow-lite PATH_SUFFIXES lib64 lib )
+find_library( TENSORFLOWLITE_LIB tensorflow-lite )
 
-set( TENSORFLOWLITE_LIBRARIES    ${TENSORFLOW_LITE_LIB} )
-set( TENSORFLOWLITE_INCLUDE_DIRS ${TENSORFLOWLITE_INCLUDE_DIR} ${TENSORFLOWLITE_FLATBUFFERS_DIR})
+set( TENSORFLOWLITE_LIBRARIES    ${TENSORFLOWLITE_LIB} )
+
+set( TENSORFLOWLITE_INCLUDE_DIRS
+    ${TENSORFLOWLITE_INCLUDE_DIR}
+    ${TENSORFLOWLITE_FLATBUFFERS_DIR}
+    )
 
 include(FindPackageHandleStandardArgs)
 
 # handle the QUIET and REQUIRED arguments and set TENSORFLOWLITE_FOUND to TRUE
 # if all listed variables are TRUE
 # Note: capitalisation of the package name must be the same as in the file name
-find_package_handle_standard_args(TensorflowLite DEFAULT_MSG TENSORFLOW_LITE_LIB TENSORFLOWLITE_INCLUDE_DIR)
+find_package_handle_standard_args(TensorflowLite DEFAULT_MSG TENSORFLOWLITE_LIB TENSORFLOWLITE_INCLUDE_DIR)
 
-mark_as_advanced(TENSORFLOWLITE_INCLUDE_DIR TENSORFLOW_LITE_LIB)
+mark_as_advanced(TENSORFLOWLITE_INCLUDE_DIR TENSORFLOWLITE_LIB)

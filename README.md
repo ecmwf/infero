@@ -1,40 +1,61 @@
 # Infero
 
 ## Description
-Infero runs a pre-trained ML model on an input sample. It can be deployed 
+Infero runs a pre-trained ML model for inference. It can be deployed 
 on a HPC system without the need for high-level python libraries 
 (e.g. TensorFlow, PyTorch, etc..)
 
+### Requirements
+
+Build dependencies:
+
+- C++ compiler
+- CMake > 3.16 --- For use and installation see http://www.cmake.org/
+- ecbuild --- ECMWF library of CMake macros (https://github.com/ecmwf/ecbuild)
+
+Runtime dependencies:
+  - eckit (https://github.com/ecmwf/eckit)
+
+Optional runtime dependencies:
+  - TensorFlow Lite (https://github.com/tensorflow/tensorflow.git)
+  - ONNX-Runtime (https://github.com/Microsoft/onnxruntime)
+  - TensorRT (https://developer.nvidia.com/tensorrt)
+
 ### Installation
-Requirements:
-  - cmake > 3.16
-  - C++ compiler
 
-Source the environment:
-> source env.sh
+Infero employs an out-of-source build/install based on CMake.
+Make sure ecbuild is installed and the ecbuild executable script is found ( `which ecbuild` ).
+Now proceed with installation as follows:
 
-For a custom configuration, the environment 
-variables in *env.sh* can be edited. 
+```bash
+# Environment --- Edit as needed
+srcdir=$(pwd)
+builddir=build
+installdir=$HOME/local  
 
-Root variables below:
+# 1. Create the build directory:
+mkdir $builddir
+cd $builddir
 
- - ${ROOT_SRC_DIR}: Root source path for dependencies
- - ${ROOT_BUILD_DIR}: Root build path
- - ${BUILD_NPROCS}: number of processes for building
+# 2. Run CMake
+ecbuild --prefix=$installdir -- -DECKIT_PATH=<path/to/eckit/install> $srcdir
 
-Supported backend runtime libraries
- - ${WITH_ONNX_RUNTIME}: with ONNX runtime library
- - ${WITH_TFLITE_RUNTIME}: with TfLite library
- - ${WITH_TRT}: with TensorRT library
-
-Install this package
-> ./install.sh
+# 3. Compile / Install
+make -j10
+make install
+```
+Useful cmake arguments:
+ - -DENABLE_TF_LITE=ON
+ - -DTENSORFLOWLITE_PATH=</path/to/tensorflow/sources>
+ - -DTENSORFLOWLITE_ROOT=</path/to/tflite/build/dir>
+ - -DENABLE_ONNX=ON
+ - -DONNX_ROOT=</path/to/onnxruntime/sources>
+ - -DENABLE_TENSORRT=ON
+ - -DTENSORRT_ROOT=</path/to/tensorRT/package>
 
 ### Installation (python scripts)
-Create and source a conda environment with all the required 
-dependencies in it:
+Create and source a conda environment containing all the required dependencies:
 
+> cd scripts
+> 
 > source scripts_env.sh
-
-### User Guide
-WIP..

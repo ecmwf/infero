@@ -73,7 +73,6 @@ ecbuild_add_library(
         "${eckit_INCLUDE_DIRS}"
         "${TENSORFLOWLITE_INCLUDE_DIRS}"
         "${ONNX_INCLUDE_DIRS}"
-        "${CUDA_INCLUDE_DIRS}"
         "${TENSORRT_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
@@ -82,6 +81,5 @@ ecbuild_add_library(
         eckit_option
         "${tensorflow_lite_libs}"
         "${onnx_libs}"
-        ${CUDA_LIBRARIES}
         "${tensor_rt_libs}"
 )
