@@ -28,27 +28,18 @@ public:
         MSE
     };
 
-    // element ordering type
-    enum Ordering
-    {
-        ROW_MAJOR,
-        COL_MAJOR,
-    };
-
 public:
-    MLTensor();
+
+    MLTensor(bool isRight = true);
 
     // takes no ownership of memory
-    MLTensor(const float* array, const std::vector<Size>& shape);
+    MLTensor(const float* array, const std::vector<Size>& shape, bool isRight = true);
 
     // has ownership of memory
-    MLTensor(const std::vector<Size>& shape);
+    MLTensor(const std::vector<Size>& shape, bool isRight = true);
 
     // shape as std::vector<size_t>
     std::vector<Size> shape() const { return shape_; }
-
-    // returns a copy (with either COL_MAJOR or ROW_MAJOR ordering)
-    std::unique_ptr<MLTensor> copy_as(Ordering new_order) const;
 
     // from/to file
     static std::unique_ptr<MLTensor> from_file(const std::string& filename);
@@ -66,7 +57,6 @@ private:
     static std::unique_ptr<MLTensor> from_numpy(const std::string& filename);
     void to_numpy(const std::string& filename);
 
-    Ordering CurrentOrdering;
 };
 
 }  // namespace infero
