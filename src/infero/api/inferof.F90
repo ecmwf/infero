@@ -4,15 +4,21 @@ private
 
 public :: infero_inference
 
+
 interface
 
   !-----------------------------------------------------------------------------------------
-  ! void infero_inference_real64( double data1[], int rank1, int shape1[],  double data2[], int rank2, int shape2[]  );
+  ! void infero_inference_real64( char model_path[], char model_type[],
+  !                               double data1[], int rank1, int shape1[],
+  !                               double data2[], int rank2, int shape2[]  );
+  !
   ! ( must be defined within `extern "C" { ... }` scope )
   !-----------------------------------------------------------------------------------------
-  subroutine infero_inference_real64( data1, rank1, shape1, data2, rank2, shape2 ) &
+  subroutine infero_inference_real64( model_path, model_type, data1, rank1, shape1, data2, rank2, shape2 ) &
     & bind(C,name="infero_inference_double")
-    use iso_c_binding, only: c_int, c_ptr, c_double
+    use iso_c_binding, only: c_int, c_ptr, c_double, c_char, c_null_char
+    character(c_char) :: model_path
+    character(c_char) :: model_type
     real(c_double), dimension(*) :: data1
     integer(c_int), value :: rank1
     integer(c_int), dimension(*) :: shape1
@@ -21,9 +27,11 @@ interface
     integer(c_int), dimension(*) :: shape2
   end subroutine
 
-  subroutine infero_inference_real32( data1, rank1, shape1, data2, rank2, shape2 ) &
+  subroutine infero_inference_real32( model_path, model_type, data1, rank1, shape1, data2, rank2, shape2 ) &
     & bind(C,name="infero_inference_float")
-    use iso_c_binding, only: c_int, c_ptr, c_float
+    use iso_c_binding, only: c_int, c_ptr, c_float, c_char, c_null_char
+    character(c_char) :: model_path
+    character(c_char) :: model_type
     real(c_float), dimension(*) :: data1
     integer(c_int), value :: rank1
     integer(c_int), dimension(*) :: shape1
@@ -48,7 +56,6 @@ end interface
 interface infero_inference ! function overloading
   module procedure infero_inference_real64_rank2_rank2
   module procedure infero_inference_real32_rank2_rank2
-
   module procedure infero_inference_real64_rank3_rank2
   module procedure infero_inference_real32_rank3_rank2
 end interface
@@ -121,8 +128,10 @@ end function
 
 !!! Inference
 
-subroutine infero_inference_real32_rank2_rank2( array1, array2 )
+subroutine infero_inference_real32_rank2_rank2(model_path, model_type, array1, array2 )
   use, intrinsic :: iso_c_binding
+  character(c_char) :: model_path
+  character(c_char) :: model_type
   real(c_float), intent(inout) :: array1(:,:)
   real(c_float), intent(inout) :: array2(:,:)
   integer(c_int) :: shape1(2)
@@ -130,16 +139,20 @@ subroutine infero_inference_real32_rank2_rank2( array1, array2 )
   real(c_float), pointer :: data1(:)
   real(c_float), pointer :: data2(:)
 
+  integer(c_int) :: i
+
   shape1 = shape(array1)
   data1  => array_view1d( array1 )
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  call infero_inference_real32(data1, size(shape1), shape1, data2, size(shape2), shape2 )
+  call infero_inference_real32(model_path, model_type, data1, size(shape1), shape1, data2, size(shape2), shape2 )
 end subroutine
 
-subroutine infero_inference_real64_rank2_rank2( array1, array2 )
+subroutine infero_inference_real64_rank2_rank2(model_path, model_type, array1, array2 )
   use, intrinsic :: iso_c_binding
+  character(c_char), pointer :: model_path
+  character(c_char), pointer :: model_type
   real(c_double), intent(inout) :: array1(:,:)
   real(c_double), intent(inout) :: array2(:,:)
   integer(c_int) :: shape1(2)
@@ -152,11 +165,13 @@ subroutine infero_inference_real64_rank2_rank2( array1, array2 )
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  call infero_inference_real64(data1, size(shape1), shape1, data2, size(shape2), shape2 )
+  call infero_inference_real64(model_path, model_type, data1, size(shape1), shape1, data2, size(shape2), shape2 )
 end subroutine
 
-subroutine infero_inference_real32_rank3_rank2( array1, array2 )
+subroutine infero_inference_real32_rank3_rank2(model_path, model_type, array1, array2 )
   use, intrinsic :: iso_c_binding
+  character(c_char), pointer :: model_path
+  character(c_char), pointer :: model_type
   real(c_float), intent(inout) :: array1(:,:,:)
   real(c_float), intent(inout) :: array2(:,:)
   integer(c_int) :: shape1(3)
@@ -169,11 +184,13 @@ subroutine infero_inference_real32_rank3_rank2( array1, array2 )
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  call infero_inference_real32(data1, size(shape1), shape1, data2, size(shape2), shape2 )
+  call infero_inference_real32(model_path, model_type, data1, size(shape1), shape1, data2, size(shape2), shape2 )
 end subroutine
 
-subroutine infero_inference_real64_rank3_rank2( array1, array2 )
+subroutine infero_inference_real64_rank3_rank2(model_path, model_type, array1, array2 )
   use, intrinsic :: iso_c_binding
+  character(c_char), pointer :: model_path
+  character(c_char), pointer :: model_type
   real(c_double), intent(inout) :: array1(:,:,:)
   real(c_double), intent(inout) :: array2(:,:)
   integer(c_int) :: shape1(3)
@@ -186,7 +203,7 @@ subroutine infero_inference_real64_rank3_rank2( array1, array2 )
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  call infero_inference_real64(data1, size(shape1), shape1, data2, size(shape2), shape2 )
+  call infero_inference_real64(model_path, model_type, data1, size(shape1), shape1, data2, size(shape2), shape2 )
 end subroutine
 
 

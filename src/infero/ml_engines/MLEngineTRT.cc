@@ -113,7 +113,7 @@ std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLT
 
     // copy output data
     float* output = static_cast<float*>(buffers.getHostBuffer(output_tensor_name));
-    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(shape));
+    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(shape, false));
     for (int i = 0; i < shape_flat; i++) {
         *(pred_ptr->data() + i) = *(output + i);
     }

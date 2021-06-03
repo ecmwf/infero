@@ -97,7 +97,7 @@ std::unique_ptr<infero::MLTensor> MLEngineTFlite::infer(std::unique_ptr<infero::
         Log::info() << i << ", ";
     Log::info() << std::endl;
 
-    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(out_shape));
+    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(out_shape, false));
 
     // copy output data
     for (size_t i = 0; i < pred_ptr->size(); i++) {

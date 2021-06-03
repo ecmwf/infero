@@ -14,6 +14,8 @@
 #include "eckit/log/Log.h"
 
 #include "infero/ml_engines/MLEngine.h"
+#include "infero/utils.h"
+
 
 #ifdef HAVE_ONNX
 #include "infero/ml_engines/MLEngineONNX.h"
@@ -35,6 +37,10 @@ namespace infero {
 MLEngine::~MLEngine() {}
 
 std::unique_ptr<MLEngine> MLEngine::create(std::string choice, std::string model_path) {
+
+    trim(choice);
+    trim(model_path);
+
     Log::info() << "Loading model " << model_path << std::endl;
 
 #ifdef HAVE_ONNX

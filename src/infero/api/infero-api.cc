@@ -10,8 +10,13 @@
 
 #include <iostream>
 #include <vector>
+#include <memory>
+
+#include "infero/ml_engines/MLEngine.h"
+#include "infero/MLTensor.h"
 
 #include "eckit/linalg/Tensor.h"
+
 
 std::vector<size_t> shapify(int rank, int shape[]) {
     std::vector<size_t> result(rank);
@@ -28,10 +33,16 @@ std::vector<size_t> shapify(int rank, int shape[]) {
 extern "C" {
 #endif
 
+using namespace std;
+using namespace infero;
+
 using eckit::linalg::TensorDouble;
 using eckit::linalg::TensorFloat;
 
-void infero_inference_double(double data1[], int rank1, int shape1[], double data2[], int rank2, int shape2[]) {
+
+void infero_inference_double(char model_path[], char model_type[],
+                             double data1[], int rank1, int shape1[],
+                             double data2[], int rank2, int shape2[]) {
 
     std::cout << "infero_inference_double()" << std::endl;
 
@@ -42,15 +53,25 @@ void infero_inference_double(double data1[], int rank1, int shape1[], double dat
     std::cout << "T2 : " << T2 << std::endl;
 }
 
-void infero_inference_float(float data1[], int rank1, int shape1[], float data2[], int rank2, int shape2[]) {
+void infero_inference_float(char model_path[], char model_type[],
+                            float data1[], int rank1, int shape1[],
+                            float data2[], int rank2, int shape2[]) {
 
     std::cout << "infero_inference_float()" << std::endl;
 
-    TensorFloat T1(data1, shapify(rank1, shape1));
-    TensorFloat T2(data2, shapify(rank2, shape2));
+    std::unique_ptr<infero::MLTensor> T1ptr( new infero::MLTensor(data1, shapify(rank1, shape1)) );
 
-    std::cout << "T1 : " << T1 << std::endl;
-    std::cout << "T2 : " << T2 << std::endl;
+    // from fortran to c-style
+    T1ptr->toLeftLayout();
+
+    auto engine = MLEngine::create(model_type, model_path);
+    std::unique_ptr<infero::MLTensor> T2ptr = engine->infer(T1ptr);
+
+    // from c-style to fortran
+    T2ptr->toRightLayout();
+
+    // TODO: this needs to be removed..
+    memcpy(data2, T2ptr->data(), T2ptr->size() * sizeof(float) );
 }
 
 #ifdef __cplusplus

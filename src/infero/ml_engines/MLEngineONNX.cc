@@ -81,7 +81,7 @@ std::unique_ptr<infero::MLTensor> MLEngineONNX::infer(std::unique_ptr<infero::ML
     Log::info() << std::endl;
 
     auto shape_   = infero::MLTensor::convert_shape<int64_t, size_t>(out_tensor_info.GetShape());
-    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(shape_));
+    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(shape_, false));
 
     // copy output data
     float* floatarr = output_tensors.front().GetTensorMutableData<float>();

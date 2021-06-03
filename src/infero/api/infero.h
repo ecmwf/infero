@@ -12,9 +12,13 @@
 extern "C" {
 #endif
 
-void infero_inference_double(double data1[], int rank1, int shape1[], double data2[], int rank2, int shape2[]);
+void infero_inference_double(char model_path[], char model_type[],
+                             double data1[], int rank1, int shape1[],
+                             double data2[], int rank2, int shape2[]);
 
-void infero_inference_float(float data1[], int rank1, int shape1[], float data2[], int rank2, int shape2[]);
+void infero_inference_float(char model_path[], char model_type[],
+                            float data1[], int rank1, int shape1[],
+                            float data2[], int rank2, int shape2[]);
 
 #if defined(__cplusplus)
 }  // extern "C"
