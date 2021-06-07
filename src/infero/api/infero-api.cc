@@ -12,6 +12,8 @@
 #include <vector>
 #include <memory>
 
+#include "infero/api/infero.h"
+
 #include "infero/ml_engines/MLEngine.h"
 #include "infero/MLTensor.h"
 #include "infero/utils.h"
@@ -42,28 +44,36 @@ using eckit::linalg::TensorFloat;
 
 
 // open a ML engine handle
-int infero_handle_open(char config_str[]){
-    std::string str(config_str);
-    trim(str);
+infero_model_handle infero_handle_open(char config_str[]) {
+    // std::string str(config_str);
+    // trim(str);
 
-    auto config = MLEngine::Configuration::from_yaml( str );
-    int handle = MLEngine::create_handle(config.type(), config.path());
+    // auto config = MLEngine::Configuration::from_yaml(config_str);
+    // int handle = MLEngine::create_handle(config.type(), config.path());
 
-    return handle;
+    eckit::Configuration cfg = ....;  // use config_str
+
+    InferenceModel* model = InferenceModel::open(cfg.getString("type"), cfg);
+    ASSERT(model);
+    return model;
 }
 
 
 // close a ML engine handle
-void infero_handle_close(int handle_id){
-    MLEngine::close_handle(handle_id);
+void infero_handle_close(infero_model_handle h) {
+    // MLEngine::close_handle(handle_id);
+    ASSERT(h);
+    InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
+    InferenceModel::close(model);
 }
 
 
 // run a ML engine for inference
-void infero_inference_double(int handle_id,
+void infero_inference_double(infero_model_handle h,
                              double data1[], int rank1, int shape1[],
                              double data2[], int rank2, int shape2[]) {
-
+    ASSERT(h);
+    InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
     std::cout << "infero_inference_double()" << std::endl;
 
     TensorDouble T1(data1, shapify(rank1, shape1));
@@ -75,24 +85,19 @@ void infero_inference_double(int handle_id,
 
 
 // run a ML engine for inference
-void infero_inference_float(int handle_id,
+void infero_inference_float(infero_model_handle h,
                             float data1[], int rank1, int shape1[],
                             float data2[], int rank2, int shape2[]) {
 
+    ASSERT(h);
+    InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
+
     std::cout << "infero_inference_float()" << std::endl;
 
-    std::unique_ptr<infero::MLTensor> T1ptr( new infero::MLTensor(data1, shapify(rank1, shape1)) );
+    TensorFloat tIn(new infero::MLTensor(data1, shapify(rank1, shape1)));
+    TensorFloat tOut(new infero::MLTensor(data2, shapify(rank2, shape2)));
 
-    // from fortran to c-style
-    T1ptr->toLeftLayout();
-
-    std::unique_ptr<infero::MLTensor> T2ptr = MLEngine::get_model(handle_id)->infer(T1ptr);
-
-    // from c-style to fortran
-    T2ptr->toRightLayout();
-
-    // TODO: this needs to be removed..
-    memcpy(data2, T2ptr->data(), T2ptr->size() * sizeof(float) );
+    model->infer(tIn, tOut);
 }
 
 #ifdef __cplusplus

@@ -16,10 +16,10 @@ interface
   !
   ! ( must be defined within `extern "C" { ... }` scope )
   !-----------------------------------------------------------------------------------------
-  subroutine infero_inference_real64( handle_id, data1, rank1, shape1, data2, rank2, shape2 ) &
+  subroutine infero_inference_real64( handle, data1, rank1, shape1, data2, rank2, shape2 ) &
     & bind(C,name="infero_inference_double")
     use iso_c_binding, only: c_int, c_ptr, c_double, c_char, c_null_char
-    integer(c_int), value :: handle_id
+    type(c_ptr) :: handle
     real(c_double), dimension(*) :: data1
     integer(c_int), value :: rank1
     integer(c_int), dimension(*) :: shape1
@@ -28,10 +28,10 @@ interface
     integer(c_int), dimension(*) :: shape2
   end subroutine
 
-  subroutine infero_inference_real32( handle_id, data1, rank1, shape1, data2, rank2, shape2 ) &
+  subroutine infero_inference_real32( handle, data1, rank1, shape1, data2, rank2, shape2 ) &
     & bind(C,name="infero_inference_float")
     use iso_c_binding, only: c_int, c_ptr, c_float, c_char, c_null_char
-    integer(c_int), value :: handle_id
+    type(c_ptr) :: handle
     real(c_float), dimension(*) :: data1
     integer(c_int), value :: rank1
     integer(c_int), dimension(*) :: shape1
@@ -51,10 +51,10 @@ interface
 end interface
 
 interface
-  subroutine infero_handle_close_interf( handle_id ) &
+  subroutine infero_handle_close_interf( handle ) &
     & bind(C,name="infero_handle_close")
     use iso_c_binding, only: c_int
-    integer(c_int), value :: handle_id
+    type(c_ptr) :: handle
   end subroutine
 end interface
 
@@ -78,27 +78,27 @@ interface infero_inference ! function overloading
 end interface
 
 interface infero_handle_open
-  module procedure infero_handle_open_fun
+  module procedure infero_handle_open_func
 end interface
 
 interface infero_handle_close
-  module procedure infero_handle_close_fun
+  module procedure infero_handle_close_func
 end interface
 
 contains
 
 !-----------------------------------------------------------------------------------------------------------------------
 
-integer(c_int) function infero_handle_open_fun( config_str )
+integer(c_int) function infero_handle_open_func( config_str )
   use iso_c_binding, only: c_char, c_int
   character(c_char) :: config_str
-  infero_handle_open_fun = infero_handle_open_interf(config_str)
+  infero_handle_open_func = infero_handle_open_interf(config_str)
 end function
 
-subroutine infero_handle_close_fun( handle_id )
-  use iso_c_binding, only: c_int
-  integer(c_int), value :: handle_id
-  call infero_handle_close_interf( handle_id )
+subroutine infero_handle_close_func( handle )
+  use iso_c_binding, only: c_ptr
+  type(c_ptr) :: handle
+  call infero_handle_close_interf( handle )
 end subroutine
 
 !-----------------------------------------------------------------------------------------------------------------------
@@ -167,9 +167,9 @@ end function
 
 !!! Inference
 
-subroutine infero_inference_real32_rank2_rank2(handle_id, array1, array2 )
+subroutine infero_inference_real32_rank2_rank2(handle, array1, array2 )
   use, intrinsic :: iso_c_binding
-  integer(c_int), value :: handle_id
+  type(c_ptr) :: handle
   real(c_float), intent(inout) :: array1(:,:)
   real(c_float), intent(inout) :: array2(:,:)
   integer(c_int) :: shape1(2)
@@ -184,12 +184,12 @@ subroutine infero_inference_real32_rank2_rank2(handle_id, array1, array2 )
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  call infero_inference_real32(handle_id, data1, size(shape1), shape1, data2, size(shape2), shape2 )
+  call infero_inference_real32(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
 end subroutine
 
-subroutine infero_inference_real64_rank2_rank2(handle_id, array1, array2 )
+subroutine infero_inference_real64_rank2_rank2(handle, array1, array2 )
   use, intrinsic :: iso_c_binding
-  integer(c_int), value :: handle_id
+  type(c_ptr) :: handle
   real(c_double), intent(inout) :: array1(:,:)
   real(c_double), intent(inout) :: array2(:,:)
   integer(c_int) :: shape1(2)
@@ -202,12 +202,12 @@ subroutine infero_inference_real64_rank2_rank2(handle_id, array1, array2 )
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  call infero_inference_real64(handle_id, data1, size(shape1), shape1, data2, size(shape2), shape2 )
+  call infero_inference_real64(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
 end subroutine
 
-subroutine infero_inference_real32_rank3_rank2(handle_id, array1, array2 )
+subroutine infero_inference_real32_rank3_rank2(handle, array1, array2 )
   use, intrinsic :: iso_c_binding
-  integer(c_int), value :: handle_id
+  type(c_ptr) :: handle
   real(c_float), intent(inout) :: array1(:,:,:)
   real(c_float), intent(inout) :: array2(:,:)
   integer(c_int) :: shape1(3)
@@ -220,12 +220,12 @@ subroutine infero_inference_real32_rank3_rank2(handle_id, array1, array2 )
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  call infero_inference_real32(handle_id, data1, size(shape1), shape1, data2, size(shape2), shape2 )
+  call infero_inference_real32(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
 end subroutine
 
-subroutine infero_inference_real64_rank3_rank2(handle_id, array1, array2 )
+subroutine infero_inference_real64_rank3_rank2(handle, array1, array2 )
   use, intrinsic :: iso_c_binding
-  integer(c_int), value :: handle_id
+  type(c_ptr) :: handle
   real(c_double), intent(inout) :: array1(:,:,:)
   real(c_double), intent(inout) :: array2(:,:)
   integer(c_int) :: shape1(3)
@@ -238,7 +238,7 @@ subroutine infero_inference_real64_rank3_rank2(handle_id, array1, array2 )
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  call infero_inference_real64(handle_id, data1, size(shape1), shape1, data2, size(shape2), shape2 )
+  call infero_inference_real64(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
 end subroutine
 
 
