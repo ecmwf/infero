@@ -7,9 +7,19 @@
 # nor does it submit to any jurisdiction.
 
 # unit tests
+
+# tensor
 ecbuild_add_test(TARGET        test_mltensor
                  INCLUDES      ${eckit_INCLUDE_DIRS}
                  SOURCES       test_mltensor.cc
+                 LIBS          infero eckit
+)
+
+
+# ml engine
+ecbuild_add_test(TARGET        test_mlengine
+                 INCLUDES      ${eckit_INCLUDE_DIRS}
+                 SOURCES       test_mlengine.cc
                  LIBS          infero eckit
 )
 

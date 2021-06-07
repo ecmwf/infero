@@ -14,6 +14,7 @@
 
 #include "infero/ml_engines/MLEngine.h"
 #include "infero/MLTensor.h"
+#include "infero/utils.h"
 
 #include "eckit/linalg/Tensor.h"
 
@@ -40,7 +41,26 @@ using eckit::linalg::TensorDouble;
 using eckit::linalg::TensorFloat;
 
 
-void infero_inference_double(char model_path[], char model_type[],
+// open a ML engine handle
+int infero_handle_open(char config_str[]){
+    std::string str(config_str);
+    trim(str);
+
+    auto config = MLEngine::Configuration::from_yaml( str );
+    int handle = MLEngine::create_handle(config.type(), config.path());
+
+    return handle;
+}
+
+
+// close a ML engine handle
+void infero_handle_close(int handle_id){
+    MLEngine::close_handle(handle_id);
+}
+
+
+// run a ML engine for inference
+void infero_inference_double(int handle_id,
                              double data1[], int rank1, int shape1[],
                              double data2[], int rank2, int shape2[]) {
 
@@ -53,7 +73,9 @@ void infero_inference_double(char model_path[], char model_type[],
     std::cout << "T2 : " << T2 << std::endl;
 }
 
-void infero_inference_float(char model_path[], char model_type[],
+
+// run a ML engine for inference
+void infero_inference_float(int handle_id,
                             float data1[], int rank1, int shape1[],
                             float data2[], int rank2, int shape2[]) {
 
@@ -64,8 +86,7 @@ void infero_inference_float(char model_path[], char model_type[],
     // from fortran to c-style
     T1ptr->toLeftLayout();
 
-    auto engine = MLEngine::create(model_type, model_path);
-    std::unique_ptr<infero::MLTensor> T2ptr = engine->infer(T1ptr);
+    std::unique_ptr<infero::MLTensor> T2ptr = MLEngine::get_model(handle_id)->infer(T1ptr);
 
     // from c-style to fortran
     T2ptr->toRightLayout();

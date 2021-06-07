@@ -12,11 +12,23 @@
 extern "C" {
 #endif
 
-void infero_inference_double(char model_path[], char model_type[],
+
+// open a ML engine handle
+int infero_handle_open(char config_str[]);
+
+
+// close a ML engine handle
+void infero_handle_close(int handle_id);
+
+
+// run a ML engine for inference (double)
+void infero_inference_double(int handle_id,
                              double data1[], int rank1, int shape1[],
                              double data2[], int rank2, int shape2[]);
 
-void infero_inference_float(char model_path[], char model_type[],
+
+// run a ML engine for inference (float)
+void infero_inference_float(int handle_id,
                             float data1[], int rank1, int shape1[],
                             float data2[], int rank2, int shape2[]);
 

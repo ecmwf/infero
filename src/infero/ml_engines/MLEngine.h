@@ -14,11 +14,14 @@
 #include <ostream>
 #include <string>
 
+#include "eckit/parser/YAMLParser.h"
+
 #include "infero/MLTensor.h"
 
 
 using namespace std;
 using namespace eckit::linalg;
+
 
 namespace infero {
 
@@ -26,6 +29,35 @@ namespace infero {
 class MLEngine {
 
 public:
+
+    // a ML Engine configuration
+    class Configuration {
+
+    public:
+
+        Configuration(const std::string& path, const std::string& type) :
+            path_(path),
+            type_(type){}
+
+        static Configuration from_yaml(std::string yml_str){
+            eckit::Value val = eckit::YAMLParser::decodeString(yml_str);
+            std::string path_ = val["path"].as<std::string>();
+            std::string type_ = val["type"].as<std::string>();
+
+            return Configuration(path_, type_);
+        }
+
+        const std::string& path() const { return path_;}
+        const std::string& type() const { return type_;}
+
+    private:
+
+        std::string path_;
+        std::string type_;
+    };
+
+public:
+
     MLEngine(std::string model_filename) : mModelFilename(model_filename) {}
 
     virtual ~MLEngine();
@@ -35,6 +67,12 @@ public:
 
     // create concrete engines
     static std::unique_ptr<MLEngine> create(std::string choice, std::string model_path);
+
+    static int create_handle(std::string choice, std::string model_path);
+
+    static void close_handle(int handle_id);
+
+    static std::unique_ptr<MLEngine>& get_model(int handle_id);
 
     friend std::ostream& operator<<(std::ostream& os, MLEngine& obj) {
         obj.print(os);
@@ -46,7 +84,12 @@ protected:
     virtual void print(std::ostream& os) const {}
 
 protected:
+
     std::string mModelFilename;
+
+    static int gid_;
+    static std::map<int, std::unique_ptr<MLEngine>> map_;
 };
+
 
 }  // namespace infero

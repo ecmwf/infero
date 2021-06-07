@@ -9,6 +9,7 @@
  */
 
 #include <vector>
+#include <string>
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
@@ -72,5 +73,49 @@ std::unique_ptr<MLEngine> MLEngine::create(std::string choice, std::string model
 
     throw BadValue("Engine type " + choice + " not supported!", Here());
 }
+
+
+int MLEngine::create_handle(string choice, string model_path) {
+
+    // append this instance to the map_
+    if (map_.find(gid_) != map_.end())
+        throw SeriousBug("Handle " + std::to_string(gid_) + " already opened!", Here());
+
+    // add the handle to map_
+    map_[gid_] = create(choice, model_path);
+
+    Log::info() << "Created ML Engine handle: "
+                << gid_ << std::endl;
+
+    // increment the global handle count
+    return gid_++;
+}
+
+void MLEngine::close_handle(int handle_id)
+{
+
+    if (map_.find(handle_id) == map_.end())
+        throw OutOfRange("Handle " + std::to_string(handle_id) + " not opened!", Here());
+
+    // remove the handle from map_
+    map_.erase(handle_id);
+
+    Log::info() << "Closed ML Engine handle: "
+                << handle_id << std::endl;
+}
+
+std::unique_ptr<MLEngine> &MLEngine::get_model(int handle_id){
+
+    if (map_.find(handle_id) == map_.end())
+        throw OutOfRange("Handle " + std::to_string(handle_id) + " not opened!", Here());
+
+    return map_[handle_id];
+}
+
+
+int MLEngine::gid_ = 0;
+
+std::map<int, std::unique_ptr<MLEngine>> MLEngine::map_;
+
 
 }  // namespace infero
