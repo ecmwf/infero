@@ -93,11 +93,8 @@ int main(int argc, char** argv) {
         Log::info() << "threshold: " << threshold << std::endl;
 
         delete refT;
-        delete engine;
         return !(err < threshold);
     }
-
-    delete engine;
 
     return EXIT_SUCCESS;
 }
