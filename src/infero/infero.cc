@@ -54,10 +54,9 @@ int main(int argc, char** argv) {
     options.push_back(new SimpleOption<std::string>("ref_path", "Path to Reference prediction"));
     options.push_back(new SimpleOption<double>("threshold", "Verification threshold"));
 
-
     CmdArgs args(&usage, options, 0, 0, true);
 
-    // input path
+    // Input path
     std::string input_path  = args.getString("input", "data.npy");
     std::string model_path  = args.getString("model", "model.onnx");
     std::string engine_type = args.getString("engine", "onnx");
@@ -65,27 +64,27 @@ int main(int argc, char** argv) {
     std::string ref_path    = args.getString("ref_path", "");
     float threshold         = args.getFloat("threshold", 0.001f);
 
-    // assemble the model configuration from CL
+    // Model configuration from CL
     LocalConfiguration local;
     local.set("path", model_path);
 
-    // input data
+    // Input data
     TensorFloat* inputT = tensor_from_file<float>(input_path);
     TensorFloat predT;
 
-    // inference model
+    // Inference model
     auto engine = InferenceModel::open(engine_type, local);
     std::cout << *engine << std::endl;
 
     // Run inference
     engine->infer(*inputT, predT);
 
-    // save
+    // Save output tensor to file
     if (args.has("output")) {
         tensor_to_file<float>(predT, output_path);
     }
 
-    // compare against ref values
+    // Compare against ref values
     if (args.has("ref_path")) {
 
         TensorFloat* refT = tensor_from_file<float>(ref_path);
@@ -94,6 +93,7 @@ int main(int argc, char** argv) {
         Log::info() << "threshold: " << threshold << std::endl;
 
         delete refT;
+        delete inputT;
         return !(err < threshold);
     }
 
