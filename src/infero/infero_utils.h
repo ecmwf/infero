@@ -29,6 +29,13 @@ namespace infero {
 namespace utils {
 
 
+// error types for tensor comparison
+enum TensorErrorType
+{
+    MSE
+};
+
+
 /// useful to convert shape of size_t to/from sahpe of int64_t
 template <typename F, typename T>
 std::vector<T> convert_shape(const std::vector<F>& vec) {
@@ -43,7 +50,7 @@ std::vector<T> convert_shape(const std::vector<F>& vec) {
 ///  right-ness bool, rank, [tensor shape components], data...
 ///
 template <typename S>
-Tensor<S>* tensor_from_csv(const std::string& filename) {
+Tensor<S>* tensor_from_csv(const std::string& filename, bool isright = false) {
 
     Log::info() << "Reading Tensor CSV file " << filename << std::endl;
 
@@ -73,7 +80,7 @@ Tensor<S>* tensor_from_csv(const std::string& filename) {
     }
 
     // fill the tensor (which has now ownership of allocated memory)
-    Tensor<S>* tensor_ptr = new Tensor<S>(local_shape);
+    Tensor<S>* tensor_ptr = new Tensor<S>(local_shape, isright);
     for (size_t i = 0; i < sz; i++) {
         file >> *(tensor_ptr->data() + i);
         file.get();
@@ -118,7 +125,7 @@ void tensor_to_csv(const Tensor<S>& T, const std::string& filename) {
 
 /// Tensor from numpy file .npy
 template <typename S>
-Tensor<S>* tensor_from_numpy(const std::string& filename) {
+Tensor<S>* tensor_from_numpy(const std::string& filename, bool isright = false) {
 
     Log::info() << "Reading numpy file " << filename << std::endl;
 
@@ -133,7 +140,7 @@ Tensor<S>* tensor_from_numpy(const std::string& filename) {
     }
 
     // fill the tensor (which has now ownership of allocated memory)
-    Tensor<S>* tensor_ptr = new Tensor<S>(local_shape);
+    Tensor<S>* tensor_ptr = new Tensor<S>(local_shape, isright);
 
     std::vector<S> vv = arr.as_vec<S>();
     for (size_t i = 0; i < vv.size(); i++) {
@@ -154,16 +161,16 @@ void tensor_to_numpy(const Tensor<S>& T, const std::string& filename) {
 
 
 template <typename S>
-Tensor<S>* tensor_from_file(const std::string& filename) {
+Tensor<S>* tensor_from_file(const std::string& filename, bool isright = false) {
 
     Tensor<S>* tensor_ptr;
 
     std::string ext = filename.substr(filename.find_last_of("."));
     if (!ext.compare(".csv")) {
-        tensor_ptr = tensor_from_csv<S>(filename);
+        tensor_ptr = tensor_from_csv<S>(filename, isright);
     }
     else if (!ext.compare(".npy")) {
-        tensor_ptr = tensor_from_numpy<S>(filename);
+        tensor_ptr = tensor_from_numpy<S>(filename, isright);
     }
     else {
         throw eckit::BadValue("File format " + ext + " not supported!", Here());
@@ -186,6 +193,37 @@ void tensor_to_file(const Tensor<S>& T, const std::string& filename) {
     else {
         throw eckit::BadValue("File format " + ext + " not supported!", Here());
     }
+}
+
+
+template <typename S>
+float compare_tensors(const Tensor<S>& T1,
+                      const Tensor<S>& T2,
+                      TensorErrorType mes){
+
+    ASSERT(T1.size() == T2.size());
+    size_t size = T1.size();
+
+    float err = 0;
+
+    switch (mes) {
+
+        case TensorErrorType::MSE:
+
+            float val_tmp;
+            for (size_t i = 0; i < size; i++) {
+                val_tmp = *(T1.data() + i) - *(T2.data() + i);
+                err += val_tmp * val_tmp;
+            }
+            err /= size;
+            break;
+
+        default:
+
+            throw eckit::BadValue("Error measure not recognised!", Here());
+    }
+
+    return err;
 }
 
 

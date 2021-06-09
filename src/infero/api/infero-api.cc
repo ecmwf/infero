@@ -66,9 +66,12 @@ void infero_handle_close(infero_model_handle h) {
 void infero_inference_double(infero_model_handle h,
                              double data1[], int rank1, int shape1[],
                              double data2[], int rank2, int shape2[]) {
+
+    std::cout << "infero_inference_double() - TO BE COMPLETED" << std::endl;
+
     ASSERT(h);
     InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
-    std::cout << "infero_inference_double()" << std::endl;
+
 
     TensorDouble T1(data1, shapify(rank1, shape1));
     TensorDouble T2(data2, shapify(rank2, shape2));
@@ -93,7 +96,7 @@ void infero_inference_float(infero_model_handle h,
 
     model->infer(*tIn, *tOut);
 
-    // needed as the result is going back to Fortran
+    // Needed as it is passed back to Fortran
     tOut->toRightLayout();
 }
 

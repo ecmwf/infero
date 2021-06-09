@@ -63,8 +63,7 @@ int main(int argc, char** argv) {
     std::string engine_type = args.getString("engine", "onnx");
     std::string output_path = args.getString("output", "out.csv");
     std::string ref_path    = args.getString("ref_path", "");
-    double threshold        = args.getDouble("threshold", 0.001);
-
+    float threshold         = args.getFloat("threshold", 0.001f);
 
     // assemble the model configuration from CL
     LocalConfiguration local;
@@ -86,16 +85,17 @@ int main(int argc, char** argv) {
         tensor_to_file<float>(predT, output_path);
     }
 
-//    // compare against ref values
-//    if (args.has("ref_path")) {
+    // compare against ref values
+    if (args.has("ref_path")) {
 
-//        std::unique_ptr<infero::MLTensor> refT = infero::MLTensor::from_file(ref_path);
-//        float err                              = predT.compare(*refT);
-//        Log::info() << "MSE error: " << err << std::endl;
-//        Log::info() << "threshold: " << threshold << std::endl;
+        TensorFloat* refT = tensor_from_file<float>(ref_path);
+        float err = compare_tensors<float>(predT, *refT, TensorErrorType::MSE);
+        Log::info() << "MSE error: " << err << std::endl;
+        Log::info() << "threshold: " << threshold << std::endl;
 
-//        return !(err < threshold);
-//    }
+        delete refT;
+        return !(err < threshold);
+    }
 
     delete inputT;
 

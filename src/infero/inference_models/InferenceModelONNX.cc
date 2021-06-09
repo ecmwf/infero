@@ -45,7 +45,7 @@ InferenceModelONNX::~InferenceModelONNX() {}
 
 void InferenceModelONNX::do_infer(TensorFloat& tIn, TensorFloat& tOut){
 
-    Log::info() << "ONNX inference! ";
+    Log::info() << "ONNX inference " << std::endl;
 
     // make a copy of the input data
     data_buffer.resize(tIn.size());
@@ -84,12 +84,8 @@ void InferenceModelONNX::do_infer(TensorFloat& tIn, TensorFloat& tOut){
     Log::info() << std::endl;
 
     auto shape_   = utils::convert_shape<int64_t, size_t>(out_tensor_info.GetShape());
-    Log::info() << "shape..";
-    for (auto i : shape_)
-        Log::info() << i << ", ";
 
     // copy output data
-    Log::info() << "Copying output...";
     tOut.resize(shape_);
     const float* floatarr = output_tensors.front().GetTensorMutableData<float>();
     memcpy(tOut.data(), floatarr, out_size * sizeof(float));

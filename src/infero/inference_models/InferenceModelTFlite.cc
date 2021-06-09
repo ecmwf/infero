@@ -102,7 +102,7 @@ void InferenceModelTFlite::do_infer(TensorFloat& tIn, TensorFloat& tOut){
     Log::info() << std::endl;
 
     // copy output data
-    Log::info() << "Copying output...";
+    Log::info() << "Copying output..." << std::endl;
     tOut.resize(out_shape);
     memcpy(tOut.data(), output, out_size * sizeof(float));
 
