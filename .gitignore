@@ -37,7 +37,6 @@ var/
 *.nc
 *.log
 .idea/
-dev/
 *.npy
 *.swp
 *.tflite
