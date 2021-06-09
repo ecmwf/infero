@@ -25,7 +25,8 @@ using namespace eckit;
 namespace infero {
 
 
-InferenceModelONNX::InferenceModelONNX(std::string model_filename) : InferenceModel(model_filename) {
+InferenceModelONNX::InferenceModelONNX(std::string model_filename) :
+    InferenceModel(model_filename), input_name(nullptr), output_name(nullptr){
 
     // environment
     env = std::unique_ptr<Ort::Env>(new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "onnx_model"));
@@ -41,7 +42,16 @@ InferenceModelONNX::InferenceModelONNX(std::string model_filename) : InferenceMo
     query_output_layer();
 }
 
-InferenceModelONNX::~InferenceModelONNX() {}
+InferenceModelONNX::~InferenceModelONNX() {
+
+    if(input_name){
+        delete input_name;
+    }
+
+    if(output_name){
+        delete output_name;
+    }
+}
 
 void InferenceModelONNX::do_infer(TensorFloat& tIn, TensorFloat& tOut){
 

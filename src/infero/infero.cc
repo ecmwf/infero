@@ -94,9 +94,11 @@ int main(int argc, char** argv) {
 
         delete refT;
         delete inputT;
+        delete engine;
         return !(err < threshold);
     }
 
+    delete engine;
     delete inputT;
 
     return EXIT_SUCCESS;

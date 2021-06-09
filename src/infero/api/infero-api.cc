@@ -98,6 +98,9 @@ void infero_inference_float(infero_model_handle h,
 
     // Needed as it is passed back to Fortran
     tOut->toRightLayout();
+
+    delete tIn;
+    delete tOut;
 }
 
 #ifdef __cplusplus
