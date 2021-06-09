@@ -15,6 +15,7 @@
 #include "eckit/option/SimpleOption.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/FileStream.h"
+#include "eckit/config/LocalConfiguration.h"
 
 #include "infero/inference_models/InferenceModel.h"
 #include "infero/infero_utils.h"
@@ -64,12 +65,17 @@ int main(int argc, char** argv) {
     std::string ref_path    = args.getString("ref_path", "");
     double threshold        = args.getDouble("threshold", 0.001);
 
+
+    // assemble the model configuration from CL
+    LocalConfiguration local;
+    local.set("path", model_path);
+
     // input data
     TensorFloat* inputT = tensor_from_file<float>(input_path);
     TensorFloat predT;
 
-    // runtime engine
-    std::unique_ptr<InferenceModel> engine = InferenceModel::create(engine_type, model_path);
+    // inference model
+    auto engine = InferenceModel::open(engine_type, local);
     std::cout << *engine << std::endl;
 
     // Run inference

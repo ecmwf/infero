@@ -36,43 +36,6 @@ namespace infero {
 
 InferenceModel::~InferenceModel() {}
 
-void InferenceModel::infer(TensorFloat &tIn, TensorFloat &tOut)
-{
-    // set the correct tensor layout
-    set_input_layout(tIn);
-
-    // call inference
-    do_infer(tIn, tOut);
-}
-
-std::unique_ptr<InferenceModel> InferenceModel::create(std::string choice, std::string model_path) {
-
-    Log::info() << "Loading model " << model_path << std::endl;
-
-#ifdef HAVE_ONNX
-    if (choice.compare("onnx") == 0) {
-        Log::info() << "creating RTEngineONNX.. " << std::endl;
-        return std::unique_ptr<InferenceModel>(new InferenceModelONNX(model_path));
-    }
-#endif
-
-#ifdef HAVE_TFLITE
-    if (choice.compare("tflite") == 0) {
-        Log::info() << "creating RTEngineTFlite.. " << std::endl;
-        return std::unique_ptr<InferenceModel>(new InferenceModelTFlite(model_path));
-    }
-#endif
-
-#ifdef HAVE_TENSORRT
-    if (choice.compare("tensorrt") == 0) {
-        Log::info() << "creating MLEngineTRT.. " << std::endl;
-        return std::unique_ptr<InferenceModel>(new InferenceModelTRT(model_path));
-    }
-#endif
-
-    throw BadValue("Engine type " + choice + " not supported!", Here());
-}
-
 
 InferenceModel* InferenceModel::open(string choice, const eckit::Configuration& conf)
 {
@@ -99,13 +62,24 @@ InferenceModel* InferenceModel::open(string choice, const eckit::Configuration& 
 #ifdef HAVE_TENSORRT
     if (choice.compare("tensorrt") == 0) {
         Log::info() << "creating MLEngineTRT.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelTFlite(model_path);
+        InferenceModel* ptr = new InferenceModelTRT(model_path);
         return ptr;
     }
 #endif
 
     throw BadValue("Engine type " + choice + " not supported!", Here());
 }
+
+
+void InferenceModel::infer(TensorFloat &tIn, TensorFloat &tOut)
+{
+    // set the correct tensor layout
+    set_input_layout(tIn);
+
+    // call inference
+    do_infer(tIn, tOut);
+}
+
 
 
 void InferenceModel::close(InferenceModel *handle)

@@ -2,10 +2,11 @@
 #include <string>
 
 #include "eckit/testing/Test.h"
+#include "eckit/config/LocalConfiguration.h"
 
 #include "infero/inference_models/InferenceModel.h"
 
-
+using namespace eckit;
 using namespace eckit::testing;
 using namespace infero;
 
@@ -17,7 +18,14 @@ CASE("ML Engine instantiation") {
     std::string choice("onnx");
     std::string path("/not-existing-path/");
 
-    EXPECT_THROWS( InferenceModel::create(choice, path) );
+    // assemble model configuration
+    LocalConfiguration local;
+    {
+        local.set("path", path);
+    }
+    const Configuration& conf = local;
+
+    EXPECT_THROWS( InferenceModel::open(choice, conf) );
 }
 
 

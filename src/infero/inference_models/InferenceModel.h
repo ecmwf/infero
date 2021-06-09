@@ -33,14 +33,11 @@ public:
 
     virtual ~InferenceModel();
 
-    /// run the inference
-    void infer(TensorFloat& tIn, TensorFloat& tOut);
-
-    /// create concrete inference models
-    static std::unique_ptr<InferenceModel> create(std::string choice, std::string model_path);
-
     /// open handle
     static InferenceModel* open(std::string choice, const eckit::Configuration& conf);
+
+    /// run the inference
+    void infer(TensorFloat& tIn, TensorFloat& tOut);
 
     /// close the handle
     static void close(InferenceModel* handle);
