@@ -1,7 +1,5 @@
 
 list(APPEND infero_srcs
-#    ${PROJECT_SOURCE_DIR}/src/infero/MLTensor.h
-#    ${PROJECT_SOURCE_DIR}/src/infero/MLTensor.cc
     InferenceModel.h
     InferenceModel.cc
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.h
