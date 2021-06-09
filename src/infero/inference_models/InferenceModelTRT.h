@@ -16,7 +16,7 @@
 #include <sstream>
 #include <string>
 
-#include <cuda_runtime_api.h>
+#include <cuda_runtime_api.h> // needed ???
 #include "NvInfer.h"
 #include "argsParser.h"
 #include "buffers.h"
@@ -56,12 +56,11 @@ public:
 
 protected:
 
-    // run the inference
-    void do_infer(TensorFloat& tIn, TensorFloat& tOut);
+    void infer(TensorFloat& tIn, TensorFloat& tOut);
 
 private:
 
-    void set_input_layout(TensorFloat& tIn);
+    void correctInput(TensorFloat& tIn);
 
     class Logger : public ILogger {
         void log(Severity severity, const char* msg) throw() {

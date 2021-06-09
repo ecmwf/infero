@@ -54,7 +54,7 @@ InferenceModelTFlite::InferenceModelTFlite(std::string model_filename) : Inferen
 InferenceModelTFlite::~InferenceModelTFlite() {}
 
 
-void InferenceModelTFlite::do_infer(TensorFloat& tIn, TensorFloat& tOut){
+void InferenceModelTFlite::calculateInference(TensorFloat& tIn, TensorFloat& tOut){
 
     Log::info() << "Sample tensor shape: ";
     for (auto i : tIn.shape())
@@ -110,7 +110,7 @@ void InferenceModelTFlite::do_infer(TensorFloat& tIn, TensorFloat& tOut){
 
 }
 
-void InferenceModelTFlite::set_input_layout(TensorFloat &tIn)
+void InferenceModelTFlite::correctInput(TensorFloat &tIn)
 {
     if (tIn.isRight()){
         Log::info() << "Input Tensor has right-layout, but left-layout is needed. "

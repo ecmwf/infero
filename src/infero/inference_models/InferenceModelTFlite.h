@@ -32,12 +32,11 @@ public:
 
 protected:
 
-    // run the inference
-    void do_infer(TensorFloat& tIn, TensorFloat& tOut);
+    void infer(TensorFloat& tIn, TensorFloat& tOut);
 
 private:
 
-    void set_input_layout(TensorFloat& tIn);
+    void correctInput(TensorFloat& tIn);
 
     // TFlite model and interpreter
     std::unique_ptr<tflite::FlatBufferModel> model;

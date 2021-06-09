@@ -23,18 +23,14 @@ class InferenceModelONNX : public InferenceModel {
 
 public:
 
-    InferenceModelONNX(std::string model_filename);
+    InferenceModelONNX(eckit::Configuration& conf);
 
     ~InferenceModelONNX();
 
 protected:
-
-    // run the inference
-    void do_infer(TensorFloat& tIn, TensorFloat& tOut);
+    void infer(TensorFloat& tIn, TensorFloat& tOut);
 
 private:
-
-    void set_input_layout(TensorFloat& tIn);
 
     // ORT session
     std::unique_ptr<Ort::Session> session;
@@ -62,12 +58,11 @@ private:
     std::vector<float> data_buffer;
 
 private:
-    void query_input_layer();
+    void queryInputLayer();
 
-    void query_output_layer();
+    void queryOutputLayer();
 
     void print(std::ostream& os) const;
-
 };
 
 }  // namespace infero

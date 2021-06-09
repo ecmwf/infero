@@ -14,13 +14,19 @@ extern "C" {
 
 typedef void* infero_model_handle;
 
-// open a ML engine handle
-infero_model_handle infero_handle_open(char config_str[]);
+// Creates an ML engine handle from a YAML string
+infero_model_handle infero_create_handle_from_yaml_str(char str[]);
+// Creates an ML engine handle from a YAML file
+infero_model_handle infero_create_handle_from_yaml_file(char path[]);
 
+// open a ML engine handle
+void infero_open_handle(infero_model_handle);
 
 // close a ML engine handle
-void infero_handle_close(infero_model_handle);
+void infero_close_handle(infero_model_handle);
 
+// Destroys the ML engine handle
+void infero_delete_handle(infero_model_handle)ß
 
 // run a ML engine for inference (double)
 void infero_inference_double(infero_model_handle h,

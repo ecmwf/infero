@@ -18,10 +18,6 @@
 #include "eckit/linalg/Tensor.h"
 
 
-using namespace std;
-using namespace eckit::linalg;
-
-
 namespace infero {
 
 /// Minimal interface for a inference model
@@ -29,42 +25,32 @@ class InferenceModel {
 
 public:
 
-    InferenceModel(std::string model_filename) : mModelFilename(model_filename) {}
+    static InferenceModel* create(const std::string& type, const eckit::Configuration& conf);
+
+    InferenceModel();
 
     virtual ~InferenceModel();
 
-    /// open handle
-    static InferenceModel* open(std::string choice, const eckit::Configuration& conf);
+    /// opens the engine
+    virtual void open();
 
     /// run the inference
-    void infer(TensorFloat& tIn, TensorFloat& tOut);
+    virtual void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut) = 0;
 
-    /// close the handle
-    static void close(InferenceModel* handle);
-
-    friend std::ostream& operator<<(std::ostream& os, InferenceModel& obj) {
-        obj.print(os);
-        return os;
-    }
-
+    /// closes the engine
+    virtual void close();
 
 protected:
-
     /// print the model
-    virtual void print(std::ostream& os) const {}
+    virtual void print(std::ostream& os) const = 0;
 
-    /// set the correct input tensor layout
-    /// as requested by the specific model
-    virtual void set_input_layout(TensorFloat& tIn) = 0;
-
-    // do run inference
-    virtual void do_infer(TensorFloat& tIn, TensorFloat& tOut) = 0;
-
-protected:
-
-    std::string mModelFilename;
-
+private:
+    bool isOpen_;
 };
 
+friend std::ostream& operator<<(std::ostream& os, InferenceModel& obj) {
+    obj.print(os);
+    return os;
+}
 
 }  // namespace infero

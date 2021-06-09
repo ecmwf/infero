@@ -69,11 +69,11 @@ int main(int argc, char** argv) {
     local.set("path", model_path);
 
     // Input data
-    TensorFloat* inputT = tensor_from_file<float>(input_path);
+    std::unique_ptr<TensorFloat> inputT(tensor_from_file<float>(input_path));
     TensorFloat predT;
 
     // Inference model
-    auto engine = InferenceModel::open(engine_type, local);
+    std::unique_ptr<InferenceModel> engine = InferenceModel::open(engine_type, local);
     std::cout << *engine << std::endl;
 
     // Run inference
@@ -93,13 +93,11 @@ int main(int argc, char** argv) {
         Log::info() << "threshold: " << threshold << std::endl;
 
         delete refT;
-        delete inputT;
         delete engine;
         return !(err < threshold);
     }
 
     delete engine;
-    delete inputT;
 
     return EXIT_SUCCESS;
 }

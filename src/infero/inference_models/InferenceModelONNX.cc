@@ -38,8 +38,8 @@ InferenceModelONNX::InferenceModelONNX(std::string model_filename) :
     session = std::unique_ptr<Ort::Session>(new Ort::Session(*env, mModelFilename.c_str(), *session_options));
 
     // query input/output layers
-    query_input_layer();
-    query_output_layer();
+    queryInputLayer();
+    queryOutputLayer();
 }
 
 InferenceModelONNX::~InferenceModelONNX() {
@@ -53,8 +53,14 @@ InferenceModelONNX::~InferenceModelONNX() {
     }
 }
 
-void InferenceModelONNX::do_infer(TensorFloat& tIn, TensorFloat& tOut){
+void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut){
 
+    if (tIn.isRight()) {
+        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
+                    << "Transforming to left.." << std::endl;
+        ;
+        tIn.toLeftLayout();
+    }
     Log::info() << "ONNX inference " << std::endl;
 
     // make a copy of the input data
@@ -93,26 +99,23 @@ void InferenceModelONNX::do_infer(TensorFloat& tIn, TensorFloat& tOut){
         Log::info() << i << ", ";
     Log::info() << std::endl;
 
-    auto shape_   = utils::convert_shape<int64_t, size_t>(out_tensor_info.GetShape());
+    auto shape   = utils::convert_shape<int64_t, size_t>(out_tensor_info.GetShape());
 
-    // copy output data
-    tOut.resize(shape_);
     const float* floatarr = output_tensors.front().GetTensorMutableData<float>();
-    memcpy(tOut.data(), floatarr, out_size * sizeof(float));
-
-}
-
-void InferenceModelONNX::set_input_layout(TensorFloat& tIn)
-{
-    if (tIn.isRight()){
-        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
-                    << "Transforming to left.." << std::endl;;
-        tIn.toLeftLayout();
+    ASSERT(tOut.shape() == shape);
+    if (tOut.isRight()) {
+        // ONNX uses Left (C) tensor layouts, so we need to convert
+        TensorFloat tLeft(floatarr, shape, false); // wrap data
+        tOut = tLeft.transformLeftToRightLayout(); // creates temporary tensor with data in left layout
+    }
+    else {
+        // ONNX uses Left (C) tensor layouts, so we can copy straight into memory of tOut
+        memcpy(tOut.data(), floatarr, out_size * sizeof(float));
     }
 }
 
 
-void InferenceModelONNX::query_input_layer() {
+void InferenceModelONNX::queryInputLayer() {
     num_input_nodes = session->GetInputCount();
 
     // note: for now we use the assumption
@@ -131,7 +134,7 @@ void InferenceModelONNX::query_input_layer() {
 }
 
 
-void InferenceModelONNX::query_output_layer() {
+void InferenceModelONNX::queryOutputLayer() {
     num_output_nodes = session->GetOutputCount();
 
     // note: for now we use the assumption

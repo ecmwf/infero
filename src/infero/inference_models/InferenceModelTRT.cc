@@ -59,7 +59,7 @@ InferenceModelTRT::InferenceModelTRT(std::string model_filename) : InferenceMode
 InferenceModelTRT::~InferenceModelTRT() {}
 
 
-void InferenceModelTRT::do_infer(TensorFloat& tIn, TensorFloat& tOut){
+void InferenceModelTRT::calculateInference(TensorFloat& tIn, TensorFloat& tOut){
 
     // =================== prediction ======================
     // Create RAII buffer manager object
@@ -121,7 +121,7 @@ void InferenceModelTRT::do_infer(TensorFloat& tIn, TensorFloat& tOut){
     // ======================================================
 }
 
-void InferenceModelTRT::set_input_layout(TensorFloat &tIn)
+void InferenceModelTRT::correctInput(TensorFloat &tIn)
 {
     if (tIn.isRight()){
         Log::info() << "Input Tensor has right-layout, but left-layout is needed. "

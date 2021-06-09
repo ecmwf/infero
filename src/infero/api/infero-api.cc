@@ -41,24 +41,44 @@ using namespace infero;
 using eckit::linalg::TensorDouble;
 using eckit::linalg::TensorFloat;
 
-
-// open a ML engine handle
-infero_model_handle infero_handle_open(char config_str[]) {
+infero_model_handle infero_create_handle_from_yaml_str(char str[]) {
 
     eckit::YAMLConfiguration cfg(config_str);  // use config_str
-    InferenceModel* model = InferenceModel::open(cfg.getString("type"), cfg);
+    InferenceModel* model = InferenceModel::create(cfg.getString("type"), cfg);
+    model->open();
 
     ASSERT(model);
 
     return model;
 }
 
+infero_model_handle infero_create_handle_from_yaml_file(char path[]) {
+    NOTIMP;
+    // read the file from aa master node and broadcast
+    eckit::YAMLConfiguration cfg(config_str);  // use config_str
+    InferenceModel* model = InferenceModel::create(cfg.getString("type"), cfg);
+    return model;
+}
 
-// close a ML engine handle
-void infero_handle_close(infero_model_handle h) {
+void infero_open_handle(infero_model_handle h) {
     ASSERT(h);
     InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
-    InferenceModel::close(model);
+    model->open();
+}
+
+
+void infero_close_handle(infero_model_handle h) {
+    ASSERT(h);
+    InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
+    model->close();
+}
+
+
+void infero_delete_handle(infero_model_handle h) {
+    ASSERT(h);
+    InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
+    delete model;
+    h = nullptr;
 }
 
 
@@ -66,6 +86,8 @@ void infero_handle_close(infero_model_handle h) {
 void infero_inference_double(infero_model_handle h,
                              double data1[], int rank1, int shape1[],
                              double data2[], int rank2, int shape2[]) {
+
+    NOTIMP;
 
     std::cout << "infero_inference_double() - TO BE COMPLETED" << std::endl;
 

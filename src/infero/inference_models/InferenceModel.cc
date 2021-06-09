@@ -33,36 +33,38 @@ using namespace eckit;
 
 namespace infero {
 
+InferenceModel::InferenceModel() {}
 
-InferenceModel::~InferenceModel() {}
+InferenceModel::~InferenceModel() {
+    if(isOpen_)
+        close();
+}
 
-
-InferenceModel* InferenceModel::open(string choice, const eckit::Configuration& conf)
+InferenceModel* InferenceModel::create(const string& type, const eckit::Configuration& conf) 
 {
-
     std::string model_path(conf.getString("path"));
     Log::info() << "Loading model " << model_path << std::endl;
 
 #ifdef HAVE_ONNX
-    if (choice.compare("onnx") == 0) {
+    if (type == "onnx") {
         Log::info() << "creating RTEngineONNX.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelONNX(model_path);
+        InferenceModel* ptr = new InferenceModelONNX(conf);
         return ptr;
     }
 #endif
 
 #ifdef HAVE_TFLITE
-    if (choice.compare("tflite") == 0) {
+    if (type == "tflite") {
         Log::info() << "creating RTEngineTFlite.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelTFlite(model_path);
+        InferenceModel* ptr = new InferenceModelTFlite(conf);
         return ptr;
     }
 #endif
 
 #ifdef HAVE_TENSORRT
-    if (choice.compare("tensorrt") == 0) {
+    if (type == "tensorrt") {
         Log::info() << "creating MLEngineTRT.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelTRT(model_path);
+        InferenceModel* ptr = new InferenceModelTRT(conf);
         return ptr;
     }
 #endif
@@ -70,21 +72,12 @@ InferenceModel* InferenceModel::open(string choice, const eckit::Configuration& 
     throw BadValue("Engine type " + choice + " not supported!", Here());
 }
 
-
-void InferenceModel::infer(TensorFloat &tIn, TensorFloat &tOut)
-{
-    // set the correct tensor layout
-    set_input_layout(tIn);
-
-    // call inference
-    do_infer(tIn, tOut);
+void InferenceModel::open()  {
+    isOpen_ = true;
 }
 
-
-
-void InferenceModel::close(InferenceModel *handle)
-{
-    delete handle;
+void InferenceModel::close() {
+    isOpen_ = false;
 }
 
 }  // namespace infero
