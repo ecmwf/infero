@@ -14,11 +14,10 @@
 
 #include "infero/api/infero.h"
 
-#include "infero/ml_engines/MLEngine.h"
-#include "infero/MLTensor.h"
-#include "infero/utils.h"
+#include "infero/inference_models/InferenceModel.h"
 
 #include "eckit/linalg/Tensor.h"
+#include "eckit/config/YAMLConfiguration.h"
 
 
 std::vector<size_t> shapify(int rank, int shape[]) {
@@ -45,23 +44,18 @@ using eckit::linalg::TensorFloat;
 
 // open a ML engine handle
 infero_model_handle infero_handle_open(char config_str[]) {
-    // std::string str(config_str);
-    // trim(str);
 
-    // auto config = MLEngine::Configuration::from_yaml(config_str);
-    // int handle = MLEngine::create_handle(config.type(), config.path());
-
-    eckit::Configuration cfg = ....;  // use config_str
-
+    eckit::YAMLConfiguration cfg(config_str);  // use config_str
     InferenceModel* model = InferenceModel::open(cfg.getString("type"), cfg);
+
     ASSERT(model);
+
     return model;
 }
 
 
 // close a ML engine handle
 void infero_handle_close(infero_model_handle h) {
-    // MLEngine::close_handle(handle_id);
     ASSERT(h);
     InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
     InferenceModel::close(model);
@@ -94,10 +88,13 @@ void infero_inference_float(infero_model_handle h,
 
     std::cout << "infero_inference_float()" << std::endl;
 
-    TensorFloat tIn(new infero::MLTensor(data1, shapify(rank1, shape1)));
-    TensorFloat tOut(new infero::MLTensor(data2, shapify(rank2, shape2)));
+    TensorFloat* tIn(new TensorFloat(data1, shapify(rank1, shape1), true));
+    TensorFloat* tOut(new TensorFloat(data2, shapify(rank2, shape2), true));
 
-    model->infer(tIn, tOut);
+    model->infer(*tIn, *tOut);
+
+    // needed as the result is going back to Fortran
+    tOut->toRightLayout();
 }
 
 #ifdef __cplusplus

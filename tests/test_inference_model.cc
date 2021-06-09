@@ -3,7 +3,7 @@
 
 #include "eckit/testing/Test.h"
 
-#include "infero/ml_engines/MLEngine.h"
+#include "infero/inference_models/InferenceModel.h"
 
 
 using namespace eckit::testing;
@@ -17,7 +17,7 @@ CASE("ML Engine instantiation") {
     std::string choice("onnx");
     std::string path("/not-existing-path/");
 
-    EXPECT_THROWS( MLEngine::create(choice, path) );
+    EXPECT_THROWS( InferenceModel::create(choice, path) );
 }
 
 

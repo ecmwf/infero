@@ -14,23 +14,28 @@
 
 #include "onnxruntime_cxx_api.h"
 
-#include "infero/ml_engines/MLEngine.h"
+#include "infero/inference_models/InferenceModel.h"
 
 
 namespace infero {
 
-class MLEngineONNX : public MLEngine {
+class InferenceModelONNX : public InferenceModel {
 
 public:
-    MLEngineONNX(std::string model_filename);
 
-    ~MLEngineONNX();
+    InferenceModelONNX(std::string model_filename);
+
+    ~InferenceModelONNX();
+
+protected:
 
     // run the inference
-    virtual std::unique_ptr<infero::MLTensor> infer(std::unique_ptr<infero::MLTensor>& input_sample);
-
+    void do_infer(TensorFloat& tIn, TensorFloat& tOut);
 
 private:
+
+    void set_input_layout(TensorFloat& tIn);
+
     // ORT session
     std::unique_ptr<Ort::Session> session;
     std::unique_ptr<Ort::SessionOptions> session_options;
@@ -62,6 +67,7 @@ private:
     void query_output_layer();
 
     void print(std::ostream& os) const;
+
 };
 
 }  // namespace infero

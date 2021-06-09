@@ -15,7 +15,7 @@
 
 ClusteringDBscan::ClusteringDBscan() : min_threshold(DBSCAN_MIN_VAL) {}
 
-int ClusteringDBscan::run(std::unique_ptr<MLTensor>& prediction) {
+int ClusteringDBscan::run(const TensorFloat& prediction) {
 
     // read point data
     vector<Point> _points = readPrediction(prediction);
@@ -27,7 +27,7 @@ int ClusteringDBscan::run(std::unique_ptr<MLTensor>& prediction) {
     ds.run();
 
     // fill up the cluster vector structure
-    for (int i = 0; i < ds.getTotalPointSize(); i++) {
+    for (size_t i = 0; i < ds.getTotalPointSize(); i++) {
 
         int cid = ds.m_points[i].clusterID;
         float x = ds.m_points[i].x;
@@ -44,7 +44,7 @@ int ClusteringDBscan::run(std::unique_ptr<MLTensor>& prediction) {
 
 
 // read and ingest the prediction
-std::vector<Point> ClusteringDBscan::readPrediction(std::unique_ptr<MLTensor>& prediction) {
+std::vector<Point> ClusteringDBscan::readPrediction(const TensorFloat& prediction) {
 
     std::vector<Point> _points;
 
@@ -54,17 +54,17 @@ std::vector<Point> ClusteringDBscan::readPrediction(std::unique_ptr<MLTensor>& p
     // dim-1 is image_rows
     // dim-2 is image_columns
     // dim-3 is image_channels (must be equal to 1)
-    ASSERT(prediction->shape().size() >= 3);
-    ASSERT(prediction->shape()[3] == 1);
+    ASSERT(prediction.shape().size() >= 3);
+    ASSERT(prediction.shape()[3] == 1);
 
-    size_t nrows = prediction->shape()[1];
-    size_t ncols = prediction->shape()[2];
+    size_t nrows = prediction.shape()[1];
+    size_t ncols = prediction.shape()[2];
 
-    int val_count = 0;
-    for (int irow = 0; irow < nrows; irow++) {
-        for (int icol = 0; icol < ncols; icol++) {
+    size_t val_count = 0;
+    for (size_t irow = 0; irow < nrows; irow++) {
+        for (size_t icol = 0; icol < ncols; icol++) {
 
-            if (prediction->data()[val_count] > min_threshold) {
+            if (prediction.data()[val_count] > min_threshold) {
                 Point p;
                 p.clusterID = UNCLASSIFIED;
                 p.x         = irow;

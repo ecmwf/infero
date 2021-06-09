@@ -16,14 +16,16 @@
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/FileStream.h"
 
-#include "infero/MLTensor.h"
-#include "infero/ml_engines/MLEngine.h"
+#include "infero/inference_models/InferenceModel.h"
+#include "infero/infero_utils.h"
 
 
 using namespace eckit;
 using namespace eckit::option;
 using namespace eckit::linalg;
+
 using namespace infero;
+using namespace infero::utils;
 
 
 void usage(const std::string&) {
@@ -63,30 +65,33 @@ int main(int argc, char** argv) {
     double threshold        = args.getDouble("threshold", 0.001);
 
     // input data
-    std::unique_ptr<infero::MLTensor> inputT = infero::MLTensor::from_file(input_path);
+    TensorFloat* inputT = tensor_from_file<float>(input_path);
+    TensorFloat predT;
 
     // runtime engine
-    std::unique_ptr<MLEngine> engine = MLEngine::create(engine_type, model_path);
+    std::unique_ptr<InferenceModel> engine = InferenceModel::create(engine_type, model_path);
     std::cout << *engine << std::endl;
 
     // Run inference
-    std::unique_ptr<infero::MLTensor> predT = engine->infer(inputT);
+    engine->infer(*inputT, predT);
 
     // save
     if (args.has("output")) {
-        predT->to_file(output_path);
+        tensor_to_file<float>(predT, output_path);
     }
 
-    // compare against ref values
-    if (args.has("ref_path")) {
+//    // compare against ref values
+//    if (args.has("ref_path")) {
 
-        std::unique_ptr<infero::MLTensor> refT = infero::MLTensor::from_file(ref_path);
-        float err                              = predT->compare(*refT);
-        Log::info() << "MSE error: " << err << std::endl;
-        Log::info() << "threshold: " << threshold << std::endl;
+//        std::unique_ptr<infero::MLTensor> refT = infero::MLTensor::from_file(ref_path);
+//        float err                              = predT.compare(*refT);
+//        Log::info() << "MSE error: " << err << std::endl;
+//        Log::info() << "threshold: " << threshold << std::endl;
 
-        return !(err < threshold);
-    }
+//        return !(err < threshold);
+//    }
+
+    delete inputT;
 
     return EXIT_SUCCESS;
 }

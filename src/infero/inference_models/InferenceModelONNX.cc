@@ -16,7 +16,8 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
-#include "infero/ml_engines/MLEngineONNX.h"
+#include "infero/infero_utils.h"
+#include "infero/inference_models/InferenceModelONNX.h"
 
 
 using namespace eckit;
@@ -24,7 +25,7 @@ using namespace eckit;
 namespace infero {
 
 
-MLEngineONNX::MLEngineONNX(std::string model_filename) : MLEngine(model_filename) {
+InferenceModelONNX::InferenceModelONNX(std::string model_filename) : InferenceModel(model_filename) {
 
     // environment
     env = std::unique_ptr<Ort::Env>(new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "onnx_model"));
@@ -40,20 +41,22 @@ MLEngineONNX::MLEngineONNX(std::string model_filename) : MLEngine(model_filename
     query_output_layer();
 }
 
-MLEngineONNX::~MLEngineONNX() {}
+InferenceModelONNX::~InferenceModelONNX() {}
 
-std::unique_ptr<infero::MLTensor> MLEngineONNX::infer(std::unique_ptr<infero::MLTensor>& input_sample) {
+void InferenceModelONNX::do_infer(TensorFloat& tIn, TensorFloat& tOut){
+
+    Log::info() << "ONNX inference! ";
 
     // make a copy of the input data
-    data_buffer.resize(input_sample->size());
-    for (int i = 0; i < input_sample->size(); i++) {
-        data_buffer[i] = input_sample->data()[i];
+    data_buffer.resize(tIn.size());
+    for (int i = 0; i < tIn.size(); i++) {
+        data_buffer[i] = tIn.data()[i];
     }
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
-    auto shape_64           = infero::MLTensor::convert_shape<size_t, int64_t>(input_sample->shape());
-    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info, data_buffer.data(), input_sample->size(),
+    auto shape_64           = utils::convert_shape<size_t, int64_t>(tIn.shape());
+    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info, data_buffer.data(), tIn.size(),
                                                               shape_64.data(), shape_64.size());
     ASSERT(input_tensor.IsTensor());
 
@@ -70,31 +73,40 @@ std::unique_ptr<infero::MLTensor> MLEngineONNX::infer(std::unique_ptr<infero::ML
 
 
     auto out_tensor_info = output_tensors.front().GetTensorTypeAndShapeInfo();
-    int out_size         = 1;
+    size_t out_size         = 1;
     for (auto i : out_tensor_info.GetShape()) {
         out_size *= i;
     }
 
-    Log::info() << "Prediction tensor shape: ";
+    Log::info() << "Prediction tensor shape::: ";
     for (auto i : out_tensor_info.GetShape())
         Log::info() << i << ", ";
     Log::info() << std::endl;
 
-    auto shape_   = infero::MLTensor::convert_shape<int64_t, size_t>(out_tensor_info.GetShape());
-    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(shape_, false));
+    auto shape_   = utils::convert_shape<int64_t, size_t>(out_tensor_info.GetShape());
+    Log::info() << "shape..";
+    for (auto i : shape_)
+        Log::info() << i << ", ";
 
     // copy output data
-    float* floatarr = output_tensors.front().GetTensorMutableData<float>();
-    std::vector<float> output_data(out_size);
-    for (size_t i = 0; i < out_size; i++) {
-        *(pred_ptr->data() + i) = *(floatarr + i);
-    }
+    Log::info() << "Copying output...";
+    tOut.resize(shape_);
+    const float* floatarr = output_tensors.front().GetTensorMutableData<float>();
+    memcpy(tOut.data(), floatarr, out_size * sizeof(float));
 
-    return pred_ptr;
+}
+
+void InferenceModelONNX::set_input_layout(TensorFloat& tIn)
+{
+    if (tIn.isRight()){
+        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
+                    << "Transforming to left.." << std::endl;;
+        tIn.toLeftLayout();
+    }
 }
 
 
-void MLEngineONNX::query_input_layer() {
+void InferenceModelONNX::query_input_layer() {
     num_input_nodes = session->GetInputCount();
 
     // note: for now we use the assumption
@@ -113,7 +125,7 @@ void MLEngineONNX::query_input_layer() {
 }
 
 
-void MLEngineONNX::query_output_layer() {
+void InferenceModelONNX::query_output_layer() {
     num_output_nodes = session->GetOutputCount();
 
     // note: for now we use the assumption
@@ -135,7 +147,7 @@ void MLEngineONNX::query_output_layer() {
 }
 
 
-void MLEngineONNX::print(std::ostream& os) const {
+void InferenceModelONNX::print(std::ostream& os) const {
 
     os << "N input tensors: " << num_input_nodes << std::endl;
     os << "Input layer " << input_node_names[0] << " expects a Tensor with " << input_layer_shape.size()

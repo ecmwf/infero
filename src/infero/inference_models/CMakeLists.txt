@@ -1,9 +1,9 @@
 
 list(APPEND infero_srcs
-    ${PROJECT_SOURCE_DIR}/src/infero/MLTensor.h
-    ${PROJECT_SOURCE_DIR}/src/infero/MLTensor.cc
-    MLEngine.h
-    MLEngine.cc
+#    ${PROJECT_SOURCE_DIR}/src/infero/MLTensor.h
+#    ${PROJECT_SOURCE_DIR}/src/infero/MLTensor.cc
+    InferenceModel.h
+    InferenceModel.cc
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.h
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.cpp
 )
@@ -11,8 +11,8 @@ list(APPEND infero_srcs
 ### support for ONNX
 if(HAVE_ONNX)
     list(APPEND infero_srcs
-        MLEngineONNX.h
-        MLEngineONNX.cc
+        InferenceModelONNX.h
+        InferenceModelONNX.cc
         )
     list(APPEND onnx_libs  ${ONNX_LIBRARIES} )
     add_definitions(-DHAVE_ONNX)
@@ -22,8 +22,8 @@ endif()
 ### support for TensorflowLite
 if(HAVE_TF_LITE)
     list(APPEND infero_srcs
-        MLEngineTFlite.h
-        MLEngineTFlite.cc
+        InferenceModelTFlite.h
+        InferenceModelTFlite.cc
     )
     list(APPEND tensorflow_lite_libs ${TENSORFLOWLITE_LIBRARIES})
     add_definitions(-DHAVE_TFLITE)
@@ -33,8 +33,8 @@ endif()
 ### support for TensorRT
 if(HAVE_TENSORRT)
     list(APPEND infero_srcs
-        MLEngineTRT.h
-        MLEngineTRT.cc
+        InferenceModelTRT.h
+        InferenceModelTRT.cc
     )
 
     set(tensor_rt_libs ${TENSORRT_LIBRARIES})

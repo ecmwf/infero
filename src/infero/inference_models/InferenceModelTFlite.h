@@ -17,22 +17,28 @@
 #include "tensorflow/lite/model.h"
 #include "tensorflow/lite/optional_debug_tools.h"
 
-#include "infero/ml_engines/MLEngine.h"
+#include "infero/inference_models/InferenceModel.h"
 
 
 namespace infero {
 
-class MLEngineTFlite : public MLEngine {
+class InferenceModelTFlite : public InferenceModel {
 
 public:
-    MLEngineTFlite(std::string model_filename);
 
-    virtual ~MLEngineTFlite();
+    InferenceModelTFlite(std::string model_filename);
+
+    virtual ~InferenceModelTFlite();
+
+protected:
 
     // run the inference
-    virtual std::unique_ptr<infero::MLTensor> infer(std::unique_ptr<infero::MLTensor>& input_sample);
+    void do_infer(TensorFloat& tIn, TensorFloat& tOut);
 
 private:
+
+    void set_input_layout(TensorFloat& tIn);
+
     // TFlite model and interpreter
     std::unique_ptr<tflite::FlatBufferModel> model;
     std::unique_ptr<tflite::Interpreter> interpreter;

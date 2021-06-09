@@ -8,18 +8,11 @@
 
 # unit tests
 
-# tensor
-ecbuild_add_test(TARGET        test_mltensor
-                 INCLUDES      ${eckit_INCLUDE_DIRS}
-                 SOURCES       test_mltensor.cc
-                 LIBS          infero eckit
-)
-
 
 # ml engine
-ecbuild_add_test(TARGET        test_mlengine
+ecbuild_add_test(TARGET        test_inference_model
                  INCLUDES      ${eckit_INCLUDE_DIRS}
-                 SOURCES       test_mlengine.cc
+                 SOURCES       test_inference_model.cc
                  LIBS          infero eckit
 )
 

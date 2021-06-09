@@ -15,10 +15,11 @@
 #include <string>
 #include <vector>
 
-#include "infero/MLTensor.h"
-
+#include "infero/infero_utils.h"
+#include "eckit/linalg/Tensor.h"
 
 using namespace infero;
+
 
 // a cluster point
 struct ClusterPoint {
@@ -48,7 +49,7 @@ public:
     virtual ~Clustering();
 
     // run the clustering
-    virtual int run(std::unique_ptr<MLTensor>& prediction) = 0;
+    virtual int run(const TensorFloat& prediction) = 0;
 
     // summary of clustering
     virtual void print_summary();

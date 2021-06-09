@@ -19,10 +19,10 @@
 static const unsigned int DBSCAN_MIN_N_CLUSTERS = 1;
 
 // dbscan point distance in cluster
-static constexpr float DBSCAN_EPS = 10.0;
+static constexpr float DBSCAN_EPS = 10.0f;
 
 // min point val to be considered for clustering
-static constexpr float DBSCAN_MIN_VAL = 0.6;
+static constexpr float DBSCAN_MIN_VAL = 0.6f;
 
 using namespace infero;
 
@@ -34,12 +34,12 @@ public:
     ClusteringDBscan();
 
     // run clustering
-    virtual int run(std::unique_ptr<MLTensor>& prediction);
+    virtual int run(const TensorFloat& prediction);
 
 
 private:
     // read the prediction
-    virtual std::vector<Point> readPrediction(std::unique_ptr<MLTensor>& prediction);
+    virtual std::vector<Point> readPrediction(const TensorFloat& prediction);
 
 
 private:

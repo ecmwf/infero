@@ -19,7 +19,7 @@ interface
   subroutine infero_inference_real64( handle, data1, rank1, shape1, data2, rank2, shape2 ) &
     & bind(C,name="infero_inference_double")
     use iso_c_binding, only: c_int, c_ptr, c_double, c_char, c_null_char
-    type(c_ptr) :: handle
+    type(c_ptr), value :: handle
     real(c_double), dimension(*) :: data1
     integer(c_int), value :: rank1
     integer(c_int), dimension(*) :: shape1
@@ -31,7 +31,7 @@ interface
   subroutine infero_inference_real32( handle, data1, rank1, shape1, data2, rank2, shape2 ) &
     & bind(C,name="infero_inference_float")
     use iso_c_binding, only: c_int, c_ptr, c_float, c_char, c_null_char
-    type(c_ptr) :: handle
+    type(c_ptr), value :: handle
     real(c_float), dimension(*) :: data1
     integer(c_int), value :: rank1
     integer(c_int), dimension(*) :: shape1
@@ -43,9 +43,9 @@ interface
 end interface
 
 interface
-  integer(c_int) function infero_handle_open_interf( config_str ) &
+  type(c_ptr) function infero_handle_open_interf( config_str ) &
     & bind(C,name="infero_handle_open")
-    use iso_c_binding, only: c_char, c_int
+    use iso_c_binding, only: c_char, c_int, c_ptr
     character(c_char) :: config_str
   end function
 end interface
@@ -53,8 +53,8 @@ end interface
 interface
   subroutine infero_handle_close_interf( handle ) &
     & bind(C,name="infero_handle_close")
-    use iso_c_binding, only: c_int
-    type(c_ptr) :: handle
+    use iso_c_binding, only: c_int, c_ptr
+    type(c_ptr), value :: handle
   end subroutine
 end interface
 
@@ -89,15 +89,15 @@ contains
 
 !-----------------------------------------------------------------------------------------------------------------------
 
-integer(c_int) function infero_handle_open_func( config_str )
-  use iso_c_binding, only: c_char, c_int
+type(c_ptr) function infero_handle_open_func( config_str )
+  use iso_c_binding, only: c_char, c_int, c_ptr
   character(c_char) :: config_str
   infero_handle_open_func = infero_handle_open_interf(config_str)
 end function
 
 subroutine infero_handle_close_func( handle )
   use iso_c_binding, only: c_ptr
-  type(c_ptr) :: handle
+  type(c_ptr), value :: handle
   call infero_handle_close_interf( handle )
 end subroutine
 

@@ -14,8 +14,8 @@
 
 #include "eckit/log/Log.h"
 
-#include "infero/MLTensor.h"
-#include "infero/ml_engines/MLEngineTFlite.h"
+#include "infero/infero_utils.h"
+#include "infero/inference_models/InferenceModelTFlite.h"
 
 
 #define DATA_SCALAR_TYPE float
@@ -33,7 +33,7 @@ using namespace eckit;
 namespace infero {
 
 
-MLEngineTFlite::MLEngineTFlite(std::string model_filename) : MLEngine(model_filename) {
+InferenceModelTFlite::InferenceModelTFlite(std::string model_filename) : InferenceModel(model_filename) {
     // Load model
     model = tflite::FlatBufferModel::BuildFromFile(this->mModelFilename.c_str());
     TFLITE_MINIMAL_CHECK(model != nullptr);
@@ -51,27 +51,28 @@ MLEngineTFlite::MLEngineTFlite(std::string model_filename) : MLEngine(model_file
     tflite::PrintInterpreterState(interpreter.get());
 }
 
-MLEngineTFlite::~MLEngineTFlite() {}
+InferenceModelTFlite::~InferenceModelTFlite() {}
 
-std::unique_ptr<infero::MLTensor> MLEngineTFlite::infer(std::unique_ptr<infero::MLTensor>& input_sample) {
+
+void InferenceModelTFlite::do_infer(TensorFloat& tIn, TensorFloat& tOut){
 
     Log::info() << "Sample tensor shape: ";
-    for (auto i : input_sample->shape())
+    for (auto i : tIn.shape())
         Log::info() << i << ", ";
     Log::info() << std::endl;
 
     // reshape the internal input tensor to accept the user passed input
-    std::vector<int> sh_(input_sample->shape().size());
-    for (int i = 0; i < input_sample->shape().size(); i++)
-        sh_[i] = input_sample->shape()[i];
+    std::vector<int> sh_(tIn.shape().size());
+    for (int i = 0; i < tIn.shape().size(); i++)
+        sh_[i] = tIn.shape()[i];
 
     interpreter->ResizeInputTensor(interpreter->inputs()[0], sh_);
     interpreter->AllocateTensors();
 
     // =========================== copy tensor ============================
     float* input      = interpreter->typed_input_tensor<float>(0);
-    const float* data = input_sample->data();
-    size_t data_size  = input_sample->size();
+    const float* data = tIn.data();
+    size_t data_size  = tIn.size();
     for (size_t i = 0; i < data_size; i++) {
         *(input + i) = *(data + i);
     }
@@ -89,23 +90,33 @@ std::unique_ptr<infero::MLTensor> MLEngineTFlite::infer(std::unique_ptr<infero::
     TfLiteTensor* out = interpreter->output_tensor(0);
 
     std::vector<size_t> out_shape(out->dims->size);
-    for (int i = 0; i < out->dims->size; i++)
+    size_t out_size = 1;
+    for (int i = 0; i < out->dims->size; i++){
         out_shape[i] = out->dims->data[i];
+        out_size *= out_shape[i];
+    }
 
     Log::info() << "Output tensor shape: ";
     for (auto i : out_shape)
         Log::info() << i << ", ";
     Log::info() << std::endl;
 
-    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(out_shape, false));
-
     // copy output data
-    for (size_t i = 0; i < pred_ptr->size(); i++) {
-        *(pred_ptr->data() + i) = *(output + i);
-    }
+    Log::info() << "Copying output...";
+    tOut.resize(out_shape);
+    memcpy(tOut.data(), output, out_size * sizeof(float));
+
     // ====================================================================
 
-    return pred_ptr;
+}
+
+void InferenceModelTFlite::set_input_layout(TensorFloat &tIn)
+{
+    if (tIn.isRight()){
+        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
+                    << "Transforming to left.." << std::endl;;
+        tIn.toLeftLayout();
+    }
 }
 
 }  // namespace infero

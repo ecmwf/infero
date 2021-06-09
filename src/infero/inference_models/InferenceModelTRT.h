@@ -24,12 +24,12 @@
 #include "logger.h"
 #include "parserOnnxConfig.h"
 
-#include "infero/ml_engines/MLEngine.h"
+#include "infero/inference_models/InferenceModel.h"
 
 
 namespace infero {
 
-class MLEngineTRT : public MLEngine {
+class InferenceModelTRT : public InferenceModel {
 
     // short for infer ptr
     template <typename T>
@@ -47,17 +47,22 @@ public:
     };
 
 public:
-    MLEngineTRT(std::string model_filename);
+    InferenceModelTRT(std::string model_filename);
 
-    virtual ~MLEngineTRT();
+    virtual ~InferenceModelTRT();
 
-    // run the inference
-    virtual std::unique_ptr<infero::MLTensor> infer(std::unique_ptr<infero::MLTensor>& input_sample);
-
-    static std::unique_ptr<MLEngineTRT> from_onnx(std::string onnx_path, TRTOptions& options,
+    static std::unique_ptr<InferenceModelTRT> from_onnx(std::string onnx_path, TRTOptions& options,
                                                   std::string trt_path = "model.trt");
 
+protected:
+
+    // run the inference
+    void do_infer(TensorFloat& tIn, TensorFloat& tOut);
+
 private:
+
+    void set_input_layout(TensorFloat& tIn);
+
     class Logger : public ILogger {
         void log(Severity severity, const char* msg) throw() {
             // show info-level messages only

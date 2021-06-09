@@ -1,6 +1,6 @@
 program my_program
 use inferof
-use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char
+use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 implicit none
 
 character(1024) :: model_path
@@ -8,7 +8,7 @@ character(1024) :: model_type
 character(1024) :: input_path
 character(1024) :: yaml_config
 
-integer :: handle_id, handle_id2
+type(c_ptr) :: handle
 
 integer :: i,j
 integer :: input_imax, input_jmax
@@ -48,14 +48,14 @@ yaml_config = "---"//NEW_LINE('A') &
   //"  path: "//TRIM(model_path)//NEW_LINE('A') &
   //"  type: "//TRIM(model_type)//c_null_char
 
-! get a handle
-handle_id = infero_handle_open(yaml_config)
+! get a inference model handle
+handle = infero_handle_open(yaml_config)
 
 ! run inference
-call infero_inference( handle_id, it2f, ot2f )
+call infero_inference( handle, it2f, ot2f )
 
 ! close the handle
-call infero_handle_close( handle_id )
+call infero_handle_close( handle )
 
 
 ! print output

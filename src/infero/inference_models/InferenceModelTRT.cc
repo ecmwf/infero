@@ -15,7 +15,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
-#include "infero/ml_engines/MLEngineTRT.h"
+#include "infero/inference_models/InferenceModelTRT.h"
 
 
 using namespace eckit;
@@ -23,7 +23,7 @@ using namespace eckit;
 namespace infero {
 
 
-MLEngineTRT::MLEngineTRT(std::string model_filename) : MLEngine(model_filename), mEngine(nullptr), network(nullptr) {
+InferenceModelTRT::InferenceModelTRT(std::string model_filename) : InferenceModel(model_filename), mEngine(nullptr), network(nullptr) {
 
     // Resurrect the TRF model..
     std::stringstream gieModelStream;
@@ -56,10 +56,10 @@ MLEngineTRT::MLEngineTRT(std::string model_filename) : MLEngine(model_filename),
     Log::info() << "modelSize " << modelSize << std::endl;
 }
 
-MLEngineTRT::~MLEngineTRT() {}
+InferenceModelTRT::~InferenceModelTRT() {}
 
 
-std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLTensor>& input_sample) {
+void InferenceModelTRT::do_infer(TensorFloat& tIn, TensorFloat& tOut){
 
     // =================== prediction ======================
     // Create RAII buffer manager object
@@ -82,8 +82,8 @@ std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLT
     //    Log::info() << "output_tensor_name " << output_tensor_name << std::endl;
 
     float* hostDataBuffer = static_cast<float*>(buffers.getHostBuffer(input_tensor_name));
-    float* data           = input_sample->data();
-    size_t data_size      = input_sample->size();
+    float* data           = tIn.data();
+    size_t data_size      = tIn.size();
     for (size_t i = 0; i < data_size; i++) {
         hostDataBuffer[i] = *(data + i);
     }
@@ -103,7 +103,7 @@ std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLT
     // ======================================================
 
     // ======================= output =======================
-    int shape_flat = 1;
+    size_t shape_flat = 1;
     std::vector<size_t> shape(output_dims.nbDims);
     for (int i = 0; i < output_dims.nbDims; i++) {
         shape[i] = output_dims.d[i];
@@ -113,13 +113,21 @@ std::unique_ptr<infero::MLTensor> MLEngineTRT::infer(std::unique_ptr<infero::MLT
 
     // copy output data
     float* output = static_cast<float*>(buffers.getHostBuffer(output_tensor_name));
-    auto pred_ptr = std::unique_ptr<infero::MLTensor>(new infero::MLTensor(shape, false));
-    for (int i = 0; i < shape_flat; i++) {
-        *(pred_ptr->data() + i) = *(output + i);
-    }
 
-    return pred_ptr;
+    // copy output data
+    Log::info() << "Copying output...";
+    tOut.resize(shape);
+    memcpy(tOut.data(), output, shape_flat * sizeof(float));
     // ======================================================
+}
+
+void InferenceModelTRT::set_input_layout(TensorFloat &tIn)
+{
+    if (tIn.isRight()){
+        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
+                    << "Transforming to left.." << std::endl;;
+        tIn.toLeftLayout();
+    }
 }
 
 }  // namespace infero

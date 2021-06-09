@@ -13,13 +13,12 @@
 #include "eckit/option/SimpleOption.h"
 #include "eckit/runtime/Main.h"
 
-#include "infero/MLTensor.h"
+#include "infero/infero_utils.h"
 #include "infero/clustering/Clustering.h"
+
 
 using namespace eckit;
 using namespace eckit::option;
-
-
 using namespace infero;
 
 
@@ -50,12 +49,12 @@ int main(int argc, char** argv) {
     std::string output_path = args.getString("output", "clusters.json");
 
     // input data
-    std::unique_ptr<infero::MLTensor> inputT = infero::MLTensor::from_file(input_path);
+    TensorFloat* Tin = utils::tensor_from_file<float>(input_path);
 
     // run clustering
     std::unique_ptr<Clustering> cluster = Clustering::create(clustering);
 
-    int err = cluster->run(inputT);
+    int err = cluster->run(Tin);
     if (err) {
         Log::error() << "Clustering Failed!" << std::endl;
         return EXIT_FAILURE;
@@ -66,6 +65,8 @@ int main(int argc, char** argv) {
         // write to JSON
         cluster->write_json(output_path);
     }
+
+    delete Tin;
 
     return EXIT_SUCCESS;
 }
