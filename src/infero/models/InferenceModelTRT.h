@@ -80,7 +80,7 @@ private:
 
     SampleUniquePtr<nvinfer1::INetworkDefinition> Network_;
 
-    char* modelMem;
+    char* modelMem_;
 };
 
 }  // namespace infero

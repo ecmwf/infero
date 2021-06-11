@@ -44,21 +44,21 @@ private:
     Ort::AllocatorWithDefaultOptions allocator;
 
     // NOTE: we assume only one input node
-    size_t input_node_idx;
-    size_t num_input_nodes;
-    char* input_name;
-    std::vector<int64_t> input_layer_shape;
-    std::vector<const char*> input_node_names;
+    size_t inputNodeIdx_;
+    size_t numInputNodes_;
+    char* inputName_;
+    std::vector<int64_t> inputLayerShape_;
+    std::vector<const char*> inputNodeNames_;
 
     // NOTE: we assume only one output node
-    size_t output_node_idx;
-    size_t num_output_nodes;
-    char* output_name;
-    std::vector<int64_t> output_layer_shape;
-    std::vector<const char*> output_node_names;
+    size_t outputNodeIdx_;
+    size_t numOutputNodes_;
+    char* outputName_;
+    std::vector<int64_t> outputLayerShape_;
+    std::vector<const char*> outputNodeNames_;
 
     // output data
-    std::vector<float> data_buffer;
+    std::vector<float> dataBuffer_;
 
 private:
     void queryInputLayer();

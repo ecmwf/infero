@@ -41,15 +41,15 @@ InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
     const long int modelSize = gieModelStream.tellg();
     gieModelStream.seekg(0, std::ios::beg);
 
-    modelMem = (char*)malloc(modelSize);
-    if (!modelMem) {
+    modelMem_ = (char*)malloc(modelSize);
+    if (!modelMem_) {
         std::string err = "failed to allocate " + std::to_string(modelSize) + " bytes";
         throw eckit::FailedSystemCall(err, Here());
     }
 
-    gieModelStream.read((char*)modelMem, modelSize);
+    gieModelStream.read((char*)modelMem_, modelSize);
     InferRuntime_ = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
-    Engine_.reset(InferRuntime_->deserializeCudaEngine((void*)modelMem, modelSize, NULL));
+    Engine_.reset(InferRuntime_->deserializeCudaEngine((void*)modelMem_, modelSize, NULL));
     if (!Engine_) {
         std::string err = "failed to read the TRT engine!";
         throw eckit::FailedSystemCall(err, Here());
@@ -60,8 +60,8 @@ InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
 
 InferenceModelTRT::~InferenceModelTRT() {
 
-    if (modelMem)
-        delete modelMem;
+    if (modelMem_)
+        delete modelMem_;
 }
 
 

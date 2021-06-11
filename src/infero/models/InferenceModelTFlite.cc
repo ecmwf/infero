@@ -38,20 +38,20 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) : I
     std::string ModelPath(conf.getString("path"));
 
     // Load model
-    model = tflite::FlatBufferModel::BuildFromFile(ModelPath.c_str());
-    TFLITE_MINIMAL_CHECK(model != nullptr);
+    model_ = tflite::FlatBufferModel::BuildFromFile(ModelPath.c_str());
+    TFLITE_MINIMAL_CHECK(model_ != nullptr);
 
     // Build the interpreter with the InterpreterBuilder.
     tflite::ops::builtin::BuiltinOpResolver resolver;
-    tflite::InterpreterBuilder builder(*model, resolver);
-    interpreter = std::unique_ptr<tflite::Interpreter>(new tflite::Interpreter);
+    tflite::InterpreterBuilder builder(*model_, resolver);
+    interpreter_ = std::unique_ptr<tflite::Interpreter>(new tflite::Interpreter);
 
-    builder(&interpreter);
-    TFLITE_MINIMAL_CHECK(interpreter != nullptr);
+    builder(&interpreter_);
+    TFLITE_MINIMAL_CHECK(interpreter_ != nullptr);
 
     // Allocate tensor buffers.
-    TFLITE_MINIMAL_CHECK(interpreter->AllocateTensors() == kTfLiteOk);
-    tflite::PrintInterpreterState(interpreter.get());
+    TFLITE_MINIMAL_CHECK(interpreter_->AllocateTensors() == kTfLiteOk);
+    tflite::PrintInterpreterState(interpreter_.get());
 }
 
 InferenceModelTFlite::~InferenceModelTFlite() {}
@@ -78,11 +78,11 @@ void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg:
     for (int i = 0; i < tIn.shape().size(); i++)
         sh_[i] = tIn.shape()[i];
 
-    interpreter->ResizeInputTensor(interpreter->inputs()[0], sh_);
-    interpreter->AllocateTensors();
+    interpreter_->ResizeInputTensor(interpreter_->inputs()[0], sh_);
+    interpreter_->AllocateTensors();
 
     // =========================== copy tensor ============================
-    float* input      = interpreter->typed_input_tensor<float>(0);
+    float* input      = interpreter_->typed_input_tensor<float>(0);
     const float* data = tIn.data();
     size_t data_size  = tIn.size();
     for (size_t i = 0; i < data_size; i++) {
@@ -91,15 +91,15 @@ void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg:
     // ====================================================================
 
     // ========================== Run inference ===========================
-    TFLITE_MINIMAL_CHECK(interpreter->Invoke() == kTfLiteOk);
+    TFLITE_MINIMAL_CHECK(interpreter_->Invoke() == kTfLiteOk);
 
     printf("\n\n=== Post-invoke Interpreter State ===\n");
-    tflite::PrintInterpreterState(interpreter.get());
+    tflite::PrintInterpreterState(interpreter_.get());
     // ====================================================================
 
     // ========================== Get output ==============================
-    float* output     = interpreter->typed_output_tensor<float>(0);
-    TfLiteTensor* out = interpreter->output_tensor(0);
+    float* output     = interpreter_->typed_output_tensor<float>(0);
+    TfLiteTensor* out = interpreter_->output_tensor(0);
 
     std::vector<size_t> out_shape(out->dims->size);
     size_t out_size = 1;

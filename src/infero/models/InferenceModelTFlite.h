@@ -37,8 +37,8 @@ protected:
 private:
 
     // TFlite model and interpreter
-    std::unique_ptr<tflite::FlatBufferModel> model;
-    std::unique_ptr<tflite::Interpreter> interpreter;
+    std::unique_ptr<tflite::FlatBufferModel> model_;
+    std::unique_ptr<tflite::Interpreter> interpreter_;
 };
 
 }  // namespace infero
