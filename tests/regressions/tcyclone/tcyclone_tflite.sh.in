@@ -13,8 +13,8 @@ eng_type=tflite
 model_path=$datadir/cyclone_model_200x200.tflite
 input_path=$datadir/cyclone_input_200x200.npy
 ref_pred=$datadir/cyclone_output_200x200.npy
-
 output_path=$bindir/cyclone_output_200x200_tflite.npy
+out_shape="1,200,200,1"
 
 
 # run inference
@@ -23,6 +23,7 @@ $exedir/infero.x \
 --input=$input_path \
 --engine=$eng_type \
 --output=$output_path \
+--out_shape=$out_shape \
 --ref_path=$ref_pred
 
 

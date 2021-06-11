@@ -24,7 +24,7 @@
 #include "logger.h"
 #include "parserOnnxConfig.h"
 
-#include "infero/inference_models/InferenceModel.h"
+#include "infero/models/InferenceModel.h"
 
 
 namespace infero {
@@ -47,7 +47,7 @@ public:
     };
 
 public:
-    InferenceModelTRT(std::string model_filename);
+    InferenceModelTRT(const eckit::Configuration& conf);
 
     virtual ~InferenceModelTRT();
 
@@ -56,11 +56,11 @@ public:
 
 protected:
 
-    void infer(TensorFloat& tIn, TensorFloat& tOut);
+    void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut);
+
+    virtual void print(std::ostream& os) const;
 
 private:
-
-    void correctInput(TensorFloat& tIn);
 
     class Logger : public ILogger {
         void log(Severity severity, const char* msg) throw() {
@@ -71,14 +71,16 @@ private:
     };
 
     // utility converter std::vector to TRT Dims
-    static Dims Vector2Dims(std::vector<int>& vecdims);
+    static Dims Vector2Dims(std::vector<int>& vecdims);    
 
 private:
-    nvinfer1::IRuntime* infer_runtime;
+    nvinfer1::IRuntime* InferRuntime_;
 
-    std::shared_ptr<nvinfer1::ICudaEngine> mEngine;  //!< The TensorRT engine used to run the network
+    std::shared_ptr<nvinfer1::ICudaEngine> Engine_;  //!< The TensorRT engine used to run the network
 
-    SampleUniquePtr<nvinfer1::INetworkDefinition> network;
+    SampleUniquePtr<nvinfer1::INetworkDefinition> Network_;
+
+    char* modelMem;
 };
 
 }  // namespace infero

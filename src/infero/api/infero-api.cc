@@ -14,7 +14,7 @@
 
 #include "infero/api/infero.h"
 
-#include "infero/inference_models/InferenceModel.h"
+#include "infero/models/InferenceModel.h"
 
 #include "eckit/linalg/Tensor.h"
 #include "eckit/config/YAMLConfiguration.h"
@@ -43,7 +43,7 @@ using eckit::linalg::TensorFloat;
 
 infero_model_handle infero_create_handle_from_yaml_str(char str[]) {
 
-    eckit::YAMLConfiguration cfg(config_str);  // use config_str
+    eckit::YAMLConfiguration cfg(str);  // use config_str
     InferenceModel* model = InferenceModel::create(cfg.getString("type"), cfg);
     model->open();
 
@@ -55,7 +55,7 @@ infero_model_handle infero_create_handle_from_yaml_str(char str[]) {
 infero_model_handle infero_create_handle_from_yaml_file(char path[]) {
     NOTIMP;
     // read the file from aa master node and broadcast
-    eckit::YAMLConfiguration cfg(config_str);  // use config_str
+    eckit::YAMLConfiguration cfg(path);  // use config_str
     InferenceModel* model = InferenceModel::create(cfg.getString("type"), cfg);
     return model;
 }
@@ -117,9 +117,6 @@ void infero_inference_float(infero_model_handle h,
     TensorFloat* tOut(new TensorFloat(data2, shapify(rank2, shape2), true));
 
     model->infer(*tIn, *tOut);
-
-    // Needed as it is passed back to Fortran
-    tOut->toRightLayout();
 
     delete tIn;
     delete tOut;

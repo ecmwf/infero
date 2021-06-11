@@ -14,8 +14,8 @@
 
 #include "eckit/log/Log.h"
 
+#include "infero/models/InferenceModelTFlite.h"
 #include "infero/infero_utils.h"
-#include "infero/inference_models/InferenceModelTFlite.h"
 
 
 #define DATA_SCALAR_TYPE float
@@ -33,9 +33,12 @@ using namespace eckit;
 namespace infero {
 
 
-InferenceModelTFlite::InferenceModelTFlite(std::string model_filename) : InferenceModel(model_filename) {
+InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) : InferenceModel() {
+
+    std::string ModelPath(conf.getString("path"));
+
     // Load model
-    model = tflite::FlatBufferModel::BuildFromFile(this->mModelFilename.c_str());
+    model = tflite::FlatBufferModel::BuildFromFile(ModelPath.c_str());
     TFLITE_MINIMAL_CHECK(model != nullptr);
 
     // Build the interpreter with the InterpreterBuilder.
@@ -54,7 +57,16 @@ InferenceModelTFlite::InferenceModelTFlite(std::string model_filename) : Inferen
 InferenceModelTFlite::~InferenceModelTFlite() {}
 
 
-void InferenceModelTFlite::calculateInference(TensorFloat& tIn, TensorFloat& tOut){
+void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut) {
+
+    if (tIn.isRight()) {
+        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
+                    << "Transforming to left.." << std::endl;
+        ;
+        tIn.toLeftLayout();
+    }
+
+    Log::info() << "TFlite inference " << std::endl;
 
     Log::info() << "Sample tensor shape: ";
     for (auto i : tIn.shape())
@@ -91,7 +103,7 @@ void InferenceModelTFlite::calculateInference(TensorFloat& tIn, TensorFloat& tOu
 
     std::vector<size_t> out_shape(out->dims->size);
     size_t out_size = 1;
-    for (int i = 0; i < out->dims->size; i++){
+    for (int i = 0; i < out->dims->size; i++) {
         out_shape[i] = out->dims->data[i];
         out_size *= out_shape[i];
     }
@@ -103,20 +115,24 @@ void InferenceModelTFlite::calculateInference(TensorFloat& tIn, TensorFloat& tOu
 
     // copy output data
     Log::info() << "Copying output..." << std::endl;
-    tOut.resize(out_shape);
-    memcpy(tOut.data(), output, out_size * sizeof(float));
+    ASSERT(tOut.shape() == out_shape);
+    if (tOut.isRight()) {
+        // TFlite uses Left (C) tensor layouts, so we need to convert
+        TensorFloat tLeft(output, out_shape, false);  // wrap data
+        tOut = tLeft.transformLeftToRightLayout();    // creates temporary tensor with data in left layout
+    }
+    else {
+        // TFlite uses Left (C) tensor layouts, so we can copy straight into memory of tOut
+        memcpy(tOut.data(), output, out_size * sizeof(float));
+    }
 
     // ====================================================================
-
 }
 
-void InferenceModelTFlite::correctInput(TensorFloat &tIn)
+void InferenceModelTFlite::print(std::ostream &os) const
 {
-    if (tIn.isRight()){
-        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
-                    << "Transforming to left.." << std::endl;;
-        tIn.toLeftLayout();
-    }
+    os << "A TFlite Model" << std::endl;
 }
+
 
 }  // namespace infero

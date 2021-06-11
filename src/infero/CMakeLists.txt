@@ -1,6 +1,6 @@
 add_subdirectory(api)
 add_subdirectory(clustering)
-add_subdirectory(inference_models)
+add_subdirectory(models)
 
 
 # infero.x executable

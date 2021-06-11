@@ -1,7 +1,8 @@
 
-list(APPEND infero_srcs
+list(APPEND infero_srcs    
     InferenceModel.h
     InferenceModel.cc
+    ${PROJECT_SOURCE_DIR}/src/infero/infero_utils.h
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.h
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.cpp
 )

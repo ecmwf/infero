@@ -24,7 +24,6 @@ namespace infero {
 class InferenceModel {
 
 public:
-
     static InferenceModel* create(const std::string& type, const eckit::Configuration& conf);
 
     InferenceModel();
@@ -44,13 +43,16 @@ protected:
     /// print the model
     virtual void print(std::ostream& os) const = 0;
 
+    friend std::ostream& operator<<(std::ostream& os, InferenceModel& obj) {
+        obj.print(os);
+        return os;
+    }
+
 private:
     bool isOpen_;
 };
 
-friend std::ostream& operator<<(std::ostream& os, InferenceModel& obj) {
-    obj.print(os);
-    return os;
-}
+
+
 
 }  // namespace infero

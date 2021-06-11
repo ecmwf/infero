@@ -15,7 +15,7 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
-#include "infero/inference_models/InferenceModelTRT.h"
+#include "infero/models/InferenceModelTRT.h"
 
 
 using namespace eckit;
@@ -23,32 +23,34 @@ using namespace eckit;
 namespace infero {
 
 
-InferenceModelTRT::InferenceModelTRT(std::string model_filename) : InferenceModel(model_filename), mEngine(nullptr), network(nullptr) {
+InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
+    InferenceModel(), Engine_(nullptr), Network_(nullptr) {
 
     // Resurrect the TRF model..
+    std::string ModelPath(conf.getString("path"));
     std::stringstream gieModelStream;
-    ifstream en(mModelFilename.c_str());
+    ifstream en(ModelPath.c_str());
     gieModelStream << en.rdbuf();
     en.close();
 
-    Log::info() << "Reading TRT model from " << mModelFilename.c_str() << std::endl;
+    Log::info() << "Reading TRT model from " << ModelPath.c_str() << std::endl;
 
     // support for stringstream deserialization was deprecated in TensorRT v2
     // instead, read the stringstream into a memory buffer and pass that to TRT.
     gieModelStream.seekg(0, std::ios::end);
-    const int modelSize = gieModelStream.tellg();
+    const long int modelSize = gieModelStream.tellg();
     gieModelStream.seekg(0, std::ios::beg);
 
-    void* modelMem = malloc(modelSize);
+    modelMem = (char*)malloc(modelSize);
     if (!modelMem) {
         std::string err = "failed to allocate " + std::to_string(modelSize) + " bytes";
         throw eckit::FailedSystemCall(err, Here());
     }
 
     gieModelStream.read((char*)modelMem, modelSize);
-    infer_runtime = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
-    mEngine.reset(infer_runtime->deserializeCudaEngine(modelMem, modelSize, NULL));
-    if (!mEngine) {
+    InferRuntime_ = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
+    Engine_.reset(InferRuntime_->deserializeCudaEngine((void*)modelMem, modelSize, NULL));
+    if (!Engine_) {
         std::string err = "failed to read the TRT engine!";
         throw eckit::FailedSystemCall(err, Here());
     }
@@ -56,27 +58,40 @@ InferenceModelTRT::InferenceModelTRT(std::string model_filename) : InferenceMode
     Log::info() << "modelSize " << modelSize << std::endl;
 }
 
-InferenceModelTRT::~InferenceModelTRT() {}
+InferenceModelTRT::~InferenceModelTRT() {
+
+    if (modelMem)
+        delete modelMem;
+}
 
 
-void InferenceModelTRT::calculateInference(TensorFloat& tIn, TensorFloat& tOut){
+void InferenceModelTRT::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut){
+
+
+    if (tIn.isRight()) {
+        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
+                    << "Transforming to left.." << std::endl;
+        ;
+        tIn.toLeftLayout();
+    }
+    Log::info() << "TRT inference " << std::endl;
 
     // =================== prediction ======================
     // Create RAII buffer manager object
-    samplesCommon::BufferManager buffers(mEngine);
-    auto context = SampleUniquePtr<nvinfer1::IExecutionContext>(mEngine->createExecutionContext());
+    samplesCommon::BufferManager buffers(Engine_);
+    auto context = SampleUniquePtr<nvinfer1::IExecutionContext>(Engine_->createExecutionContext());
 
-    Log::info() << "mEngine->getNbBindings() " << mEngine->getNbBindings() << std::endl;
-    Log::info() << "mEngine->getBindingName(0) " << mEngine->getBindingName(0) << std::endl;
-    Log::info() << "mEngine->bindingIsInput(0) " << mEngine->bindingIsInput(0) << std::endl;
-    Log::info() << "mEngine->getBindingDimensions(0) " << mEngine->getBindingDimensions(0) << std::endl;
-    Log::info() << "mEngine->getBindingName(1) " << mEngine->getBindingName(1) << std::endl;
-    Log::info() << "mEngine->getBindingDimensions(1) " << mEngine->getBindingDimensions(1) << std::endl;
+    Log::info() << "mEngine->getNbBindings() " << Engine_->getNbBindings() << std::endl;
+    Log::info() << "mEngine->getBindingName(0) " << Engine_->getBindingName(0) << std::endl;
+    Log::info() << "mEngine->bindingIsInput(0) " << Engine_->bindingIsInput(0) << std::endl;
+    Log::info() << "mEngine->getBindingDimensions(0) " << Engine_->getBindingDimensions(0) << std::endl;
+    Log::info() << "mEngine->getBindingName(1) " << Engine_->getBindingName(1) << std::endl;
+    Log::info() << "mEngine->getBindingDimensions(1) " << Engine_->getBindingDimensions(1) << std::endl;
 
-    std::string input_tensor_name  = mEngine->getBindingName(0);
-    std::string output_tensor_name = mEngine->getBindingName(1);
+    std::string input_tensor_name  = Engine_->getBindingName(0);
+    std::string output_tensor_name = Engine_->getBindingName(1);
     //    Dims input_dims = mEngine->getBindingDimensions(0);
-    Dims output_dims = mEngine->getBindingDimensions(1);
+    Dims output_dims = Engine_->getBindingDimensions(1);
 
     //    auto output_tensor_name = network->getOutput(0)->getName();
     //    Log::info() << "output_tensor_name " << output_tensor_name << std::endl;
@@ -116,18 +131,23 @@ void InferenceModelTRT::calculateInference(TensorFloat& tIn, TensorFloat& tOut){
 
     // copy output data
     Log::info() << "Copying output...";
-    tOut.resize(shape);
-    memcpy(tOut.data(), output, shape_flat * sizeof(float));
+    ASSERT(tOut.shape() == shape);
+    if (tOut.isRight()) {
+        // TRT uses Left (C) tensor layouts, so we need to convert
+        eckit::linalg::TensorFloat tLeft(output, shape, false);  // wrap data
+        tOut = tLeft.transformLeftToRightLayout();  // creates temporary tensor with data in left layout
+    }
+    else {
+        // TRT uses Left (C) tensor layouts, so we can copy straight into memory of tOut
+        memcpy(tOut.data(), output, shape_flat * sizeof(float));
+    }
     // ======================================================
 }
 
-void InferenceModelTRT::correctInput(TensorFloat &tIn)
+void InferenceModelTRT::print(ostream &os) const
 {
-    if (tIn.isRight()){
-        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
-                    << "Transforming to left.." << std::endl;;
-        tIn.toLeftLayout();
-    }
+    os << "A TRT Model" << std::endl;
 }
+
 
 }  // namespace infero

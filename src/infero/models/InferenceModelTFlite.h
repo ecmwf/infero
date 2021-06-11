@@ -17,7 +17,7 @@
 #include "tensorflow/lite/model.h"
 #include "tensorflow/lite/optional_debug_tools.h"
 
-#include "infero/inference_models/InferenceModel.h"
+#include "infero/models/InferenceModel.h"
 
 
 namespace infero {
@@ -25,18 +25,16 @@ namespace infero {
 class InferenceModelTFlite : public InferenceModel {
 
 public:
-
-    InferenceModelTFlite(std::string model_filename);
+    InferenceModelTFlite(const eckit::Configuration& conf);
 
     virtual ~InferenceModelTFlite();
 
 protected:
+    void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut);
 
-    void infer(TensorFloat& tIn, TensorFloat& tOut);
+    void print(std::ostream& os) const;
 
 private:
-
-    void correctInput(TensorFloat& tIn);
 
     // TFlite model and interpreter
     std::unique_ptr<tflite::FlatBufferModel> model;

@@ -15,18 +15,18 @@
 #include "eckit/log/Log.h"
 #include "eckit/config/LocalConfiguration.h"
 
-#include "infero/inference_models/InferenceModel.h"
+#include "infero/models/InferenceModel.h"
 
 #ifdef HAVE_ONNX
-#include "infero/inference_models/InferenceModelONNX.h"
+#include "infero/models/InferenceModelONNX.h"
 #endif
 
 #ifdef HAVE_TFLITE
-#include "infero/inference_models/InferenceModelTFlite.h"
+#include "infero/models/InferenceModelTFlite.h"
 #endif
 
 #ifdef HAVE_TENSORRT
-#include "infero/inference_models/InferenceModelTRT.h"
+#include "infero/models/InferenceModelTRT.h"
 #endif
 
 using namespace eckit;
@@ -69,7 +69,7 @@ InferenceModel* InferenceModel::create(const string& type, const eckit::Configur
     }
 #endif
 
-    throw BadValue("Engine type " + choice + " not supported!", Here());
+    throw BadValue("Engine type " + type + " not supported!", Here());
 }
 
 void InferenceModel::open()  {

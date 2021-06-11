@@ -3,8 +3,11 @@ implicit none
 private
 
 public :: infero_inference
-public :: infero_handle_open
-public :: infero_handle_close
+public :: infero_create_handle_from_yaml_str
+public :: infero_create_handle_from_yaml_file
+public :: infero_open_handle
+public :: infero_close_handle
+public :: infero_delete_handle
 
 
 interface
@@ -43,16 +46,40 @@ interface
 end interface
 
 interface
-  type(c_ptr) function infero_handle_open_interf( config_str ) &
-    & bind(C,name="infero_handle_open")
+  type(c_ptr) function infero_create_handle_from_yaml_str_interf( config_str ) &
+    & bind(C,name="infero_create_handle_from_yaml_str")
     use iso_c_binding, only: c_char, c_int, c_ptr
     character(c_char) :: config_str
   end function
 end interface
 
 interface
-  subroutine infero_handle_close_interf( handle ) &
-    & bind(C,name="infero_handle_close")
+  type(c_ptr) function infero_create_handle_from_yaml_file_interf( config_str ) &
+    & bind(C,name="infero_create_handle_from_yaml_file")
+    use iso_c_binding, only: c_char, c_int, c_ptr
+    character(c_char) :: config_str
+  end function
+end interface
+
+interface
+  subroutine infero_open_handle_interf( handle ) &
+    & bind(C,name="infero_open_handle")
+    use iso_c_binding, only: c_int, c_ptr
+    type(c_ptr), value :: handle
+  end subroutine
+end interface
+
+interface
+  subroutine infero_close_handle_interf( handle ) &
+    & bind(C,name="infero_close_handle")
+    use iso_c_binding, only: c_int, c_ptr
+    type(c_ptr), value :: handle
+  end subroutine
+end interface
+
+interface
+  subroutine infero_delete_handle_interf( handle ) &
+    & bind(C,name="infero_delete_handle")
     use iso_c_binding, only: c_int, c_ptr
     type(c_ptr), value :: handle
   end subroutine
@@ -77,28 +104,60 @@ interface infero_inference ! function overloading
   module procedure infero_inference_real32_rank3_rank2
 end interface
 
-interface infero_handle_open
-  module procedure infero_handle_open_func
+
+interface infero_create_handle_from_yaml_str
+  module procedure infero_create_handle_from_yaml_str_func
 end interface
 
-interface infero_handle_close
-  module procedure infero_handle_close_func
+interface infero_create_handle_from_yaml_file
+  module procedure infero_create_handle_from_yaml_file_func
 end interface
+
+interface infero_open_handle
+  module procedure infero_open_handle_func
+end interface
+
+interface infero_close_handle
+  module procedure infero_close_handle_func
+end interface
+
+interface infero_delete_handle
+  module procedure infero_delete_handle_func
+end interface
+
 
 contains
 
 !-----------------------------------------------------------------------------------------------------------------------
 
-type(c_ptr) function infero_handle_open_func( config_str )
+type(c_ptr) function infero_create_handle_from_yaml_str_func( config_str )
   use iso_c_binding, only: c_char, c_int, c_ptr
   character(c_char) :: config_str
-  infero_handle_open_func = infero_handle_open_interf(config_str)
+  infero_create_handle_from_yaml_str_func = infero_create_handle_from_yaml_str_interf(config_str)
 end function
 
-subroutine infero_handle_close_func( handle )
+type(c_ptr) function infero_create_handle_from_yaml_file_func( config_str )
+  use iso_c_binding, only: c_char, c_int, c_ptr
+  character(c_char) :: config_str
+  infero_create_handle_from_yaml_file_func = infero_create_handle_from_yaml_file_interf(config_str)
+end function
+
+subroutine infero_open_handle_func( handle )
   use iso_c_binding, only: c_ptr
   type(c_ptr), value :: handle
-  call infero_handle_close_interf( handle )
+  call infero_open_handle_interf( handle )
+end subroutine
+
+subroutine infero_close_handle_func( handle )
+  use iso_c_binding, only: c_ptr
+  type(c_ptr), value :: handle
+  call infero_close_handle_interf( handle )
+end subroutine
+
+subroutine infero_delete_handle_func( handle )
+  use iso_c_binding, only: c_ptr
+  type(c_ptr), value :: handle
+  call infero_delete_handle_interf( handle )
 end subroutine
 
 !-----------------------------------------------------------------------------------------------------------------------

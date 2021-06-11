@@ -13,8 +13,8 @@ eng_type=tensorrt
 model_path=$datadir/model.trt
 input_path=$datadir/m36966_input.npy
 ref_pred=$datadir/ref_pred.csv
-
 output_path=$bindir/prediction_trt.csv
+out_shape="8,126"
 
 
 # run inference
@@ -23,6 +23,7 @@ $exedir/infero.x \
 --input=$input_path \
 --engine=$eng_type \
 --output=$output_path \
+--out_shape=$out_shape \
 --ref_path=$ref_pred
 
 

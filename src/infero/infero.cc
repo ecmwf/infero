@@ -9,15 +9,17 @@
  */
 
 #include <memory>
+#include <sstream>
 
 #include "eckit/log/Log.h"
 #include "eckit/option/CmdArgs.h"
 #include "eckit/option/SimpleOption.h"
+#include "eckit/option/VectorOption.h"
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/FileStream.h"
 #include "eckit/config/LocalConfiguration.h"
 
-#include "infero/inference_models/InferenceModel.h"
+#include "infero/models/InferenceModel.h"
 #include "infero/infero_utils.h"
 
 
@@ -53,6 +55,7 @@ int main(int argc, char** argv) {
     options.push_back(new SimpleOption<std::string>("engine", "ML engine [onnx, tflite, trt]"));
     options.push_back(new SimpleOption<std::string>("ref_path", "Path to Reference prediction"));
     options.push_back(new SimpleOption<double>("threshold", "Verification threshold"));
+    options.push_back(new SimpleOption<std::string>("out_shape", "output tensor shape [s1,s1,...]"));
 
     CmdArgs args(&usage, options, 0, 0, true);
 
@@ -63,6 +66,7 @@ int main(int argc, char** argv) {
     std::string output_path = args.getString("output", "out.csv");
     std::string ref_path    = args.getString("ref_path", "");
     float threshold         = args.getFloat("threshold", 0.001f);
+    std::string out_shape   = args.getString("out_shape", "");
 
     // Model configuration from CL
     LocalConfiguration local;
@@ -70,10 +74,22 @@ int main(int argc, char** argv) {
 
     // Input data
     std::unique_ptr<TensorFloat> inputT(tensor_from_file<float>(input_path));
-    TensorFloat predT;
+
+
+    // Prepare output tensor
+    // TODO : find a batter way to pass output shape..
+    std::vector<size_t> out_shape_vec;
+    std::stringstream ss(out_shape);
+    std::string val;
+    while( ss.good() )
+    {
+        getline( ss, val, ',' );
+        out_shape_vec.push_back( std::stoull(val) );
+    }
+    TensorFloat predT(out_shape_vec, false);
 
     // Inference model
-    std::unique_ptr<InferenceModel> engine = InferenceModel::open(engine_type, local);
+    std::unique_ptr<InferenceModel> engine(InferenceModel::create(engine_type, local));
     std::cout << *engine << std::endl;
 
     // Run inference

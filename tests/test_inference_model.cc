@@ -4,7 +4,7 @@
 #include "eckit/testing/Test.h"
 #include "eckit/config/LocalConfiguration.h"
 
-#include "infero/inference_models/InferenceModel.h"
+#include "infero/models/InferenceModel.h"
 
 using namespace eckit;
 using namespace eckit::testing;
@@ -25,7 +25,7 @@ CASE("ML Engine instantiation") {
     }
     const Configuration& conf = local;
 
-    EXPECT_THROWS( InferenceModel::open(choice, conf) );
+    EXPECT_THROWS( InferenceModel::create(choice, conf) );
 }
 
 

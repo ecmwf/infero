@@ -16,8 +16,8 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/log/Log.h"
 
+#include "infero/models/InferenceModelONNX.h"
 #include "infero/infero_utils.h"
-#include "infero/inference_models/InferenceModelONNX.h"
 
 
 using namespace eckit;
@@ -25,8 +25,12 @@ using namespace eckit;
 namespace infero {
 
 
-InferenceModelONNX::InferenceModelONNX(std::string model_filename) :
-    InferenceModel(model_filename), input_name(nullptr), output_name(nullptr){
+InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
+    InferenceModel(),
+    input_name(nullptr),
+    output_name(nullptr) {
+
+    std::string ModelPath(conf.getString("path"));
 
     // environment
     env = std::unique_ptr<Ort::Env>(new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "onnx_model"));
@@ -35,7 +39,7 @@ InferenceModelONNX::InferenceModelONNX(std::string model_filename) :
     session_options = std::unique_ptr<Ort::SessionOptions>(new Ort::SessionOptions);
     session_options->SetIntraOpNumThreads(1);
     session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-    session = std::unique_ptr<Ort::Session>(new Ort::Session(*env, mModelFilename.c_str(), *session_options));
+    session = std::unique_ptr<Ort::Session>(new Ort::Session(*env, ModelPath.c_str(), *session_options));
 
     // query input/output layers
     queryInputLayer();
@@ -44,16 +48,16 @@ InferenceModelONNX::InferenceModelONNX(std::string model_filename) :
 
 InferenceModelONNX::~InferenceModelONNX() {
 
-    if(input_name){
+    if (input_name) {
         delete input_name;
     }
 
-    if(output_name){
+    if (output_name) {
         delete output_name;
     }
 }
 
-void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut){
+void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut) {
 
     if (tIn.isRight()) {
         Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
@@ -71,9 +75,9 @@ void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut){
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
-    auto shape_64           = utils::convert_shape<size_t, int64_t>(tIn.shape());
-    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info, data_buffer.data(), tIn.size(),
-                                                              shape_64.data(), shape_64.size());
+    auto shape_64 = utils::convert_shape<size_t, int64_t>(tIn.shape());
+    Ort::Value input_tensor =
+        Ort::Value::CreateTensor<float>(memory_info, data_buffer.data(), tIn.size(), shape_64.data(), shape_64.size());
     ASSERT(input_tensor.IsTensor());
 
     Ort::TensorTypeAndShapeInfo info = input_tensor.GetTensorTypeAndShapeInfo();
@@ -89,24 +93,24 @@ void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut){
 
 
     auto out_tensor_info = output_tensors.front().GetTensorTypeAndShapeInfo();
-    size_t out_size         = 1;
+    size_t out_size      = 1;
     for (auto i : out_tensor_info.GetShape()) {
         out_size *= i;
     }
 
-    Log::info() << "Prediction tensor shape::: ";
+    Log::info() << "Prediction tensor shape: ";
     for (auto i : out_tensor_info.GetShape())
         Log::info() << i << ", ";
     Log::info() << std::endl;
 
-    auto shape   = utils::convert_shape<int64_t, size_t>(out_tensor_info.GetShape());
-
+    auto shape = utils::convert_shape<int64_t, size_t>(out_tensor_info.GetShape());
     const float* floatarr = output_tensors.front().GetTensorMutableData<float>();
+
     ASSERT(tOut.shape() == shape);
     if (tOut.isRight()) {
         // ONNX uses Left (C) tensor layouts, so we need to convert
-        TensorFloat tLeft(floatarr, shape, false); // wrap data
-        tOut = tLeft.transformLeftToRightLayout(); // creates temporary tensor with data in left layout
+        TensorFloat tLeft(floatarr, shape, false);  // wrap data
+        tOut = tLeft.transformLeftToRightLayout();  // creates temporary tensor with data in left layout
     }
     else {
         // ONNX uses Left (C) tensor layouts, so we can copy straight into memory of tOut
