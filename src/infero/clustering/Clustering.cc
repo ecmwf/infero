@@ -113,7 +113,7 @@ int Clustering::write_json(std::string filename) {
 }
 
 std::unique_ptr<Clustering> Clustering::create(std::string choice) {
-    if (choice.compare("dbscan") == 0) {
+    if (choice == "dbscan") {
         Log::info() << "creating ClusteringDBscan.. " << std::endl;
         return std::unique_ptr<Clustering>(new ClusteringDBscan);
     }

@@ -164,10 +164,10 @@ Tensor<S>* tensor_from_file(const std::string& filename, bool isright = false) {
     Tensor<S>* tensor_ptr;
 
     std::string ext = filename.substr(filename.find_last_of("."));
-    if (!ext.compare(".csv")) {
+    if (ext == ".csv") {
         tensor_ptr = tensor_from_csv<S>(filename, isright);
     }
-    else if (!ext.compare(".npy")) {
+    else if (ext == ".npy") {
         tensor_ptr = tensor_from_numpy<S>(filename, isright);
     }
     else {
@@ -181,10 +181,10 @@ Tensor<S>* tensor_from_file(const std::string& filename, bool isright = false) {
 template <typename S>
 void tensor_to_file(const Tensor<S>& T, const std::string& filename) {
     std::string ext = filename.substr(filename.find_last_of("."));
-    if (!ext.compare(".csv")) {
+    if (ext == ".csv") {
         tensor_to_csv<S>(T, filename);
     }
-    else if (!ext.compare(".npy")) {
+    else if (ext == ".npy") {
         tensor_to_numpy<S>(T, filename);
     }
     else {
