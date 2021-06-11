@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
 
     options.push_back(new SimpleOption<std::string>("input", "Path to input file"));
     options.push_back(new SimpleOption<std::string>("clustering", "Clustering [dbscan, ...]"));
+    options.push_back(new SimpleOption<std::string>("output", "Path to output file"));
 
     CmdArgs args(&usage, options, 0, 0, true);
 
@@ -49,12 +50,12 @@ int main(int argc, char** argv) {
     std::string output_path = args.getString("output", "clusters.json");
 
     // input data
-    TensorFloat* Tin = utils::tensor_from_file<float>(input_path);
+    std::unique_ptr<TensorFloat> Tin(utils::tensor_from_file<float>(input_path));
 
     // run clustering
-    std::unique_ptr<Clustering> cluster = Clustering::create(clustering);
+    std::unique_ptr<Clustering> cluster(Clustering::create(clustering));
 
-    int err = cluster->run(Tin);
+    int err = cluster->run(*Tin);
     if (err) {
         Log::error() << "Clustering Failed!" << std::endl;
         return EXIT_FAILURE;
@@ -65,8 +66,6 @@ int main(int argc, char** argv) {
         // write to JSON
         cluster->write_json(output_path);
     }
-
-    delete Tin;
 
     return EXIT_SUCCESS;
 }

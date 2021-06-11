@@ -74,9 +74,7 @@ void Clustering::calculate_cluster_centers() {
 void Clustering::print_summary() {
 
     Log::info() << "\n*** centers *** " << std::endl;
-
     for (const auto& clust_ctr : cluster_centers) {
-
         printf("%2d) x = %8.3f, y = %8.3f\n", clust_ctr.cid, clust_ctr.x, clust_ctr.y);
     }
 
@@ -112,10 +110,10 @@ int Clustering::write_json(std::string filename) {
     return -1;
 }
 
-std::unique_ptr<Clustering> Clustering::create(std::string choice) {
+Clustering* Clustering::create(std::string choice) {
     if (choice == "dbscan") {
         Log::info() << "creating ClusteringDBscan.. " << std::endl;
-        return std::unique_ptr<Clustering>(new ClusteringDBscan);
+        return new ClusteringDBscan;
     }
     else {
         throw BadValue("Invalid Clustering choice" + std::string(choice), Here());

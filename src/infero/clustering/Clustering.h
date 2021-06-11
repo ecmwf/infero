@@ -57,7 +57,7 @@ public:
     // write JSON
     virtual int write_json(std::string filename);
 
-    static std::unique_ptr<Clustering> create(std::string choice);
+    static Clustering* create(std::string choice);
 
 public:
     // cluster centers

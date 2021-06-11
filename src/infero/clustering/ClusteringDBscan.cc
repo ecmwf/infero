@@ -11,6 +11,7 @@
 
 #include "infero/clustering/ClusteringDBscan.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/log/Log.h"
 
 
 ClusteringDBscan::ClusteringDBscan() : min_threshold(DBSCAN_MIN_VAL) {}
@@ -18,7 +19,7 @@ ClusteringDBscan::ClusteringDBscan() : min_threshold(DBSCAN_MIN_VAL) {}
 int ClusteringDBscan::run(const TensorFloat& prediction) {
 
     // read point data
-    vector<Point> _points = readPrediction(prediction);
+    vector<Point> _points = readPrediction(prediction);    
 
     // constructor
     DBSCAN ds(DBSCAN_MIN_N_CLUSTERS, DBSCAN_EPS, _points);
@@ -54,6 +55,11 @@ std::vector<Point> ClusteringDBscan::readPrediction(const TensorFloat& predictio
     // dim-1 is image_rows
     // dim-2 is image_columns
     // dim-3 is image_channels (must be equal to 1)
+    eckit::Log::info() << "Prediction shape: " << std::endl;
+    for(const auto& s: prediction.shape())
+        eckit::Log::info() << s << ", ";
+    eckit::Log::info() << std::endl;
+
     ASSERT(prediction.shape().size() >= 3);
     ASSERT(prediction.shape()[3] == 1);
 
