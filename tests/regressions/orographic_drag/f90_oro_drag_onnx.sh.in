@@ -11,11 +11,27 @@ eng_type=onnx
 
 model_path=$datadir/model.onnx
 input_path=$datadir/m36966_input.csv
+ref=$datadir/m36966_prediction.csv
 
-# run inference
-$exedir/runner_oro_drag \
+# run inference and check prediction sum
+# just a sanity check (independent of tensor layout)
+pred_sum=$($exedir/runner_oro_drag \
 $model_path \
 $eng_type \
-$input_path
+$input_path \
+| tail -n 1008 | awk 'BEGIN{sum=0}{sum+=$6}END{print sum}')
 
+echo "prediction sum: $pred_sum"
+
+ref_sum=$(cat $ref \
+| sed 's/ /\n/g' \
+| awk 'BEGIN{sum=0}{sum+=$1}END{print sum}')
+
+echo "reference sum: $ref_sum"
+
+if (( $(echo "$pred_sum-$ref_sum<0.000001" | bc -l) )); then
+  exit 0
+else
+  exit 1
+fi
 
