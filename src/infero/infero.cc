@@ -103,12 +103,11 @@ int main(int argc, char** argv) {
     // Compare against ref values
     if (args.has("ref_path")) {
 
-        TensorFloat* refT = tensor_from_file<float>(ref_path);
+        std::unique_ptr<TensorFloat> refT(tensor_from_file<float>(ref_path));
         float err = compare_tensors<float>(predT, *refT, TensorErrorType::MSE);
         Log::info() << "MSE error: " << err << std::endl;
         Log::info() << "threshold: " << threshold << std::endl;
 
-        delete refT;
         return !(err < threshold);
     }
 
