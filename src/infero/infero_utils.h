@@ -10,9 +10,9 @@
 
 #pragma once
 
-#include <string>
 #include <fstream>
 #include <iomanip>
+#include <string>
 
 #include "cnpy/cnpy.h"
 
@@ -122,7 +122,6 @@ void tensor_to_csv(const Tensor<S>& T, const std::string& filename) {
 }
 
 
-
 /// Tensor from numpy file .npy
 template <typename S>
 Tensor<S>* tensor_from_numpy(const std::string& filename, bool isright = false) {
@@ -159,7 +158,6 @@ void tensor_to_numpy(const Tensor<S>& T, const std::string& filename) {
 }
 
 
-
 template <typename S>
 Tensor<S>* tensor_from_file(const std::string& filename, bool isright = false) {
 
@@ -180,7 +178,6 @@ Tensor<S>* tensor_from_file(const std::string& filename, bool isright = false) {
 }
 
 
-
 template <typename S>
 void tensor_to_file(const Tensor<S>& T, const std::string& filename) {
     std::string ext = filename.substr(filename.find_last_of("."));
@@ -197,9 +194,7 @@ void tensor_to_file(const Tensor<S>& T, const std::string& filename) {
 
 
 template <typename S>
-float compare_tensors(const Tensor<S>& T1,
-                      const Tensor<S>& T2,
-                      TensorErrorType mes){
+float compare_tensors(const Tensor<S>& T1, const Tensor<S>& T2, TensorErrorType mes) {
 
     ASSERT(T1.size() == T2.size());
     size_t size = T1.size();
@@ -227,6 +222,5 @@ float compare_tensors(const Tensor<S>& T1,
 }
 
 
-
-} // infero namespace
-} // utils namespace
+}  // namespace utils
+}  // namespace infero

@@ -35,7 +35,6 @@ protected:
     void print(std::ostream& os) const;
 
 private:
-
     // TFlite model and interpreter
     std::unique_ptr<tflite::FlatBufferModel> model_;
     std::unique_ptr<tflite::Interpreter> interpreter_;

@@ -15,8 +15,8 @@
 #include <string>
 #include <vector>
 
-#include "infero/infero_utils.h"
 #include "eckit/linalg/Tensor.h"
+#include "infero/infero_utils.h"
 
 using namespace infero;
 

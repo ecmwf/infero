@@ -22,19 +22,16 @@ namespace infero {
 class InferenceModelONNX : public InferenceModel {
 
 public:
-
     InferenceModelONNX(const eckit::Configuration& conf);
 
     ~InferenceModelONNX();
 
 protected:
-
     void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut);
 
     void print(std::ostream& os) const;
 
 private:
-
     // ORT session
     std::unique_ptr<Ort::Session> session;
     std::unique_ptr<Ort::SessionOptions> session_options;
@@ -64,7 +61,6 @@ private:
     void queryInputLayer();
 
     void queryOutputLayer();
-
 };
 
 }  // namespace infero

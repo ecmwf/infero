@@ -16,7 +16,7 @@
 #include <sstream>
 #include <string>
 
-#include <cuda_runtime_api.h> // needed ???
+#include <cuda_runtime_api.h>  // needed ???
 #include "NvInfer.h"
 #include "argsParser.h"
 #include "buffers.h"
@@ -52,16 +52,14 @@ public:
     virtual ~InferenceModelTRT();
 
     static std::unique_ptr<InferenceModelTRT> from_onnx(std::string onnx_path, TRTOptions& options,
-                                                  std::string trt_path = "model.trt");
+                                                        std::string trt_path = "model.trt");
 
 protected:
-
     void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut);
 
     virtual void print(std::ostream& os) const;
 
 private:
-
     class Logger : public ILogger {
         void log(Severity severity, const char* msg) throw() {
             // show info-level messages only
@@ -71,7 +69,7 @@ private:
     };
 
     // utility converter std::vector to TRT Dims
-    static Dims Vector2Dims(std::vector<int>& vecdims);    
+    static Dims Vector2Dims(std::vector<int>& vecdims);
 
 private:
     nvinfer1::IRuntime* InferRuntime_;
