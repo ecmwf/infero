@@ -16,9 +16,7 @@
 #include <sstream>
 #include <string>
 
-#include <cuda_runtime_api.h>  // needed ???
 #include "NvInfer.h"
-#include "argsParser.h"
 #include "buffers.h"
 #include "common.h"
 #include "logger.h"

@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
 
 
     // Prepare output tensor
-    // TODO : find a batter way to pass output shape..
+    // TODO : find a better way to pass output shape..
     std::vector<size_t> out_shape_vec;
     std::stringstream ss(out_shape);
     std::string val;
