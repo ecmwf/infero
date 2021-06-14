@@ -9,7 +9,8 @@ on a HPC system without the need for high-level python libraries
 
 Build dependencies:
 
-- C++ compiler
+- C/C++ compiler
+- Fortran 90 compiler
 - CMake > 3.16 --- For use and installation see http://www.cmake.org/
 - ecbuild --- ECMWF library of CMake macros (https://github.com/ecmwf/ecbuild)
 
