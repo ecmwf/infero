@@ -33,12 +33,23 @@ using namespace eckit;
 namespace infero {
 
 
-InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) : InferenceModel() {
+InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf,
+                                           const InferenceModelBuffer* model_buffer) : InferenceModel() {
 
     std::string ModelPath(conf.getString("path"));
 
-    // Load model
-    model_ = tflite::FlatBufferModel::BuildFromFile(ModelPath.c_str());
+    // if not null, use the model buffer
+    if (model_buffer){
+
+        Log::info() << "Constructing TFLITE model from buffer.." << std::endl;
+        Log::info() << "Model expected size: " + std::to_string(model_buffer->size()) << std::endl;
+        model_ = tflite::FlatBufferModel::BuildFromBuffer((char*)model_buffer->data(),
+                                                          model_buffer->size());
+
+    } else {  // otherwise construct from model path
+        model_ = tflite::FlatBufferModel::BuildFromFile(ModelPath.c_str());
+    }
+
     TFLITE_MINIMAL_CHECK(model_ != nullptr);
 
     // Build the interpreter with the InterpreterBuilder.

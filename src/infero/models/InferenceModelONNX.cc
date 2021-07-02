@@ -25,7 +25,8 @@ using namespace eckit;
 namespace infero {
 
 
-InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
+InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf,
+                                       const InferenceModelBuffer* model_buffer) :
     InferenceModel(),
     inputName_(nullptr),
     outputName_(nullptr) {
@@ -39,7 +40,19 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
     session_options = std::unique_ptr<Ort::SessionOptions>(new Ort::SessionOptions);
     session_options->SetIntraOpNumThreads(1);
     session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
-    session = std::unique_ptr<Ort::Session>(new Ort::Session(*env, ModelPath.c_str(), *session_options));
+
+    // if not null, use the model buffer
+    if (model_buffer){
+        Log::info() << "Constructing ONNX model from buffer.." << std::endl;
+        Log::info() << "Model expected size: " + std::to_string(model_buffer->size()) << std::endl;
+        session = std::unique_ptr<Ort::Session>(new Ort::Session(*env,
+                                                                 model_buffer->data(),
+                                                                 model_buffer->size(),
+                                                                 *session_options));
+    } else {  // otherwise construct from model path
+        session = std::unique_ptr<Ort::Session>(new Ort::Session(*env, ModelPath.c_str(), *session_options));
+    }
+
 
     // query input/output layers
     queryInputLayer();

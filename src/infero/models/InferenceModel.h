@@ -13,18 +13,26 @@
 #include <memory>
 #include <ostream>
 #include <string>
+#include <fstream>
 
 #include "eckit/config/Configuration.h"
 #include "eckit/linalg/Tensor.h"
+#include "eckit/log/Log.h"
 
+using eckit::Log;
 
 namespace infero {
+
+class InferenceModelBuffer;
 
 /// Minimal interface for a inference model
 class InferenceModel {
 
+
 public:
-    static InferenceModel* create(const std::string& type, const eckit::Configuration& conf);
+    static InferenceModel* create(const std::string& type,
+                                  const eckit::Configuration& conf,
+                                  const InferenceModelBuffer* model_buffer = nullptr);
 
     InferenceModel();
 
@@ -50,6 +58,43 @@ protected:
 
 private:
     bool isOpen_;
+};
+
+
+class InferenceModelBuffer
+{
+public:
+    InferenceModelBuffer(void* data, size_t dataSize): data_(data), dataSize_(dataSize){}
+
+    static InferenceModelBuffer* from_path(const std::string path){
+
+        // read model from path
+        std::ifstream file(path, std::ios::binary | std::ios::ate);
+        std::streamsize size = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        if (size <= 0)
+            throw eckit::FailedSystemCall("File " + path +
+                                          " has size " + std::to_string(size),
+                                          Here());
+        char* buffer = new char [size];
+        if (file.read(buffer, size))
+        {
+            Log::info() << "Reading from " + path + " worked. " << std::endl;
+            Log::info() << "Model size: " + std::to_string(size) << std::endl;
+        }
+
+        return new InferenceModelBuffer( reinterpret_cast<void*>(buffer),
+                                         static_cast<size_t>(size));
+    }
+
+    void* data() const {return data_;}
+
+    size_t size() const {return dataSize_;}
+
+private:
+    void* data_;
+    size_t dataSize_;
 };
 
 

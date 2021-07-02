@@ -45,7 +45,8 @@ public:
     };
 
 public:
-    InferenceModelTRT(const eckit::Configuration& conf);
+    InferenceModelTRT(const eckit::Configuration& conf,
+                      const InferenceModelBuffer* model_buffer = nullptr);
 
     virtual ~InferenceModelTRT();
 

@@ -25,7 +25,8 @@ namespace infero {
 class InferenceModelTFlite : public InferenceModel {
 
 public:
-    InferenceModelTFlite(const eckit::Configuration& conf);
+    InferenceModelTFlite(const eckit::Configuration& conf,
+                         const InferenceModelBuffer* model_buffer = nullptr);
 
     virtual ~InferenceModelTFlite();
 

@@ -12,7 +12,6 @@
 #include <string>
 
 #include "eckit/exception/Exceptions.h"
-#include "eckit/log/Log.h"
 #include "eckit/config/LocalConfiguration.h"
 
 #include "infero/models/InferenceModel.h"
@@ -40,7 +39,9 @@ InferenceModel::~InferenceModel() {
         close();
 }
 
-InferenceModel* InferenceModel::create(const string& type, const eckit::Configuration& conf) 
+InferenceModel* InferenceModel::create(const string& type,
+                                       const eckit::Configuration& conf,
+                                       const InferenceModelBuffer* model_buffer)
 {
     std::string model_path(conf.getString("path"));
     Log::info() << "Loading model " << model_path << std::endl;
@@ -48,7 +49,7 @@ InferenceModel* InferenceModel::create(const string& type, const eckit::Configur
 #ifdef HAVE_ONNX
     if (type == "onnx") {
         Log::info() << "creating RTEngineONNX.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelONNX(conf);
+        InferenceModel* ptr = new InferenceModelONNX(conf, model_buffer);
         return ptr;
     }
 #endif
@@ -56,7 +57,7 @@ InferenceModel* InferenceModel::create(const string& type, const eckit::Configur
 #ifdef HAVE_TFLITE
     if (type == "tflite") {
         Log::info() << "creating RTEngineTFlite.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelTFlite(conf);
+        InferenceModel* ptr = new InferenceModelTFlite(conf, model_buffer);
         return ptr;
     }
 #endif
@@ -64,7 +65,7 @@ InferenceModel* InferenceModel::create(const string& type, const eckit::Configur
 #ifdef HAVE_TENSORRT
     if (type == "tensorrt") {
         Log::info() << "creating MLEngineTRT.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelTRT(conf);
+        InferenceModel* ptr = new InferenceModelTRT(conf, model_buffer);
         return ptr;
     }
 #endif

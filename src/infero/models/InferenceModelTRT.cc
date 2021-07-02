@@ -23,39 +23,59 @@ using namespace eckit;
 namespace infero {
 
 
-InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
+InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf,
+                                     const InferenceModelBuffer* model_buffer) :
     InferenceModel(), Engine_(nullptr), Network_(nullptr) {
 
-    // Resurrect the TRF model..
-    std::string ModelPath(conf.getString("path"));
-    std::stringstream gieModelStream;
-    ifstream en(ModelPath.c_str());
-    gieModelStream << en.rdbuf();
-    en.close();
-
-    Log::info() << "Reading TRT model from " << ModelPath.c_str() << std::endl;
-
-    // support for stringstream deserialization was deprecated in TensorRT v2
-    // instead, read the stringstream into a memory buffer and pass that to TRT.
-    gieModelStream.seekg(0, std::ios::end);
-    const long int modelSize = gieModelStream.tellg();
-    gieModelStream.seekg(0, std::ios::beg);
-
-    modelMem_ = (char*)malloc(modelSize);
-    if (!modelMem_) {
-        std::string err = "failed to allocate " + std::to_string(modelSize) + " bytes";
-        throw eckit::FailedSystemCall(err, Here());
-    }
-
-    gieModelStream.read((char*)modelMem_, modelSize);
+    // Runtime creation
     InferRuntime_ = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
-    Engine_.reset(InferRuntime_->deserializeCudaEngine((void*)modelMem_, modelSize, NULL));
-    if (!Engine_) {
-        std::string err = "failed to read the TRT engine!";
-        throw eckit::FailedSystemCall(err, Here());
-    }
 
-    Log::info() << "modelSize " << modelSize << std::endl;
+    // if not null, use the model buffer
+    if (model_buffer){
+        Log::info() << "Constructing ONNX model from buffer.." << std::endl;
+        Log::info() << "Model expected size: " + std::to_string(model_buffer->size()) << std::endl;
+
+        Engine_.reset(InferRuntime_->deserializeCudaEngine(model_buffer->data(), model_buffer->size()));
+
+        if (!Engine_) {
+            std::string err = "failed to read the TRT engine!";
+            throw eckit::FailedSystemCall(err, Here());
+        }
+
+    } else {  // otherwise construct from model path
+
+        // Resurrect the TRF model..
+        std::string ModelPath(conf.getString("path"));
+        std::stringstream gieModelStream;
+        ifstream en(ModelPath.c_str());
+        gieModelStream << en.rdbuf();
+        en.close();
+
+        Log::info() << "Reading TRT model from " << ModelPath.c_str() << std::endl;
+
+        // support for stringstream deserialization was deprecated in TensorRT v2
+        // instead, read the stringstream into a memory buffer and pass that to TRT.
+        gieModelStream.seekg(0, std::ios::end);
+        const long int modelSize = gieModelStream.tellg();
+        gieModelStream.seekg(0, std::ios::beg);
+
+        modelMem_ = (char*)malloc(modelSize);
+        if (!modelMem_) {
+            std::string err = "failed to allocate " + std::to_string(modelSize) + " bytes";
+            throw eckit::FailedSystemCall(err, Here());
+        }
+
+        gieModelStream.read((char*)modelMem_, modelSize);
+
+        Engine_.reset(InferRuntime_->deserializeCudaEngine((void*)modelMem_, modelSize, NULL));
+        if (!Engine_) {
+            std::string err = "failed to read the TRT engine!";
+            throw eckit::FailedSystemCall(err, Here());
+        }
+
+        Log::info() << "modelSize " << modelSize << std::endl;
+
+    }
 }
 
 InferenceModelTRT::~InferenceModelTRT() {
