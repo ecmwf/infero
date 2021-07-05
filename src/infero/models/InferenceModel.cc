@@ -13,6 +13,7 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/mpi/Comm.h"
 
 #include "infero/models/InferenceModel.h"
 
@@ -32,7 +33,56 @@ using namespace eckit;
 
 namespace infero {
 
-InferenceModel::InferenceModel() {}
+InferenceModel::InferenceModel(const eckit::Configuration& conf) {
+
+#ifdef HAVE_MPI
+    Log::info() << "mpi::comm().size() " << mpi::comm().size() << std::endl;
+    Log::info() << "mpi::comm().rank() " << mpi::comm().rank() << std::endl;
+
+    // Model configuration from CL
+    std::string ModelPath(conf.getString("path"));
+
+    model_buffer = nullptr;
+    size_t model_buffer_size;
+    char* model_buffer_data;
+
+    // rank 0 reads data from disk
+    if (mpi::comm().rank() == 0){
+        model_buffer = InferenceModelBuffer::from_path(ModelPath);
+        model_buffer_size = model_buffer->size();
+        model_buffer_data = reinterpret_cast<char*>(model_buffer->data());
+        Log::info() << "Rank 0 has read the model buffer. Broadcasting size.." << std::endl;
+    }
+
+    // rank 0 broadcasts model size
+    mpi::comm().broadcast(model_buffer_size, 0);
+
+    // all other ranks make space for data buffer
+    if (mpi::comm().rank() != 0){
+        model_buffer_data = new char[model_buffer_size];
+    }
+
+    // rank 0 broadcasts the model buffer
+    mpi::comm().broadcast(model_buffer_data, model_buffer_data+model_buffer_size, 0);
+
+    // all other ranks build their modelbuffer
+    if (mpi::comm().rank() != 0){
+        model_buffer = new InferenceModelBuffer(model_buffer_data, model_buffer_size);
+    }
+
+    Log::info() << "rank " << mpi::comm().rank()
+                << " has buffer size " << model_buffer_size
+                << std::endl;
+#else
+    // Model configuration from CL
+    std::string ModelPath(conf.getString("path"));
+
+    // rank 0 reads data from disk
+    model_buffer = InferenceModelBuffer::from_path(ModelPath);
+
+#endif
+
+}
 
 InferenceModel::~InferenceModel() {
     if(isOpen_)
@@ -40,8 +90,7 @@ InferenceModel::~InferenceModel() {
 }
 
 InferenceModel* InferenceModel::create(const string& type,
-                                       const eckit::Configuration& conf,
-                                       const InferenceModelBuffer* model_buffer)
+                                       const eckit::Configuration& conf)
 {
     std::string model_path(conf.getString("path"));
     Log::info() << "Loading model " << model_path << std::endl;
@@ -49,7 +98,7 @@ InferenceModel* InferenceModel::create(const string& type,
 #ifdef HAVE_ONNX
     if (type == "onnx") {
         Log::info() << "creating RTEngineONNX.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelONNX(conf, model_buffer);
+        InferenceModel* ptr = new InferenceModelONNX(conf);
         return ptr;
     }
 #endif
@@ -57,7 +106,7 @@ InferenceModel* InferenceModel::create(const string& type,
 #ifdef HAVE_TFLITE
     if (type == "tflite") {
         Log::info() << "creating RTEngineTFlite.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelTFlite(conf, model_buffer);
+        InferenceModel* ptr = new InferenceModelTFlite(conf);
         return ptr;
     }
 #endif
@@ -65,7 +114,7 @@ InferenceModel* InferenceModel::create(const string& type,
 #ifdef HAVE_TENSORRT
     if (type == "tensorrt") {
         Log::info() << "creating MLEngineTRT.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelTRT(conf, model_buffer);
+        InferenceModel* ptr = new InferenceModelTRT(conf);
         return ptr;
     }
 #endif

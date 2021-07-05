@@ -48,6 +48,10 @@ if(HAVE_TENSORRT)
 endif()
 
 
+if(HAVE_MPI)
+    add_definitions(-DHAVE_MPI)
+endif()
+
 ecbuild_add_library(
 
     TARGET infero
@@ -70,15 +74,18 @@ ecbuild_add_library(
 
     PRIVATE_INCLUDES
         "${eckit_INCLUDE_DIRS}"
+        "${MPI_INCLUDE_DIRS}"
         "${TENSORFLOWLITE_INCLUDE_DIRS}"
         "${ONNX_INCLUDE_DIRS}"
-        "${TENSORRT_INCLUDE_DIRS}"
+        "${TENSORRT_INCLUDE_DIRS}"        
 
     PRIVATE_LIBS
-        ${ZLIB_LIBRARIES}
+        ${ZLIB_LIBRARIES}        
         eckit
         eckit_option
+        eckit_mpi
         "${tensorflow_lite_libs}"
         "${onnx_libs}"
         "${tensor_rt_libs}"
+
 )

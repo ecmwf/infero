@@ -31,10 +31,9 @@ class InferenceModel {
 
 public:
     static InferenceModel* create(const std::string& type,
-                                  const eckit::Configuration& conf,
-                                  const InferenceModelBuffer* model_buffer = nullptr);
+                                  const eckit::Configuration& conf);
 
-    InferenceModel();
+    InferenceModel(const eckit::Configuration& conf);
 
     virtual ~InferenceModel();
 
@@ -56,15 +55,29 @@ protected:
         return os;
     }
 
+    InferenceModelBuffer* model_buffer;
+
 private:
-    bool isOpen_;
+    bool isOpen_;    
 };
 
 
 class InferenceModelBuffer
 {
 public:
-    InferenceModelBuffer(void* data, size_t dataSize): data_(data), dataSize_(dataSize){}
+
+    InferenceModelBuffer(char* data, size_t dataSize): data_(nullptr), dataSize_(dataSize){
+
+        ASSERT(dataSize_ >=0);
+
+        // takes ownership of data_
+        data_ = new char[ dataSize_ ];
+        memcpy(data_, data, dataSize);
+    }
+
+    ~InferenceModelBuffer(){
+        delete [] data_;
+    }
 
     static InferenceModelBuffer* from_path(const std::string path){
 
@@ -77,23 +90,29 @@ public:
             throw eckit::FailedSystemCall("File " + path +
                                           " has size " + std::to_string(size),
                                           Here());
-        char* buffer = new char [size];
+
+        char* buffer = new char[ static_cast<size_t>(size) ];
         if (file.read(buffer, size))
         {
             Log::info() << "Reading from " + path + " worked. " << std::endl;
             Log::info() << "Model size: " + std::to_string(size) << std::endl;
         }
 
-        return new InferenceModelBuffer( reinterpret_cast<void*>(buffer),
-                                         static_cast<size_t>(size));
+        InferenceModelBuffer* modelBuffr = new InferenceModelBuffer( buffer, static_cast<size_t>(size));
+
+        delete [] buffer;
+
+        return modelBuffr;
     }
 
-    void* data() const {return data_;}
+    void* data() const {return reinterpret_cast<void*>(data_);}
 
     size_t size() const {return dataSize_;}
 
 private:
-    void* data_;
+
+    // data copy
+    char* data_;
     size_t dataSize_;
 };
 

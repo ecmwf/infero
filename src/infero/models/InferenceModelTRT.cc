@@ -23,9 +23,8 @@ using namespace eckit;
 namespace infero {
 
 
-InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf,
-                                     const InferenceModelBuffer* model_buffer) :
-    InferenceModel(), Engine_(nullptr), Network_(nullptr) {
+InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
+    InferenceModel(conf), Engine_(nullptr), Network_(nullptr) {
 
     // Runtime creation
     InferRuntime_ = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());

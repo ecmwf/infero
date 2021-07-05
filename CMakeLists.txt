@@ -34,6 +34,13 @@ if(HAVE_FORTRAN)
     ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
 endif()
 
+
+############## MPI
+ecbuild_add_option(DEFAULT OFF
+                   FEATURE MPI
+                   DESCRIPTION "Use system MPI libraries"
+                   REQUIRED_PACKAGES "MPI COMPONENTS CXX C" )
+
 ############## TFlite
 ecbuild_add_option( FEATURE TF_LITE
                     DEFAULT OFF
@@ -54,6 +61,9 @@ ecbuild_add_option( FEATURE TENSORRT
 
 find_package(ZLIB REQUIRED) # for cnpy
 
+ecbuild_info("MPI_FOUND ${MPI_FOUND}")
+ecbuild_info("MPI_CXX_LIBRARIES ${MPI_CXX_LIBRARIES}")
+ecbuild_info("MPI_CXX_INCLUDE_DIRS ${MPI_CXX_INCLUDE_DIRS}")
 
 ecbuild_info("TENSORFLOWLITE_FOUND ${TENSORFLOWLITE_FOUND}")
 ecbuild_info("TENSORFLOWLITE_LIBRARIES ${TENSORFLOWLITE_LIBRARIES}")

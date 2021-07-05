@@ -33,8 +33,8 @@ using namespace eckit;
 namespace infero {
 
 
-InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf,
-                                           const InferenceModelBuffer* model_buffer) : InferenceModel() {
+InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
+    InferenceModel(conf) {
 
     std::string ModelPath(conf.getString("path"));
 

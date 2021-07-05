@@ -22,8 +22,7 @@ namespace infero {
 class InferenceModelONNX : public InferenceModel {
 
 public:
-    InferenceModelONNX(const eckit::Configuration& conf,
-                       const InferenceModelBuffer* model_buffer = nullptr);
+    InferenceModelONNX(const eckit::Configuration& conf);
 
     ~InferenceModelONNX();
 

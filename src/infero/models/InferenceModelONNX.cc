@@ -25,9 +25,8 @@ using namespace eckit;
 namespace infero {
 
 
-InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf,
-                                       const InferenceModelBuffer* model_buffer) :
-    InferenceModel(),
+InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
+    InferenceModel(conf),
     inputName_(nullptr),
     outputName_(nullptr) {
 
