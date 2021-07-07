@@ -12,12 +12,14 @@ module inferof
 implicit none
 private
 
+public :: infero_initialise
 public :: infero_inference
 public :: infero_create_handle_from_yaml_str
 public :: infero_create_handle_from_yaml_file
 public :: infero_open_handle
 public :: infero_close_handle
 public :: infero_delete_handle
+public :: infero_finalise
 
 
 interface
@@ -53,6 +55,16 @@ interface
     integer(c_int), dimension(*) :: shape2
   end subroutine
 
+end interface
+
+
+interface
+  subroutine infero_initialise_interf( argc, argv ) &
+    & bind(C,name="infero_initialise")
+    use iso_c_binding, only: c_int, c_ptr
+    integer(c_int), value :: argc
+    type(c_ptr) :: argv(15)
+  end subroutine
 end interface
 
 interface
@@ -95,6 +107,13 @@ interface
   end subroutine
 end interface
 
+interface
+  subroutine infero_finalise_interf( ) &
+    & bind(C,name="infero_finalise")
+    use iso_c_binding
+  end subroutine
+end interface
+
 
 ! Array views API
 
@@ -123,6 +142,9 @@ interface infero_inference ! function overloading
   module procedure infero_inference_real64_rank4_rank4
 end interface
 
+interface infero_initialise
+  module procedure infero_initialise_func
+end interface
 
 interface infero_create_handle_from_yaml_str
   module procedure infero_create_handle_from_yaml_str_func
@@ -144,6 +166,10 @@ interface infero_delete_handle
   module procedure infero_delete_handle_func
 end interface
 
+interface infero_finalise
+  module procedure infero_finalise_func
+end interface
+
 
 contains
 
@@ -161,6 +187,14 @@ type(c_ptr) function infero_create_handle_from_yaml_file_func( config_str )
   infero_create_handle_from_yaml_file_func = infero_create_handle_from_yaml_file_interf(config_str)
 end function
 
+subroutine infero_initialise_func( )
+  use iso_c_binding, only: c_int, c_ptr
+  integer(c_int) :: argc
+  type(c_ptr) :: argv(15)
+  call get_c_commandline_arguments(argc,argv)
+  call infero_initialise_interf( argc,argv )
+end subroutine
+
 subroutine infero_open_handle_func( handle )
   use iso_c_binding, only: c_ptr
   type(c_ptr), value :: handle
@@ -177,6 +211,11 @@ subroutine infero_delete_handle_func( handle )
   use iso_c_binding, only: c_ptr
   type(c_ptr), value :: handle
   call infero_delete_handle_interf( handle )
+end subroutine
+
+subroutine infero_finalise_func( )
+  use iso_c_binding
+  call infero_finalise_interf( )
 end subroutine
 
 !-----------------------------------------------------------------------------------------------------------------------
@@ -380,6 +419,42 @@ subroutine infero_inference_real64_rank4_rank4(handle, array1, array2 )
   call infero_inference_real64(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
 end subroutine
 
+
+
+!======================== utility tools =========================
+
+subroutine get_c_commandline_arguments(argc,argv)
+  use, intrinsic :: iso_c_binding
+  integer(c_int), intent(out) :: argc
+  type(c_ptr), intent(inout) :: argv(:)
+  character(kind=c_char,len=1), save, target :: args(255)
+  character(kind=c_char,len=255), save, target :: cmd
+  character(kind=c_char,len=255) :: arg
+  integer(c_int) :: iarg, arglen, pos, ich, argpos, i
+  call get_command(cmd)
+  do ich=1,len(cmd)
+    if (cmd(ich:ich) == " ") then
+      cmd(ich:ich) = c_null_char
+      exit
+    endif
+  enddo
+  argv(1) = c_loc(cmd(1:1))
+  argc = command_argument_count()+1
+  pos = 1
+  do iarg=1,argc
+    argpos = pos
+    call get_command_argument(iarg, arg )
+    arglen = len_trim(arg)
+    do ich=1,arglen
+      args(pos) = arg(ich:ich)
+      pos = pos+1
+    end do
+    args(pos) = c_null_char;  pos = pos+1
+    args(pos) = " ";          pos = pos+1
+    argv(iarg+1) = c_loc(args(argpos))
+  enddo
+
+end subroutine
 
 end module
 

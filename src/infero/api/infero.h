@@ -14,6 +14,9 @@ extern "C" {
 
 typedef void* infero_model_handle;
 
+// initialize infero library
+void infero_initialise(int argc, char** argv);
+
 // Creates an ML engine handle from a YAML string
 infero_model_handle infero_create_handle_from_yaml_str(char str[]);
 
@@ -37,6 +40,8 @@ void infero_inference_double(infero_model_handle h, double data1[], int rank1, i
 // run a ML engine for inference (float)
 void infero_inference_float(infero_model_handle h, float data1[], int rank1, int shape1[], float data2[], int rank2,
                             int shape2[]);
+
+void infero_finalise();
 
 #if defined(__cplusplus)
 }  // extern "C"

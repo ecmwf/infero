@@ -64,6 +64,9 @@ yaml_config = "---"//NEW_LINE('A') &
   //"  path: "//TRIM(model_path)//NEW_LINE('A') &
   //"  type: "//TRIM(model_type)//c_null_char
 
+! 0) init infero
+call infero_initialise()
+
 ! 1) get a inference model handle
 handle = infero_create_handle_from_yaml_str(yaml_config)
 
@@ -76,6 +79,9 @@ call infero_inference( handle, it2f, ot2f )
 ! 4) close and delete the handle
 call infero_close_handle( handle )
 call infero_delete_handle( handle )
+
+! 5) finalise
+call infero_finalise()
 
 
 ! print output

@@ -18,6 +18,7 @@
 
 #include "eckit/linalg/Tensor.h"
 #include "eckit/config/YAMLConfiguration.h"
+#include "eckit/runtime/Main.h"
 
 
 std::vector<size_t> shapify(int rank, int shape[]) {
@@ -41,6 +42,11 @@ using namespace infero;
 using eckit::linalg::TensorDouble;
 using eckit::linalg::TensorFloat;
 
+
+void infero_initialise(int argc, char** argv){
+    eckit::Main::initialise(argc, argv);
+}
+
 infero_model_handle infero_create_handle_from_yaml_str(char str[]) {
 
     eckit::YAMLConfiguration cfg(str);  // use config_str
@@ -54,7 +60,6 @@ infero_model_handle infero_create_handle_from_yaml_str(char str[]) {
 
 infero_model_handle infero_create_handle_from_yaml_file(char path[]) {
     NOTIMP;
-    // read the file from aa master node and broadcast
     eckit::YAMLConfiguration cfg(path);  // use config_str
     InferenceModel* model = InferenceModel::create(cfg.getString("type"), cfg);
     return model;
@@ -120,6 +125,10 @@ void infero_inference_float(infero_model_handle h,
 
     delete tIn;
     delete tOut;
+}
+
+void infero_finalise(){
+    // nothing to do here..
 }
 
 #ifdef __cplusplus
