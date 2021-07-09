@@ -43,7 +43,7 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
 
         Log::info() << "Constructing TFLITE model from buffer.." << std::endl;
         Log::info() << "Model expected size: " + std::to_string(model_buffer->size()) << std::endl;
-        model_ = tflite::FlatBufferModel::BuildFromBuffer((char*)model_buffer->data(),
+        model_ = tflite::FlatBufferModel::BuildFromBuffer((char*)model_buffer->as_void_ptr(),
                                                           model_buffer->size());
 
     } else {  // otherwise construct from model path

@@ -17,13 +17,15 @@ class InferoBuffer
 {
 public:
 
-    InferoBuffer(char* data, size_t dataSize);
+    InferoBuffer(char* as_void_ptr, size_t dataSize);
 
     ~InferoBuffer();
 
     static InferoBuffer* from_path(const std::string path);
 
-    void* data() const {return reinterpret_cast<void*>(data_);}
+    void* as_void_ptr() const {return reinterpret_cast<void*>(data_);}
+
+    char* as_char_ptr() const {return data_;}
 
     size_t size() const {return dataSize_;}
 

@@ -34,7 +34,7 @@ InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
         Log::info() << "Constructing ONNX model from buffer.." << std::endl;
         Log::info() << "Model expected size: " + std::to_string(model_buffer->size()) << std::endl;
 
-        Engine_.reset(InferRuntime_->deserializeCudaEngine(model_buffer->data(), model_buffer->size()));
+        Engine_.reset(InferRuntime_->deserializeCudaEngine(model_buffer->as_void_ptr(), model_buffer->size()));
 
         if (!Engine_) {
             std::string err = "failed to read the TRT engine!";

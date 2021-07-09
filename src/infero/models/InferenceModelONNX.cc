@@ -45,7 +45,7 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
         Log::info() << "Constructing ONNX model from buffer.." << std::endl;
         Log::info() << "Model expected size: " + std::to_string(model_buffer->size()) << std::endl;
         session = std::unique_ptr<Ort::Session>(new Ort::Session(*env,
-                                                                 model_buffer->data(),
+                                                                 model_buffer->as_void_ptr(),
                                                                  model_buffer->size(),
                                                                  *session_options));
     } else {  // otherwise construct from model path

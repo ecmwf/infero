@@ -32,7 +32,7 @@ InferoBuffer* InferoBuffer::from_path(const std::string path){
     if (eckit::mpi::comm().rank() == 0){
         _buffr = InferoBuffer::read_from_disk(path);
         _buffr_size = _buffr->size();
-        _buffr_data = reinterpret_cast<char*>(_buffr->data());
+        _buffr_data = _buffr->as_char_ptr();
         Log::info() << "Rank 0 has read file: " << path
                     << ", of size: " << _buffr_size
                     << std::endl;
