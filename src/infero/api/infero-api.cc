@@ -65,6 +65,9 @@ infero_model_handle infero_create_handle_from_yaml_file(char path[]) {
     eckit::YAMLConfiguration cfg(conf_buffr->as_char_ptr());
 
     InferenceModel* model = InferenceModel::create(cfg.getString("type"), cfg);
+
+    ASSERT(model);
+
     return model;
 }
 
