@@ -35,52 +35,9 @@ namespace infero {
 
 InferenceModel::InferenceModel(const eckit::Configuration& conf) {
 
-#ifdef HAVE_MPI
-    Log::info() << "mpi::comm().size() " << mpi::comm().size() << std::endl;
-    Log::info() << "mpi::comm().rank() " << mpi::comm().rank() << std::endl;
-
     // Model configuration from CL
     std::string ModelPath(conf.getString("path"));
-
-    model_buffer = nullptr;
-    size_t model_buffer_size;
-    char* model_buffer_data;
-
-    // rank 0 reads data from disk
-    if (mpi::comm().rank() == 0){
-        model_buffer = InferenceModelBuffer::from_path(ModelPath);
-        model_buffer_size = model_buffer->size();
-        model_buffer_data = reinterpret_cast<char*>(model_buffer->data());
-        Log::info() << "Rank 0 has read the model buffer. Broadcasting size.." << std::endl;
-    }
-
-    // rank 0 broadcasts model size
-    mpi::comm().broadcast(model_buffer_size, 0);
-
-    // all other ranks make space for data buffer
-    if (mpi::comm().rank() != 0){
-        model_buffer_data = new char[model_buffer_size];
-    }
-
-    // rank 0 broadcasts the model buffer
-    mpi::comm().broadcast(model_buffer_data, model_buffer_data+model_buffer_size, 0);
-
-    // all other ranks build their modelbuffer
-    if (mpi::comm().rank() != 0){
-        model_buffer = new InferenceModelBuffer(model_buffer_data, model_buffer_size);
-    }
-
-    Log::info() << "rank " << mpi::comm().rank()
-                << " has buffer size " << model_buffer_size
-                << std::endl;
-#else
-    // Model configuration from CL
-    std::string ModelPath(conf.getString("path"));
-
-    // rank 0 reads data from disk
-    model_buffer = InferenceModelBuffer::from_path(ModelPath);
-
-#endif
+    model_buffer = InferoBuffer::from_path(ModelPath);
 
 }
 
