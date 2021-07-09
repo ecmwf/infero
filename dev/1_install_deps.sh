@@ -16,7 +16,7 @@ if [ ! -d ${ECBUILD_SRC_DIR} ]; then
   echo "Cloning ecbuild into ${ECBUILD_SRC_DIR}.."
   git clone https://github.com/ecmwf/ecbuild.git ${ECBUILD_SRC_DIR}
   cd ${ECBUILD_SRC_DIR}
-  git checkout tags/${ECBUILD_TAG} -b ${ECBUILD_TAG}-branch
+  git checkout ${ECBUILD_BRANCH}
 
 else
   echo "Directory ${ECBUILD_SRC_DIR} already exist!"
@@ -33,7 +33,7 @@ if [ ! -d ${ECKIT_SRC_DIR} ]; then
   echo "Cloning ecbuild into ${ECKIT_SRC_DIR}.."
   git clone https://github.com/ecmwf/eckit.git ${ECKIT_SRC_DIR}
   cd ${ECKIT_SRC_DIR}
-  git checkout tags/${ECKIT_TAG} -b ${ECKIT_TAG}-branch
+  git checkout ${ECKIT_BRANCH}
 else
     echo "Directory ${ECKIT_SRC_DIR} already exist!"
 fi
@@ -57,7 +57,7 @@ fi
 # ====================================
 
 # ====== Clone and build ONNXRT ======
-if [ ! -d ${ONNXRT_SOURCE_DIR} ]; then
+if [ ! -d ${ONNXRT_SOURCE_DIR} ] && [ ${WITH_ONNX_RUNTIME} == ON ]; then
 
   # clone ONNXRT
   echo "Creating dir ${ONNXRT_SOURCE_DIR}.."
@@ -74,12 +74,12 @@ if [ ! -d ${ONNXRT_SOURCE_DIR} ]; then
   ./build.sh --config Release --build_shared_lib --parallel ${BUILD_NPROCS}
 
 else
-    echo "Directory ${ONNXRT_SOURCE_DIR} already exist!"
+    echo "Skipping ${ONNXRT_SOURCE_DIR}.."
 fi
 # =============================================
 
 # =========== Clone Tensorflow-LITE ===========
-if [ ! -d ${TFLITE_SOURCE_DIR} ]; then
+if [ ! -d ${TFLITE_SOURCE_DIR} ] && [ ${WITH_TFLITE_RUNTIME} == ON ]; then
 
   # clone ONNXRT
   echo "Creating dir ${TFLITE_SOURCE_DIR}.."
@@ -89,12 +89,12 @@ if [ ! -d ${TFLITE_SOURCE_DIR} ]; then
   git clone https://github.com/tensorflow/tensorflow.git ${TFLITE_SOURCE_DIR}
 
 else
-    echo "Directory ${TFLITE_SOURCE_DIR} already exist!"
+    echo "Skipping ${TFLITE_SOURCE_DIR}.."
 fi
 # =============================================
 
 # =========== Build Tensorflow-LITE ===========
-if [ ! -d ${TFLITE_BUILD_DIR} ]; then
+if [ ! -d ${TFLITE_BUILD_DIR} ] && [ ${WITH_TFLITE_RUNTIME} == ON ]; then
 
   echo "Building TFLITE in ${TFLITE_BUILD_DIR}.."
   if [ ! -e ${TFLITE_BUILD_DIR} ]; then
@@ -107,7 +107,7 @@ if [ ! -d ${TFLITE_BUILD_DIR} ]; then
   make -j${BUILD_NPROCS}
 
 else
-    echo "Directory ${TFLITE_BUILD_DIR} already exist!"
+    echo "Skipping ${TFLITE_BUILD_DIR}.."
 fi
 # =============================================
 
