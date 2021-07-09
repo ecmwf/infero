@@ -15,6 +15,7 @@
 #include "infero/api/infero.h"
 
 #include "infero/models/InferenceModel.h"
+#include "infero/InferoBuffer.h"
 
 #include "eckit/linalg/Tensor.h"
 #include "eckit/config/YAMLConfiguration.h"
@@ -59,8 +60,10 @@ infero_model_handle infero_create_handle_from_yaml_str(char str[]) {
 }
 
 infero_model_handle infero_create_handle_from_yaml_file(char path[]) {
-    NOTIMP;
-    eckit::YAMLConfiguration cfg(path);  // use config_str
+
+    InferoBuffer* conf_buffr = InferoBuffer::from_path(path);
+    eckit::YAMLConfiguration cfg(conf_buffr->as_char_ptr());
+
     InferenceModel* model = InferenceModel::create(cfg.getString("type"), cfg);
     return model;
 }
