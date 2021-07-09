@@ -33,12 +33,11 @@ using namespace eckit;
 
 namespace infero {
 
-InferenceModel::InferenceModel(const eckit::Configuration& conf) {
+InferenceModel::InferenceModel(const eckit::Configuration& conf) : modelBuffer_{size_t(0)}{
 
     // Model configuration from CL
     std::string ModelPath(conf.getString("path"));
-    model_buffer = InferoBuffer::from_path(ModelPath);
-
+    modelBuffer_ = eckit::mpi::comm().broadcastFile(conf.getString("path"), 0);
 }
 
 InferenceModel::~InferenceModel() {

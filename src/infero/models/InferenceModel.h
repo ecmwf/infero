@@ -18,8 +18,7 @@
 #include "eckit/config/Configuration.h"
 #include "eckit/linalg/Tensor.h"
 #include "eckit/log/Log.h"
-
-#include "infero/InferoBuffer.h"
+#include "eckit/io/SharedBuffer.h"
 
 using eckit::Log;
 
@@ -55,7 +54,7 @@ protected:
         return os;
     }
 
-    InferoBuffer* model_buffer;
+    eckit::SharedBuffer modelBuffer_;
 
 private:
     bool isOpen_;    

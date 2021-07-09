@@ -13,25 +13,15 @@
 #include <memory>
 
 #include "infero/api/infero.h"
-
 #include "infero/models/InferenceModel.h"
-#include "infero/InferoBuffer.h"
 
-#include "eckit/linalg/Tensor.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/runtime/Main.h"
+#include "eckit/io/SharedBuffer.h"
+#include "eckit/mpi/Comm.h"
 
-
-std::vector<size_t> shapify(int rank, int shape[]) {
-    std::vector<size_t> result(rank);
-    for (int i = 0; i < rank; ++i) {
-        result[i] = shape[i];
-    }
-    return result;
-}
 
 //---------------------------------------------------------------------------------------------------
-
 
 #ifdef __cplusplus
 extern "C" {
@@ -50,7 +40,8 @@ void infero_initialise(int argc, char** argv){
 
 infero_model_handle infero_create_handle_from_yaml_str(char str[]) {
 
-    eckit::YAMLConfiguration cfg(str);  // use config_str
+    std::string str_(str);
+    eckit::YAMLConfiguration cfg(str_);
     InferenceModel* model = InferenceModel::create(cfg.getString("type"), cfg);
     model->open();
 
@@ -61,8 +52,8 @@ infero_model_handle infero_create_handle_from_yaml_str(char str[]) {
 
 infero_model_handle infero_create_handle_from_yaml_file(char path[]) {
 
-    InferoBuffer* conf_buffr = InferoBuffer::from_path(path);
-    eckit::YAMLConfiguration cfg(conf_buffr->as_char_ptr());
+    eckit::SharedBuffer buff = eckit::mpi::comm().broadcastFile(path, 0);
+    eckit::YAMLConfiguration cfg(buff);
 
     InferenceModel* model = InferenceModel::create(cfg.getString("type"), cfg);
 
@@ -106,8 +97,8 @@ void infero_inference_double(infero_model_handle h,
     InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
 
 
-    TensorDouble T1(data1, shapify(rank1, shape1));
-    TensorDouble T2(data2, shapify(rank2, shape2));
+    TensorDouble T1(data1, eckit::linalg::shapify(rank1, shape1));
+    TensorDouble T2(data2, eckit::linalg::shapify(rank2, shape2));
 
     std::cout << "T1 : " << T1 << std::endl;
     std::cout << "T2 : " << T2 << std::endl;
@@ -124,8 +115,8 @@ void infero_inference_float(infero_model_handle h,
 
     std::cout << "infero_inference_float()" << std::endl;
 
-    TensorFloat* tIn(new TensorFloat(data1, shapify(rank1, shape1), true));
-    TensorFloat* tOut(new TensorFloat(data2, shapify(rank2, shape2), true));
+    TensorFloat* tIn(new TensorFloat(data1, eckit::linalg::shapify(rank1, shape1), true));
+    TensorFloat* tOut(new TensorFloat(data2, eckit::linalg::shapify(rank2, shape2), true));
 
     model->infer(*tIn, *tOut);
 

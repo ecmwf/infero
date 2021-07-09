@@ -41,12 +41,12 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
     session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     // if not null, use the model buffer
-    if (model_buffer){
+    if (modelBuffer_.data()){
         Log::info() << "Constructing ONNX model from buffer.." << std::endl;
-        Log::info() << "Model expected size: " + std::to_string(model_buffer->size()) << std::endl;
+        Log::info() << "Model expected size: " + std::to_string(modelBuffer_.size()) << std::endl;
         session = std::unique_ptr<Ort::Session>(new Ort::Session(*env,
-                                                                 model_buffer->as_void_ptr(),
-                                                                 model_buffer->size(),
+                                                                 modelBuffer_.data(),
+                                                                 modelBuffer_.size(),
                                                                  *session_options));
     } else {  // otherwise construct from model path
         session = std::unique_ptr<Ort::Session>(new Ort::Session(*env, ModelPath.c_str(), *session_options));

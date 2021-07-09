@@ -30,11 +30,11 @@ InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
     InferRuntime_ = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
 
     // if not null, use the model buffer
-    if (model_buffer){
+    if (modelBuffer_.data()){
         Log::info() << "Constructing ONNX model from buffer.." << std::endl;
-        Log::info() << "Model expected size: " + std::to_string(model_buffer->size()) << std::endl;
+        Log::info() << "Model expected size: " + std::to_string(modelBuffer_.size()) << std::endl;
 
-        Engine_.reset(InferRuntime_->deserializeCudaEngine(model_buffer->as_void_ptr(), model_buffer->size()));
+        Engine_.reset(InferRuntime_->deserializeCudaEngine(modelBuffer_.data(), modelBuffer_.size()));
 
         if (!Engine_) {
             std::string err = "failed to read the TRT engine!";
