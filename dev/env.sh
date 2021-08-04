@@ -3,12 +3,12 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # ======= Basic config =========
-ROOT_DIR=${HOME}
+ROOT_DIR=${INFERO_HOME:-$HOME}
 
 ROOT_SRC_DIR=${ROOT_DIR}/local
 ROOT_BUILD_DIR=${ROOT_DIR}/builds
 
-WITH_MPI=ON
+WITH_MPI=OFF
 WITH_ONNX_RUNTIME=OFF
 WITH_TFLITE_RUNTIME=ON
 WITH_TRT=OFF

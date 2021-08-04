@@ -5,6 +5,9 @@
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 source ${SCRIPT_DIR}/env.sh
 
+echo "ROOT_DIR = ${ROOT_DIR}"
+echo "ROOT_SRC_DIR = ${ROOT_SRC_DIR}"
+echo "ROOT_BUILD_DIR = ${ROOT_BUILD_DIR}"
 
 # ============= ECBUILD =============
 if [ ! -d ${ECBUILD_SRC_DIR} ]; then
