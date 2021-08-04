@@ -48,3 +48,34 @@ INFERO_SRC_DIR=$(dirname ${SCRIPT_DIR})
 INFERO_BUILD_DIR=${ROOT_BUILD_DIR}/infero
 # ===============================
 
+
+# ====== get miniconda env ======
+CONDA_DIR=${ROOT_DIR}/miniconda
+CONDA_ENV=infero_test_env
+
+if [ ! -d ${CONDA_DIR} ]; then
+  
+  # get miniconda
+  cd ${ROOT_DIR}
+  wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh
+  sh Miniconda3-latest-Linux-x86_64.sh -b -p ${CONDA_DIR}
+ 
+  # export path
+  export PATH=${CONDA_DIR}/bin:${PATH}
+
+  # create infero env
+  conda create -y -n ${CONDA_ENV} python=3
+
+  # install cmake
+  source activate ${CONDA_ENV}
+  pip install cmake
+
+fi
+
+# activate env
+export PATH=${CONDA_DIR}/bin:${PATH}
+source activate ${CONDA_ENV}
+# ===============================
+
+
+
