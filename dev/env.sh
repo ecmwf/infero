@@ -10,6 +10,7 @@ module load cmake
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # ======= Basic config =========
+INFERO_VERBOSE_COMPILATION=${INFERO_VERBOSE_COMPILATION:-"0"}
 ROOT_DIR=${INFERO_HOME:-$HOME}
 
 ROOT_SRC_DIR=${ROOT_DIR}/local
