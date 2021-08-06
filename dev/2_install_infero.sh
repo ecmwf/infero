@@ -17,7 +17,7 @@ cd ${INFERO_BUILD_DIR}
 
 echo "Building Infero.."
 ${ECBUILD_BUILD_EXE} \
--Deckit_ROOT=${HOME}/builds2/eckit \
+-Deckit_ROOT=${ECKIT_BUILD_DIR} \
 \
 -DENABLE_MPI=${WITH_MPI} \
 \
