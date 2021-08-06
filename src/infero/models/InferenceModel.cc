@@ -45,7 +45,7 @@ InferenceModel::~InferenceModel() {
         close();
 }
 
-InferenceModel* InferenceModel::create(const string& type,
+InferenceModel* InferenceModel::create(const std::string& type,
                                        const eckit::Configuration& conf)
 {
     std::string model_path(conf.getString("path"));
