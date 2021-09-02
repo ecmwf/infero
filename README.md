@@ -5,6 +5,9 @@ Infero runs a pre-trained ML model for inference. It can be deployed
 on a HPC system without the need for high-level python libraries 
 (e.g. TensorFlow, PyTorch, etc..)
 
+### Disclaimer
+This software is still under heavy development and not yet ready for operational use
+
 ### Requirements
 
 Build dependencies:
