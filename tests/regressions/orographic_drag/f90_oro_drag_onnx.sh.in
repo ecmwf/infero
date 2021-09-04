@@ -4,7 +4,7 @@ set -eux
 
 srcdir=@CMAKE_CURRENT_SOURCE_DIR@
 bindir=@CMAKE_CURRENT_BINARY_DIR@
-datadir=@CMAKE_SOURCE_DIR@/tests/data/orographic_drag
+datadir=@CMAKE_BINARY_DIR@/tests/data/orographic_drag
 exedir=@CMAKE_BINARY_DIR@/bin
 
 eng_type=onnx

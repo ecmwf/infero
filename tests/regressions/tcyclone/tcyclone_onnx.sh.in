@@ -4,7 +4,7 @@ set -eux
 
 srcdir=@CMAKE_CURRENT_SOURCE_DIR@
 bindir=@CMAKE_CURRENT_BINARY_DIR@
-datadir=@CMAKE_SOURCE_DIR@/tests/data/cyclone
+datadir=@CMAKE_BINARY_DIR@/tests/data/cyclone
 exedir=@CMAKE_BINARY_DIR@/bin
 
 

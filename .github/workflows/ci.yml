@@ -1,0 +1,70 @@
+name: Continuous Integration
+
+on: [push, pull_request]
+
+jobs:
+
+  ci:
+
+    name: Build & Test
+
+    strategy:
+      matrix:
+        name:
+        - gnu-10@ubuntu-18.04
+        include:
+        - name: gnu-10@ubuntu-20.04
+          os: ubuntu-20.04
+          compiler: gnu-10
+          compiler_cc: gcc-10
+          compiler_cxx: g++-10
+          compiler_fc: gfortran-10
+
+    runs-on: ${{ matrix.os }}
+    #runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Checkout Repository
+      uses: actions/checkout@v2
+      
+    - name: Install cmake
+      run: |      
+        wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
+        tar -zxvf cmake-3.20.0.tar.gz
+        cd cmake-3.20.0
+        ./bootstrap && make && sudo make install
+        cmake --version
+    
+    - name: Install gfortran
+      run: |      
+        sudo apt-get update
+        sudo apt-get -y install gfortran
+        
+    - name: Install bc
+      run: |      
+        sudo apt-get update
+        sudo apt-get -y install bc
+
+    - name: Set cmake version
+      env:
+        OS: ${{ matrix.os }}
+      shell: bash -eux {0}
+      run: |
+
+        # Get installed CMake version number.
+        CMAKE_VERSION="$( cmake --version | head -n 1 | awk '{print $3}' )"        
+        echo "CMAKE_VERSION=$CMAKE_VERSION" >> $GITHUB_ENV        
+
+    - name: Manual installation of deps
+      run: |
+        ./dev/1_install_deps.sh
+        
+    - name: Install infero
+      run: |
+        ./dev/2_install_infero.sh
+        
+    - name: Run tests
+      run: |
+        ./dev/3_run_tests.sh
+

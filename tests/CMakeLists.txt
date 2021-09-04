@@ -18,3 +18,10 @@ ecbuild_add_test(TARGET        test_inference_model
 
 # regression tests
 add_subdirectory(regressions)
+
+# copy test data to build directory
+add_custom_command(TARGET test_inference_model POST_BUILD
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${CMAKE_SOURCE_DIR}/tests/data
+                   ${CMAKE_BINARY_DIR}/tests/data
+                   )
