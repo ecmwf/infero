@@ -15,7 +15,7 @@ jobs:
       
       WITH_MPI: OFF
       WITH_ONNX_RUNTIME: ON
-      WITH_TFLITE_RUNTIME: OFF
+      WITH_TFLITE_RUNTIME: ON
       WITH_TRT: OFF
       
       BUILD_NPROCS: "8"
@@ -98,17 +98,16 @@ jobs:
         echo "INFERO_SRC_DIR: ${{env.INFERO_SRC_DIR}}"
         echo "INFERO_BUILD_DIR: ${{env.INFERO_BUILD_DIR}}"
         
+        echo "ENV_ACT: ${{ env.ACT }}"
+        
     - name: Install gfortran
+      if: ${{ env.ACT }}
       run: |      
         sudo apt-get update
         sudo apt-get -y install gfortran
         
-    - name: Install bc
-      run: |      
-        sudo apt-get update
-        sudo apt-get -y install bc
-        
     - name: Install cmake
+      if: ${{ env.ACT }}
       shell: bash -eux {0}
       run: |
         wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
@@ -120,6 +119,10 @@ jobs:
         CMAKE_VERSION="$( cmake --version | head -n 1 | awk '{print $3}' )"        
         echo "CMAKE_VERSION=$CMAKE_VERSION" >> $GITHUB_ENV  
 
+    - name: Install bc
+      run: |      
+        sudo apt-get update
+        sudo apt-get -y install bc
   
     - name: Install ECBUILD
       run: |
