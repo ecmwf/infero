@@ -5,9 +5,44 @@ on: [push, pull_request]
 jobs:
 
   ci:
-
+    
     name: Build & Test
+    
+    env:
+      ROOT_DIR: /var/tmp
+      ROOT_SRC_DIR: ${{env.ROOT_DIR}}/local
+      ROOT_BUILD_DIR: ${{env.ROOT_DIR}}/builds
+      
+      WITH_MPI: OFF
+      WITH_ONNX_RUNTIME: ON
+      WITH_TFLITE_RUNTIME: OFF
+      WITH_TRT: OFF
+      
+      BUILD_NPROCS: "8"
+      INFERO_VERBOSE_COMPILATION: "0"
 
+      ECBUILD_BRANCH: develop
+      ECBUILD_SRC_DIR: ${{env.ROOT_SRC_DIR}}/ecbuild
+      ECBUILD_BUILD_DIR: ${{env.ECBUILD_SRC_DIR}}
+      ECBUILD_BUILD_EXE: ${{env.ECBUILD_BUILD_DIR}}/bin/ecbuild
+
+      ECKIT_BRANCH: develop
+      ECKIT_SRC_DIR: ${{env.ROOT_SRC_DIR}}/eckit
+      ECKIT_BUILD_DIR: ${{env.ROOT_BUILD_DIR}}/eckit
+
+      ONNXRT_SOURCE_DIR: ${{env.ROOT_SRC_DIR}}/onnx_rt
+      ONNXRT_BUILD_DIR: ${{env.ONNXRT_SOURCE_DIR}}/build
+
+      TFLITE_SOURCE_DIR: ${{env.ROOT_SRC_DIR}}/tensorflow
+      TFLITE_BUILD_DIR: ${{env.ROOT_BUILD_DIR}}/tflite
+
+      TRT_SOURCE_DIR: ${{env.ROOT_SRC_DIR}}/TensorRT-8.0.0.3
+      TRT_BUILD_DIR: ${{env.ROOT_SRC_DIR}}/TensorRT-8.0.0.3
+
+      INFERO_SRC_DIR: $GITHUB_WORKSPACE
+      INFERO_BUILD_DIR: ${{env.ROOT_BUILD_DIR}}/infero
+      
+      
     strategy:
       matrix:
         name:
@@ -21,21 +56,48 @@ jobs:
           compiler_fc: gfortran-10
 
     runs-on: ${{ matrix.os }}
-    #runs-on: ubuntu-latest
 
     steps:
 
     - name: Checkout Repository
       uses: actions/checkout@v2
       
-    - name: Install cmake
-      run: |      
-        wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
-        tar -zxvf cmake-3.20.0.tar.gz
-        cd cmake-3.20.0
-        ./bootstrap && make && sudo make install
-        cmake --version
-    
+    - name: Echo Infero environment
+      run: |
+      
+        echo "ROOT_DIR: ${{env.ROOT_DIR}}"
+        echo "ROOT_SRC_DIR: ${{env.ROOT_SRC_DIR}}"
+        echo "ROOT_BUILD_DIR: ${{env.ROOT_BUILD_DIR}}"
+
+        echo "WITH_MPI: ${{env.WITH_MPI}}"
+        echo "WITH_ONNX_RUNTIME: ${{env.WITH_ONNX_RUNTIME}}"
+        echo "WITH_TFLITE_RUNTIME: ${{env.WITH_TFLITE_RUNTIME}}"
+        echo "WITH_TRT: ${{env.WITH_TRT}}"
+
+        echo "BUILD_NPROCS: ${{env.BUILD_NPROCS}}"
+        echo "INFERO_VERBOSE_COMPILATION: ${{env.INFERO_VERBOSE_COMPILATION}}"
+
+        echo "ECBUILD_BRANCH: ${{env.ECBUILD_BRANCH}}"
+        echo "ECBUILD_SRC_DIR: ${{env.ECBUILD_SRC_DIR}}"
+        echo "ECBUILD_BUILD_DIR: ${{env.ECBUILD_BUILD_DIR}}"
+        echo "ECBUILD_BUILD_EXE: ${{env.ECBUILD_BUILD_EXE}}"
+
+        echo "ECKIT_BRANCH: ${{env.ECKIT_BRANCH}}"
+        echo "ECKIT_SRC_DIR: ${{env.ECKIT_SRC_DIR}}"
+        echo "ECKIT_BUILD_DIR: ${{env.ECKIT_BUILD_DIR}}"
+
+        echo "ONNXRT_SOURCE_DIR: ${{env.ONNXRT_SOURCE_DIR}}"
+        echo "ONNXRT_BUILD_DIR: ${{env.ONNXRT_BUILD_DIR}}"
+
+        echo "TFLITE_SOURCE_DIR: ${{env.TFLITE_SOURCE_DIR}}"
+        echo "TFLITE_BUILD_DIR: ${{env.TFLITE_BUILD_DIR}}"
+
+        echo "TRT_SOURCE_DIR: ${{env.TRT_SOURCE_DIR}}"
+        echo "TRT_BUILD_DIR: ${{env.TRT_BUILD_DIR}}"
+
+        echo "INFERO_SRC_DIR: ${{env.INFERO_SRC_DIR}}"
+        echo "INFERO_BUILD_DIR: ${{env.INFERO_BUILD_DIR}}"
+        
     - name: Install gfortran
       run: |      
         sudo apt-get update
@@ -45,26 +107,179 @@ jobs:
       run: |      
         sudo apt-get update
         sudo apt-get -y install bc
-
-    - name: Set cmake version
-      env:
-        OS: ${{ matrix.os }}
+        
+    - name: Install cmake
       shell: bash -eux {0}
       run: |
-
+        wget https://github.com/Kitware/CMake/releases/download/v3.20.0/cmake-3.20.0.tar.gz
+        tar -zxvf cmake-3.20.0.tar.gz
+        cd cmake-3.20.0
+        ./bootstrap && make -j${{env.BUILD_NPROCS}} && sudo make install
+         
         # Get installed CMake version number.
         CMAKE_VERSION="$( cmake --version | head -n 1 | awk '{print $3}' )"        
-        echo "CMAKE_VERSION=$CMAKE_VERSION" >> $GITHUB_ENV        
+        echo "CMAKE_VERSION=$CMAKE_VERSION" >> $GITHUB_ENV  
 
-    - name: Manual installation of deps
+  
+    - name: Install ECBUILD
       run: |
-        ./dev/1_install_deps.sh
+      
+        if [ ! -d ${{env.ECBUILD_SRC_DIR}} ]; then
+
+          # clone ECBUILD
+          echo "Creating dir ${{env.ECBUILD_SRC_DIR}}.."
+          mkdir -p ${{env.ECBUILD_SRC_DIR}}
+          
+          echo "Cloning ecbuild into ${{env.ECBUILD_SRC_DIR}}.."
+          git clone https://github.com/ecmwf/ecbuild.git ${{env.ECBUILD_SRC_DIR}}
+          cd ${{env.ECBUILD_SRC_DIR}}
+          git checkout ${{env.ECBUILD_BRANCH}}
+
+        else
+          echo "Directory ${{env.ECBUILD_SRC_DIR}} already exist!"
+        fi
+      
+    - name: Install ECKIT
+      run: |
+
+        if [ ! -d ${{env.ECKIT_SRC_DIR}} ]; then
+
+          # clone ECKIT
+          echo "Creating dir ${{env.ECKIT_SRC_DIR}}.."
+          mkdir -p ${{env.ECKIT_SRC_DIR}}
+          
+          echo "Cloning ecbuild into ${{env.ECKIT_SRC_DIR}}.."
+          git clone https://github.com/ecmwf/eckit.git ${{env.ECKIT_SRC_DIR}}
+          cd ${{env.ECKIT_SRC_DIR}}
+          git checkout ${{env.ECKIT_BRANCH}}
         
+        else
+          echo "Directory ${{env.ECKIT_SRC_DIR}} already exist!"
+        fi
+        
+
+        if [ ! -d ${{env.ECKIT_BUILD_DIR}} ]; then
+
+          echo "Building eckit in ${{env.ECKIT_BUILD_DIR}}.."
+          if [ ! -e ${{env.ECKIT_BUILD_DIR}} ]; then
+              echo "Creating dir ${{env.ECKIT_BUILD_DIR}}.."
+              mkdir -p ${{env.ECKIT_BUILD_DIR}}
+          fi          
+          cd ${{env.ECKIT_BUILD_DIR}}
+          export PATH=${{env.ECBUILD_SRC_DIR}}/bin:$PATH
+          cmake ${{env.ECKIT_SRC_DIR}}
+          make -j${{env.BUILD_NPROCS}}
+        else
+          echo "Directory ${{env.ECKIT_BUILD_DIR}} already exist!"
+        fi
+
+    - name: Install TF-Lite
+      run: |
+
+        if [ ! -d ${{env.TFLITE_SOURCE_DIR}} ] && [ ${{env.WITH_TFLITE_RUNTIME}} == ON ]; then
+        
+          # clone ONNXRT
+          echo "Creating dir ${{env.TFLITE_SOURCE_DIR}}.."
+          mkdir -p ${{env.TFLITE_SOURCE_DIR}}
+        
+          echo "cloning TFLITE in ${{env.TFLITE_SOURCE_DIR}}.."
+          git clone https://github.com/tensorflow/tensorflow.git ${{env.TFLITE_SOURCE_DIR}}
+        
+        else
+            echo "Skipping ${{env.TFLITE_SOURCE_DIR}}.."
+        fi
+
+        if [ ! -d ${{env.TFLITE_BUILD_DIR}} ] && [ ${{env.WITH_TFLITE_RUNTIME}} == ON ]; then
+        
+          echo "Building TFLITE in ${{env.TFLITE_BUILD_DIR}}.."
+          if [ ! -e ${{env.TFLITE_BUILD_DIR}} ]; then
+            echo "Creating dir ${{env.TFLITE_BUILD_DIR}}.."
+            mkdir -p ${{env.TFLITE_BUILD_DIR}}
+          fi
+        
+          cd ${{env.TFLITE_BUILD_DIR}}
+          cmake -DBUILD_SHARED_LIBS=ON ${{env.TFLITE_SOURCE_DIR}}/tensorflow/lite
+          make -j${{env.BUILD_NPROCS}}
+        
+        else
+            echo "Skipping ${{env.TFLITE_BUILD_DIR}}.."
+        fi
+
+        
+    - name: Install ONNX-runtime
+      run: |        
+
+        if [ ! -d ${{env.ONNXRT_SOURCE_DIR}} ] && [ ${{env.WITH_ONNX_RUNTIME}} == ON ]; then
+        
+          # clone ONNXRT
+          echo "Creating dir ${{env.ONNXRT_SOURCE_DIR}}.."
+          mkdir -p ${{env.ONNXRT_SOURCE_DIR}}
+        
+          echo "cloning ONNXRT in ${{env.ONNXRT_SOURCE_DIR}}.."
+          git clone --recursive https://github.com/Microsoft/onnxruntime ${{env.ONNXRT_SOURCE_DIR}}
+        
+          # build ONNXRT
+          echo "cd in ${{env.ONNXRT_SOURCE_DIR}}.."
+          cd ${{env.ONNXRT_SOURCE_DIR}}
+        
+          echo "Building ONNX.."
+          ./build.sh --config Release --build_shared_lib --parallel ${{env.BUILD_NPROCS}}
+        
+        else
+            echo "Skipping ${{env.ONNXRT_SOURCE_DIR}}.."
+        fi
+        # =============================================
+
+    - name: Install TensorRT
+      run: |
+
+        if [[ ! -d ${{env.TRT_SOURCE_DIR}} && ${{env.WITH_TRT}} == ON ]] ; then
+          echo "WITH_TRT=ON but TRT source dir ${{env.TRT_SOURCE_DIR}} is NOT FOUND!"
+          exit 1
+        fi
+        
+        if [[ ! -d ${{env.TRT_BUILD_DIR}} && ${{env.WITH_TRT}} == ON ]] ; then
+          echo "WITH_TRT=ON but TRT build dir ${{env.TRT_BUILD_DIR}} is NOT FOUND!"
+          exit 1
+        fi
+
     - name: Install infero
       run: |
-        ./dev/2_install_infero.sh
+        
+        # make build dir
+        if [ ! -e ${{env.INFERO_BUILD_DIR}} ]; then
+          echo "Creating dir ${{env.INFERO_BUILD_DIR}}.."
+          mkdir -p ${{env.INFERO_BUILD_DIR}}
+        fi
+        
+        echo "cd in ${{env.INFERO_BUILD_DIR}}.."
+        cd ${{env.INFERO_BUILD_DIR}}
+        
+        
+        echo "Building Infero.."
+        INFERO_CMAKE_CMD="${{env.ECBUILD_BUILD_EXE}} \
+          -Deckit_ROOT=${{env.ECKIT_BUILD_DIR}} \
+          -DENABLE_MPI=${{env.WITH_MPI}} \
+          -DENABLE_TF_LITE=${{env.WITH_TFLITE_RUNTIME}} \
+          -DTENSORFLOWLITE_PATH=${{env.TFLITE_SOURCE_DIR}} \
+          -DTENSORFLOWLITE_ROOT=${{env.TFLITE_BUILD_DIR}} \
+          -DENABLE_ONNX=${{env.WITH_ONNX_RUNTIME}} \
+          -DONNX_ROOT=${{env.ONNXRT_SOURCE_DIR}} \
+          -DENABLE_TENSORRT=${{env.WITH_TRT}} ${{env.INFERO_SRC_DIR}}"
+        
+        if [ ${{env.INFERO_VERBOSE_COMPILATION}} == "0" ]; then
+          INFERO_MAKE_CMD="make" 
+        else
+          INFERO_MAKE_CMD="make VERBOSE=1" 
+        fi
+        
+        #execute cmake and make
+        ${INFERO_CMAKE_CMD} && ${INFERO_MAKE_CMD}
         
     - name: Run tests
       run: |
-        ./dev/3_run_tests.sh
+        echo "cd in ${{env.INFERO_BUILD_DIR}}.."
+        cd ${{env.INFERO_BUILD_DIR}}
+        make test
+
 
