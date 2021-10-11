@@ -35,6 +35,10 @@ integer :: output_dim_1
 integer :: output_dim_2
 integer :: output_dim_3
 
+real*8 input_sum
+real*8 tmp_input
+real output_sum
+
 ! file IO
 integer :: ios, fu
 integer, parameter :: read_unit = 99
@@ -65,13 +69,16 @@ allocate( it2f(input_dim_0,input_dim_1,input_dim_2,input_dim_3) )
 allocate( ot2f(output_dim_0,output_dim_1,output_dim_2,output_dim_3) )
 
 ! Read 4D data from sequential CSV (CSV values are in Fortran order)
+input_sum = 0
 open (action='read', file=TRIM(input_path), iostat=ios, newunit=fu)
 if (ios /= 0) stop
 do ch = 1,input_dim_3
     do j = 1,input_dim_2
         do i = 1,input_dim_1
             do ss = 1,input_dim_0
-              read(fu, *) it2f(ss, i, j, ch)
+              read(fu, *) tmp_input
+              it2f(ss, i, j, ch) = tmp_input
+              input_sum = input_sum + tmp_input
             end do
         end do
     end do
@@ -103,16 +110,21 @@ call infero_finalise()
 
 
 ! print output tensor (Prediction of Infero model)
+output_sum = 0
 do ch = 1,output_dim_3
     do j = 1,output_dim_2
         do i = 1,output_dim_1
             do ss = 1,output_dim_0
               print*, "[",ss, ",",i, ",",j, ",",ch, "]", ot2f(ss, i, j, ch)
+              output_sum = output_sum + ot2f(ss, i, j, ch)
             end do
         end do
     end do
 end do
 
+! print out sum
+print* , "input_sum: ", input_sum
+print* , "output_sum: ", output_sum
 
 end program
 
