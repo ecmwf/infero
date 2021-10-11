@@ -62,7 +62,7 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
 
     // Allocate tensor buffers.
     TFLITE_MINIMAL_CHECK(interpreter_->AllocateTensors() == kTfLiteOk);
-    tflite::PrintInterpreterState(interpreter_.get());
+//    tflite::PrintInterpreterState(interpreter_.get());
 }
 
 InferenceModelTFlite::~InferenceModelTFlite() {}
@@ -104,8 +104,8 @@ void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg:
     // ========================== Run inference ===========================
     TFLITE_MINIMAL_CHECK(interpreter_->Invoke() == kTfLiteOk);
 
-    printf("\n\n=== Post-invoke Interpreter State ===\n");
-    tflite::PrintInterpreterState(interpreter_.get());
+//    printf("\n\n=== Post-invoke Interpreter State ===\n");
+//    tflite::PrintInterpreterState(interpreter_.get());
     // ====================================================================
 
     // ========================== Get output ==============================
