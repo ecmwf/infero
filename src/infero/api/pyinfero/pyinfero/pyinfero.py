@@ -78,18 +78,18 @@ class Infero:
         """
 
         # input set to Fortran order
-        input_data = np.array(input_data, order='F', dtype=np.float32)
+        input_data = np.array(input_data, order='C', dtype=np.float32)
         cdata1p = self.ffi.cast("float *", input_data.ctypes.data)
         cshape1 = self.ffi.new(f"int[]", input_data.shape)
 
         # output also expected in Fortran order
-        cdata2 = np.zeros(output_shape, order='F', dtype=np.float32)
+        cdata2 = np.zeros(output_shape, order='C', dtype=np.float32)
         cdata2p = self.ffi.cast("float *", cdata2.ctypes.data)
         cshape2 = self.ffi.new(f"int[]", output_shape)
 
-        self.__lib.infero_inference_float(self.infero_hdl,
-                                          cdata1p, len(input_data.shape), cshape1,
-                                          cdata2p, len(output_shape), cshape2)
+        self.__lib.infero_inference_float_ctensor(self.infero_hdl,
+                                                  cdata1p, len(input_data.shape), cshape1,
+                                                  cdata2p, len(output_shape), cshape2)
 
         return_output = copy.deepcopy(cdata2)
         return_output = np.array(return_output)
