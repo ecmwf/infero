@@ -106,6 +106,18 @@ void infero_inference_double(infero_model_handle h,
 
 
 // run a ML engine for inference
+void infero_inference_double_ctensor(infero_model_handle h,
+                                     double data1[], int rank1, int shape1[],
+                                     double data2[], int rank2, int shape2[]) {
+
+    NOTIMP;
+
+    std::cout << "infero_inference_double_ctensor() - used for c-style input tensors" << std::endl;
+
+}
+
+
+// run a ML engine for inference
 void infero_inference_float(infero_model_handle h,
                             float data1[], int rank1, int shape1[],
                             float data2[], int rank2, int shape2[]) {
@@ -117,6 +129,25 @@ void infero_inference_float(infero_model_handle h,
 
     TensorFloat* tIn(new TensorFloat(data1, eckit::linalg::shapify(rank1, shape1), true));
     TensorFloat* tOut(new TensorFloat(data2, eckit::linalg::shapify(rank2, shape2), true));
+
+    model->infer(*tIn, *tOut);
+
+    delete tIn;
+    delete tOut;
+}
+
+// run a ML engine for inference
+void infero_inference_float_ctensor(infero_model_handle h,
+                                   float data1[], int rank1, int shape1[],
+                                   float data2[], int rank2, int shape2[]) {
+
+    ASSERT(h);
+    InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
+
+    std::cout << "infero_inference_float_ctensor() - used for c-style input tensors" << std::endl;
+
+    TensorFloat* tIn(new TensorFloat(data1, eckit::linalg::shapify(rank1, shape1), false));
+    TensorFloat* tOut(new TensorFloat(data2, eckit::linalg::shapify(rank2, shape2), false));
 
     model->infer(*tIn, *tOut);
 

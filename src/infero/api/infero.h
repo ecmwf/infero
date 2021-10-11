@@ -36,10 +36,18 @@ void infero_delete_handle(infero_model_handle);
 void infero_inference_double(infero_model_handle h, double data1[], int rank1, int shape1[], double data2[], int rank2,
                              int shape2[]);
 
+// run a ML engine for inference (double) - for c-style input tensors
+void infero_inference_double_ctensor(infero_model_handle h, double data1[], int rank1, int shape1[], double data2[], int rank2,
+                                    int shape2[]);
 
 // run a ML engine for inference (float)
 void infero_inference_float(infero_model_handle h, float data1[], int rank1, int shape1[], float data2[], int rank2,
                             int shape2[]);
+
+// run a ML engine for inference (float) - for c-style input tensors
+void infero_inference_float_ctensor(infero_model_handle h, float data1[], int rank1, int shape1[], float data2[], int rank2,
+                                   int shape2[]);
+
 
 void infero_finalise();
 
