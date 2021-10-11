@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+set -eux
+
+srcdir=@CMAKE_CURRENT_SOURCE_DIR@
+bindir=@CMAKE_CURRENT_BINARY_DIR@
+datadir=@CMAKE_SOURCE_DIR@/tests/data/cyclone
+exedir=@CMAKE_BINARY_DIR@/bin
+
+eng_type=tflite
+model_path=$datadir/cyclone_model_200x200.tflite
+input_path=$datadir/cyclone_input_200x200_ctensor.csv
+ref=$datadir/cyclone_output_200x200.csv
+
+
+# run inference
+pred_sum=$($exedir/runner_tcyclone_ctensor \
+$model_path \
+$eng_type \
+$input_path \
+| tail -n 1 \
+| awk 'BEGIN{sum=0}{sum+=$2}END{print sum}')
+
+echo "prediction sum: $pred_sum"
+
+ref_sum=$(cat $ref \
+| sed 's/ /\n/g' \
+| awk 'BEGIN{sum=0}{sum+=$1}END{print sum}')
+
+echo "reference sum: $ref_sum"
+
+if (( $(echo "$pred_sum-$ref_sum<0.01" | bc -l) )); then
+  exit 0
+else
+  exit 1
+fi

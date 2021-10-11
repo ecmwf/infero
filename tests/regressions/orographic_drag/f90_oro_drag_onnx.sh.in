@@ -8,7 +8,6 @@ datadir=@CMAKE_SOURCE_DIR@/tests/data/orographic_drag
 exedir=@CMAKE_BINARY_DIR@/bin
 
 eng_type=onnx
-
 model_path=$datadir/model.onnx
 input_path=$datadir/m36966_input.csv
 ref=$datadir/m36966_prediction.csv
@@ -19,7 +18,8 @@ pred_sum=$($exedir/runner_oro_drag \
 $model_path \
 $eng_type \
 $input_path \
-| tail -n 1008 | awk 'BEGIN{sum=0}{sum+=$6}END{print sum}')
+| tail -n 1008 \
+| awk 'BEGIN{sum=0}{sum+=$6}END{print sum}')
 
 echo "prediction sum: $pred_sum"
 
