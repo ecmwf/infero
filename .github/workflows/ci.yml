@@ -177,9 +177,6 @@ jobs:
     steps:
     - name: Notify Teams
       uses: ecmwf-actions/notify-teams@v1
-      if: env.INCOMING_WEBHOOK
-      env:
-        INCOMING_WEBHOOK: ${{ secrets.MS_TEAMS_INCOMING_WEBHOOK }}
       with:
-        incoming_webhook: ${{ env.INCOMING_WEBHOOK }}
+        incoming_webhook: ${{ secrets.MS_TEAMS_INCOMING_WEBHOOK }}
         needs_context: ${{ toJSON(needs) }}
