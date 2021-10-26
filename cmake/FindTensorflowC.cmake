@@ -19,14 +19,12 @@
 #  TENSORFLOWC_ROOT              - Set this variable to the root installation
 
 # Search with priority for TENSORFLOWC_PATH if given as CMake or env var
-find_path(TENSORFLOWC_INCLUDE_DIR include/tensorflow/c/c_api.h
-          HINTS $ENV{TENSORFLOWC_ROOT}/include/tensorflow/c
-                ${TENSORFLOWC_ROOT}/include/tensorflow/c
-
+find_path(TENSORFLOWC_INCLUDE_DIR tensorflow/c/c_api.h
+          HINTS $ENV{TENSORFLOWC_ROOT} ${TENSORFLOWC_ROOT}
           PATHS ${TENSORFLOWC_PATH} ENV TENSORFLOWC_PATH
           PATH_SUFFIXES include NO_DEFAULT_PATH)
 
-find_path(TENSORFLOWC_INCLUDE_DIR include/tensorflow/c/c_api.h PATH_SUFFIXES include )
+find_path(TENSORFLOWC_INCLUDE_DIR tensorflow/c/c_api.h PATH_SUFFIXES include )
 
 # Search with priority for TENSORFLOWC_PATH if given as CMake or env var
 find_library(TENSORFLOWC_LIB tensorflow

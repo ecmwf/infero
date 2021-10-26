@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include <tensorflow/c/c_api.h>
+#include "tensorflow/c/c_api.h"
 
 #include "infero/models/InferenceModel.h"
 
