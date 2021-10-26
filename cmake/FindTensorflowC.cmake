@@ -9,14 +9,14 @@
 # - Try to find TensorFlowLite
 # Once done this will define
 #
-#  TENSORFLOWC_FOUND  - found ONNX
-#  TENSORFLOWC_INCLUDE_DIRS  - the ONNX include directories
-#  TENSORFLOWC_LIBRARIES     - the ONNX libraries
+#  TENSORFLOWC_FOUND         - found TensorflowC
+#  TENSORFLOWC_INCLUDE_DIRS  - the TensorflowC include directories
+#  TENSORFLOWC_LIBRARIES     - the TensorflowC libraries
 #
 # The following paths will be searched with priority if set in CMake or env
 #
-#  TENSORFLOWC_PATH          - prefix path of the ONNX installation
-#  TENSORFLOWC_ROOT              - Set this variable to the root installation
+#  TENSORFLOWC_PATH          - prefix path of the TensorflowC installation
+#  TENSORFLOWC_ROOT          - Set this variable to the root installation
 
 # Search with priority for TENSORFLOWC_PATH if given as CMake or env var
 find_path(TENSORFLOWC_INCLUDE_DIR tensorflow/c/c_api.h

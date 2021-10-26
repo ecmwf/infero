@@ -20,8 +20,9 @@ Build dependencies:
 Runtime dependencies:
   - eckit (https://github.com/ecmwf/eckit)
 
-Optional runtime dependencies:
+Optional runtime dependencies:  
   - TensorFlow Lite (https://github.com/tensorflow/tensorflow.git)
+  - TensorFlow C API's (https://www.tensorflow.org/install/lang_c)
   - ONNX-Runtime (https://github.com/Microsoft/onnxruntime)
   - TensorRT (https://developer.nvidia.com/tensorrt)
 
@@ -52,6 +53,8 @@ Useful cmake arguments:
  - -DENABLE_TF_LITE=ON
  - -DTENSORFLOWLITE_PATH=</path/to/tensorflow/sources>
  - -DTENSORFLOWLITE_ROOT=</path/to/tflite/root/dir>
+ - -DENABLE_TF_C=ON
+ - -DTENSORFLOWC_ROOT=</path/to/tf_c/root/dir>
  - -DENABLE_ONNX=ON
  - -DONNX_ROOT=</path/to/onnxruntime/root/dir>
  - -DENABLE_TENSORRT=ON
