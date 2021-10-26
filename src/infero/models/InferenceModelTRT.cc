@@ -26,11 +26,16 @@ namespace infero {
 InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
     InferenceModel(conf), Engine_(nullptr), Network_(nullptr) {
 
+    std::string ModelPath(conf.getString("path"));
+
+    // read/bcast model by mpi (when possible)
+    broadcast_model(ModelPath);
+
     // Runtime creation
     InferRuntime_ = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
 
     // if not null, use the model buffer
-    if (modelBuffer_.data()){
+    if (modelBuffer_.size()){
         Log::info() << "Constructing ONNX model from buffer.." << std::endl;
         Log::info() << "Model expected size: " + std::to_string(modelBuffer_.size()) << std::endl;
 

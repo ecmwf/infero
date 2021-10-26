@@ -47,6 +47,12 @@ ecbuild_add_option( FEATURE TF_LITE
                     DESCRIPTION "TensorflowLite engine"
                     REQUIRED_PACKAGES TensorflowLite )
 
+############## TF_C
+ecbuild_add_option( FEATURE TF_C
+                    DEFAULT OFF
+                    DESCRIPTION "Tensorflow C engine"
+                    REQUIRED_PACKAGES TensorflowC )
+
 ############## ONNX
 ecbuild_add_option( FEATURE ONNX
                     DEFAULT OFF
@@ -68,6 +74,10 @@ ecbuild_info("MPI_CXX_INCLUDE_DIRS ${MPI_CXX_INCLUDE_DIRS}")
 ecbuild_info("TENSORFLOWLITE_FOUND ${TENSORFLOWLITE_FOUND}")
 ecbuild_info("TENSORFLOWLITE_LIBRARIES ${TENSORFLOWLITE_LIBRARIES}")
 ecbuild_info("TENSORFLOWLITE_INCLUDE_DIRS ${TENSORFLOWLITE_INCLUDE_DIRS}")
+
+ecbuild_info("TENSORFLOWC_FOUND ${TENSORFLOWC_FOUND}")
+ecbuild_info("TENSORFLOWC_LIBRARIES ${TENSORFLOWC_LIBRARIES}")
+ecbuild_info("TENSORFLOWC_INCLUDE_DIRS ${TENSORFLOWC_INCLUDE_DIRS}")
 
 ecbuild_info("ONNX_FOUND ${ONNX_FOUND}")
 ecbuild_info("ONNX_LIBRARIES ${ONNX_LIBRARIES}")

@@ -13,12 +13,19 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/config/LocalConfiguration.h"
+
+#ifdef HAVE_MPI
 #include "eckit/mpi/Comm.h"
+#endif
 
 #include "infero/models/InferenceModel.h"
 
 #ifdef HAVE_ONNX
 #include "infero/models/InferenceModelONNX.h"
+#endif
+
+#ifdef HAVE_TF_C
+#include "infero/models/InferenceModelTFC.h"
 #endif
 
 #ifdef HAVE_TFLITE
@@ -35,9 +42,6 @@ namespace infero {
 
 InferenceModel::InferenceModel(const eckit::Configuration& conf) : modelBuffer_{size_t(0)}{
 
-    // Model configuration from CL
-    std::string ModelPath(conf.getString("path"));
-    modelBuffer_ = eckit::mpi::comm().broadcastFile(conf.getString("path"), 0);
 }
 
 InferenceModel::~InferenceModel() {
@@ -55,6 +59,14 @@ InferenceModel* InferenceModel::create(const std::string& type,
     if (type == "onnx") {
         Log::info() << "creating RTEngineONNX.. " << std::endl;
         InferenceModel* ptr = new InferenceModelONNX(conf);
+        return ptr;
+    }
+#endif
+
+#ifdef HAVE_TF_C
+    if (type == "tf_c") {
+        Log::info() << "creating RTEngineTFC.. " << std::endl;
+        InferenceModel* ptr = new InferenceModelTFC(conf);
         return ptr;
     }
 #endif
@@ -84,6 +96,13 @@ void InferenceModel::open()  {
 
 void InferenceModel::close() {
     isOpen_ = false;
+}
+
+void InferenceModel::broadcast_model(const std::string path) {
+
+#ifdef HAVE_MPI
+    modelBuffer_ = eckit::mpi::comm().broadcastFile(path, 0);
+#endif
 }
 
 }  // namespace infero

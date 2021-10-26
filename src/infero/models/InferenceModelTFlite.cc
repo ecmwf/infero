@@ -22,12 +22,6 @@
 #define OUTPUT_SCALAR_TYPE float
 
 
-#define TFLITE_MINIMAL_CHECK(x)                                  \
-    if (!(x)) {                                                  \
-        fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); \
-        exit(1);                                                 \
-    }
-
 using namespace eckit;
 
 namespace infero {
@@ -38,8 +32,11 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
 
     std::string ModelPath(conf.getString("path"));
 
+    // read/bcast model by mpi (when possible)
+    broadcast_model(ModelPath);
+
     // if not null, use the model buffer
-    if (modelBuffer_.data()){
+    if (modelBuffer_.size()){
 
         Log::info() << "Constructing TFLITE model from buffer.." << std::endl;
         Log::info() << "Model expected size: " + std::to_string(modelBuffer_.size()) << std::endl;
@@ -50,7 +47,7 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
         model_ = tflite::FlatBufferModel::BuildFromFile(ModelPath.c_str());
     }
 
-    TFLITE_MINIMAL_CHECK(model_ != nullptr);
+    INFERO_CHECK(model_ != nullptr);
 
     // Build the interpreter with the InterpreterBuilder.
     tflite::ops::builtin::BuiltinOpResolver resolver;
@@ -58,10 +55,10 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
     interpreter_ = std::unique_ptr<tflite::Interpreter>(new tflite::Interpreter);
 
     builder(&interpreter_);
-    TFLITE_MINIMAL_CHECK(interpreter_ != nullptr);
+    INFERO_CHECK(interpreter_ != nullptr);
 
     // Allocate tensor buffers.
-    TFLITE_MINIMAL_CHECK(interpreter_->AllocateTensors() == kTfLiteOk);
+    INFERO_CHECK(interpreter_->AllocateTensors() == kTfLiteOk);
 //    tflite::PrintInterpreterState(interpreter_.get());
 }
 
@@ -102,7 +99,7 @@ void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg:
     // ====================================================================
 
     // ========================== Run inference ===========================
-    TFLITE_MINIMAL_CHECK(interpreter_->Invoke() == kTfLiteOk);
+    INFERO_CHECK(interpreter_->Invoke() == kTfLiteOk);
 
 //    printf("\n\n=== Post-invoke Interpreter State ===\n");
 //    tflite::PrintInterpreterState(interpreter_.get());

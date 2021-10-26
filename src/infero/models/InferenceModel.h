@@ -54,6 +54,8 @@ protected:
         return os;
     }
 
+    virtual void broadcast_model(const std::string path);
+
     eckit::SharedBuffer modelBuffer_;
 
 private:

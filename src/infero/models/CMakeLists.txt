@@ -17,6 +17,16 @@ if(HAVE_ONNX)
     add_definitions(-DHAVE_ONNX)
 endif()
 
+### support for Tensorflow C API
+if(HAVE_TF_C)
+    list(APPEND infero_srcs
+        InferenceModelTFC.h
+        InferenceModelTFC.cc
+    )
+    list(APPEND tensorflow_c_libs ${TENSORFLOWC_LIBRARIES})
+    add_definitions(-DHAVE_TF_C)
+endif()
+
 
 ### support for TensorflowLite
 if(HAVE_TF_LITE)
@@ -75,6 +85,7 @@ ecbuild_add_library(
     PRIVATE_INCLUDES
         "${eckit_INCLUDE_DIRS}"
         "${MPI_INCLUDE_DIRS}"
+        "${TENSORFLOWC_INCLUDE_DIRS}"
         "${TENSORFLOWLITE_INCLUDE_DIRS}"
         "${ONNX_INCLUDE_DIRS}"
         "${TENSORRT_INCLUDE_DIRS}"        
@@ -84,6 +95,7 @@ ecbuild_add_library(
         eckit
         eckit_option
         eckit_mpi
+        "${tensorflow_c_libs}"
         "${tensorflow_lite_libs}"
         "${onnx_libs}"
         "${tensor_rt_libs}"

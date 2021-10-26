@@ -32,6 +32,9 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
 
     std::string ModelPath(conf.getString("path"));
 
+    // read/bcast model by mpi (when possible)
+    broadcast_model(ModelPath);
+
     // environment
     env = std::unique_ptr<Ort::Env>(new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "onnx_model"));
 
@@ -41,7 +44,7 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
     session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     // if not null, use the model buffer
-    if (modelBuffer_.data()){
+    if (modelBuffer_.size()){
         Log::info() << "Constructing ONNX model from buffer.." << std::endl;
         Log::info() << "Model expected size: " + std::to_string(modelBuffer_.size()) << std::endl;
         session = std::unique_ptr<Ort::Session>(new Ort::Session(*env,

@@ -19,6 +19,17 @@ if (HAVE_ONNX)
 
 endif()
 
+if (HAVE_TF_C)
+
+    ecbuild_configure_file(tcyclone_tf_c.sh.in
+        tcyclone_tf_c.sh @ONLY )
+
+    ecbuild_add_test(
+        TYPE     SCRIPT
+        COMMAND  tcyclone_tf_c.sh )
+
+endif()
+
 
 if (HAVE_TF_LITE)
 

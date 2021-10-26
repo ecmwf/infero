@@ -21,6 +21,12 @@
 
 #define CSV_FLOAT_PRECISION 16
 
+#define INFERO_CHECK(x)                                          \
+    if (!(x)) {                                                  \
+        fprintf(stderr, "Error at %s:%d\n", __FILE__, __LINE__); \
+        exit(1);                                                 \
+    }
+
 using namespace eckit;
 using namespace eckit::linalg;
 
