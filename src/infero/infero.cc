@@ -52,7 +52,7 @@ int main(int argc, char** argv) {
     options.push_back(new SimpleOption<std::string>("input", "Path to input file"));
     options.push_back(new SimpleOption<std::string>("output", "Path to output file"));
     options.push_back(new SimpleOption<std::string>("model", "Path to ML model"));
-    options.push_back(new SimpleOption<std::string>("engine", "ML engine [onnx, tflite, trt]"));
+    options.push_back(new SimpleOption<std::string>("engine", "ML engine [onnx, tflite, trt, tf_c]"));
     options.push_back(new SimpleOption<std::string>("ref_path", "Path to Reference prediction"));
     options.push_back(new SimpleOption<double>("threshold", "Verification threshold"));
     options.push_back(new SimpleOption<std::string>("out_shape", "output tensor shape [s1,s1,...]"));
