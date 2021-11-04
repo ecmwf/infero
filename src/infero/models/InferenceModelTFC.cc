@@ -17,6 +17,7 @@
 
 #include "infero/models/InferenceModelTFC.h"
 #include "infero/infero_utils.h"
+#include "eckit/utils/StringTools.h"
 
 
 using namespace eckit;
@@ -182,6 +183,86 @@ void InferenceModelTFC::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::Te
 
 }
 
+void InferenceModelTFC::infer_mimo(std::vector<TensorFloat*> tIn, std::vector<char*> input_names,
+                                   std::vector<TensorFloat*> tOut, std::vector<char*> output_names)
+{
+
+    // N Input tensors
+    size_t NInputs = input_names.size();
+
+    // array of outputs for input-operations
+    TF_Output* Input = static_cast<TF_Output*>(malloc(sizeof(TF_Output) * NInputs));
+    for (size_t i=0; i<NInputs; i++){
+        Input[i] = getOperation(input_names[i]);
+    }
+
+    // N Output tensors
+    size_t NOutputs = output_names.size();
+
+    // array of outputs for output-operations
+    TF_Output* Output = static_cast<TF_Output*>(malloc(sizeof(TF_Output) * NOutputs));
+
+    for (size_t i=0; i<NOutputs; i++){
+        Output[i] = getOperation(output_names[i]);
+    }
+
+    // -----------------------------------------------
+    // input tensors
+    TF_Tensor** InputValues = static_cast<TF_Tensor**>(malloc(sizeof(TF_Tensor*) * NInputs));
+    for (size_t i=0; i<NInputs; i++){
+        InputValues[i] = TF_TensorFromData( tIn[i]->shape(), tIn[i]->data() );
+    }
+
+    // input tensors
+    TF_Tensor** OutputValues = static_cast<TF_Tensor**>(malloc(sizeof(TF_Tensor*) * NOutputs));
+    for (size_t i=0; i<NOutputs; i++){
+        OutputValues[i] = TF_TensorFromData( tOut[i]->shape(), tOut[i]->data() );
+    }
+    // -----------------------------------------------
+
+    // ------------ Run the Session ------------------
+    TF_SessionRun(session,
+                  nullptr,
+                  Input,
+                  InputValues,
+                  static_cast<int>(NInputs),
+                  Output,
+                  OutputValues,
+                  static_cast<int>(NOutputs),
+                  nullptr,
+                  0,
+                  nullptr,
+                  err_status);
+
+    check_status(err_status, "TF_SessionRun");
+    // -----------------------------------------------
+
+
+    // --------------- copy output -------------------
+    for (size_t i=0; i<NOutputs; i++){
+
+        void* buff = TF_TensorData(OutputValues[1]);
+        float* offsets = static_cast<float*>(buff);
+
+        if (tOut[i]->isRight()) {
+
+            // TFC uses Left (C) tensor layouts, so we need to convert
+            TensorFloat tLeft(offsets, tOut[i]->shape(), false);  // wrap data
+
+            // creates temporary tensor with data in left layout
+            *tOut[i] = tLeft.transformLeftToRightLayout();
+
+        } else {
+
+            // TFC uses Left (C) tensor layouts, so we can copy straight into memory of tOut
+            Log::info() << "output size " << tOut[i]->size() << std::endl;
+            memcpy(tOut[i]->data(), offsets, tOut[i]->size() * sizeof(float));
+        }
+    }
+    // -----------------------------------------------
+
+}
+
 void InferenceModelTFC::print(std::ostream &os) const
 {
     os << "A TFC Model" << std::endl;
@@ -197,6 +278,71 @@ void InferenceModelTFC::check_status(const TF_Status* s, std::string name){
         throw eckit::BadValue("Operation failed!", Here());
     }
 }
+
+TF_Output InferenceModelTFC::getOperation(std::string name)
+{
+
+    std::vector<std::string> name_split = StringTools::split(":", name);
+    std::string name_text = name_split[0];
+
+    // by default op id = 0, otherwise try "<name>:id"
+    int op_id = 0;
+    if(name_split.size() > 1){
+        op_id = std::stoi(name_split[1]);
+    }
+
+    // op output
+    TF_Output t0 = {TF_GraphOperationByName(network_graph, name_text.c_str()), op_id};
+
+    int t0_ndims = TF_GraphGetTensorNumDims(network_graph, t0, err_status);
+    check_status(err_status, "TF_GraphGetTensorNumDims");
+    Log::info() << "Layer " << name_text
+                << " [id=" << op_id << "]"
+                << " has " << t0_ndims
+                << " dims." << std::endl;
+
+    int64_t* t0_dims = static_cast<int64_t*>(malloc(sizeof(int64_t) * t0_ndims));
+    TF_GraphGetTensorShape(network_graph,
+                           t0,
+                           t0_dims,
+                           t0_ndims,
+                           err_status);
+
+    for (int i=0; i<t0_ndims; i++){
+        Log::info() << "N output dims: " << t0_dims[i] << std::endl;
+    }
+
+    check_status(err_status, "TF_GraphGetTensorShape");
+
+    return t0;
+
+}
+
+TF_Tensor* InferenceModelTFC::TF_TensorFromData(const std::vector<size_t>& dims, float* data){
+
+    size_t InputNdims = dims.size();
+
+    int prod=1;
+    for (auto& d: dims) {
+       prod *= d;
+    }
+    size_t InputSize = sizeof(float) * prod;
+    std::vector<int64_t> input_dims = utils::convert_shape<eckit::linalg::Size, int64_t>(dims);
+
+    TF_Tensor* Tensor = TF_NewTensor(TF_FLOAT,
+                                     input_dims.data(),
+                                     static_cast<int>(InputNdims),
+                                     data,
+                                     InputSize,
+                                     &NoOpDeallocator,
+                                     nullptr);
+    INFERO_CHECK(Tensor)
+
+    return Tensor;
+
+}
+
+
 
 void InferenceModelTFC::broadcast_model(const std::string path){
 

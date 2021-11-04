@@ -29,6 +29,9 @@ public:
 protected:
     void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut);
 
+    virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> tIn, std::vector<char*> input_names,
+                            std::vector<eckit::linalg::TensorFloat*> tOut, std::vector<char*> output_names);
+
     void print(std::ostream& os) const;
 
     virtual void broadcast_model(const std::string path);
@@ -36,6 +39,8 @@ protected:
 private:
 
     void check_status(const TF_Status* s, std::string name);
+    TF_Output getOperation(std::string name);
+    TF_Tensor *TF_TensorFromData(const std::vector<size_t> &dims, float *data);
 
 private:
 

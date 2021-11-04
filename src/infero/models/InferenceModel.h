@@ -42,6 +42,10 @@ public:
     /// run the inference
     virtual void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut) = 0;
 
+    /// run the inference (multi-input/multi-output inference)
+    virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> tIn, std::vector<char*> input_names,
+                            std::vector<eckit::linalg::TensorFloat*> tOut, std::vector<char*> output_names);
+
     /// closes the engine
     virtual void close();
 
