@@ -210,6 +210,13 @@ void InferenceModelTFC::infer_mimo(std::vector<TensorFloat*> tIn, std::vector<ch
     // input tensors
     TF_Tensor** InputValues = static_cast<TF_Tensor**>(malloc(sizeof(TF_Tensor*) * NInputs));
     for (size_t i=0; i<NInputs; i++){
+
+        if (tIn[i]->isRight()) {
+            Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
+                        << "Transforming to left.." << std::endl;
+            tIn[i]->toLeftLayout();
+        }
+
         InputValues[i] = TF_TensorFromData( tIn[i]->shape(), tIn[i]->data() );
     }
 
