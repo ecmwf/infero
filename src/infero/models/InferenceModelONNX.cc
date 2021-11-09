@@ -85,8 +85,6 @@ void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut) {
                                             shape_64.data(),
                                             shape_64.size());
     ASSERT(input_tensor.IsTensor());
-    Log::info() << "Input has shape: ";
-    print_shape(input_tensor);
 
     auto output_tensors = session->Run(Ort::RunOptions{nullptr},
                                        inputNames.data(),
@@ -97,9 +95,6 @@ void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut) {
 
     // output tensors
     ASSERT(output_tensors.size() == 1 && output_tensors.front().IsTensor());
-
-    Log::info() << "Output has shape: ";
-    print_shape(output_tensors.front());
 
     if (tOut.isRight()) {
 
@@ -143,8 +138,6 @@ void InferenceModelONNX::infer_mimo(std::vector<TensorFloat *> tIn, std::vector<
                                                 shape_64.data(),
                                                 shape_64.size());
         ASSERT(input_tensor.IsTensor());
-        Log::info() << "Input [" << i << "] " << " has shape: ";
-        print_shape(input_tensor);
 
         inputTensors.emplace_back(std::move(input_tensor));
 
@@ -163,9 +156,6 @@ void InferenceModelONNX::infer_mimo(std::vector<TensorFloat *> tIn, std::vector<
     for (size_t i=0; i<numOutputs; i++){
 
          ASSERT(output_tensors[i].IsTensor());
-
-         Log::info() << "Output [" << i << "] " << " has shape: ";
-         print_shape(output_tensors[i]);
 
          if (tOut[i]->isRight()) {
 
@@ -193,7 +183,6 @@ void InferenceModelONNX::setupInputLayers() {
     // get input name
     numInputs = session->GetInputCount();
 
-    Log::info() << "ONNX model has: " << numInputs << " inputs" << std::endl;
     for (size_t i=0; i<numInputs; i++){
 
         char* inputName_ = session->GetInputName(i, allocator);
@@ -204,12 +193,6 @@ void InferenceModelONNX::setupInputLayers() {
 
         std::vector<int64_t> inputLayerShape_ = tensor_info.GetShape();
         inputLayerShapes.push_back(inputLayerShape_);
-
-        Log::info() << "Layer [" << i << "] " << inputName_ << " has shape: ";
-        for (auto s: inputLayerShape_){
-            Log::info() << s << ", ";
-        }
-        Log::info() << std::endl;
     }
 }
 
@@ -219,7 +202,6 @@ void InferenceModelONNX::setupOutputLayers() {
     // get input name
     numOutputs = session->GetOutputCount();
 
-    Log::info() << "ONNX model has: " << numOutputs << " outputs" << std::endl;
     for (size_t i=0; i<numOutputs; i++){
 
         char* outputName_ = session->GetOutputName(i, allocator);
@@ -231,31 +213,30 @@ void InferenceModelONNX::setupOutputLayers() {
         std::vector<int64_t> outputLayerShape_ = tensor_info.GetShape();
         outputLayerShapes.push_back(outputLayerShape_);
 
-        Log::info() << "Layer [" << i << "] " << outputName_ << " has shape: ";
-        for (auto s: outputLayerShape_){
-            Log::info() << s << ", ";
-        }
-        Log::info() << std::endl;
     }
-
 }
 
 
 void InferenceModelONNX::print(std::ostream& os) const {
 
-//    os << "N input tensors: " << numInputNodes_ << std::endl;
-//    os << "Input layer " << inputNodeNames_[0] << " expects a Tensor with " << inputLayerShape_.size()
-//       << " dimensions" << std::endl;
+    os << "ONNX model has: " << numInputs << " inputs" << std::endl;
+    for (size_t i=0; i<numInputs; i++){
+        Log::info() << "Layer [" << i << "] " << inputNames[i] << " has shape: ";
+        for (auto s: inputLayerShapes[i]){
+            Log::info() << s << ", ";
+        }
+        Log::info() << std::endl;
+    }
 
-//    for (int j = 0; j < inputLayerShape_.size(); j++)
-//        os << "dim [" << j << "]: " << inputLayerShape_[j] << std::endl;
+    os << "ONNX model has: " << numOutputs << " outputs" << std::endl;
+    for (size_t i=0; i<numOutputs; i++){
+        Log::info() << "Layer [" << i << "] " << outputNames[i] << " has shape: ";
+        for (auto s: outputLayerShapes[i]){
+            Log::info() << s << ", ";
+        }
+        Log::info() << std::endl;
+    }
 
-//    os << "N output tensors: " << numOutputNodes_ << std::endl;
-//    os << "Output layer " << outputNodeNames_[0] << " expects a Tensor with " << outputLayerShape_.size()
-//       << " dimensions" << std::endl;
-
-//    for (int j = 0; j < outputLayerShape_.size(); j++)
-//        os << "dim [" << j << "]: " << outputLayerShape_[j] << std::endl;
 }
 
 
