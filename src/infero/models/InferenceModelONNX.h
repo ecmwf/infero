@@ -29,9 +29,13 @@ public:
 protected:
     void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut);
 
+    virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> tIn, std::vector<char*> input_names,
+                            std::vector<eckit::linalg::TensorFloat*> tOut, std::vector<char*> output_names);
+
     void print(std::ostream& os) const;
 
 private:
+
     // ORT session
     std::unique_ptr<Ort::Session> session;
     std::unique_ptr<Ort::SessionOptions> session_options;
@@ -40,27 +44,24 @@ private:
     // allocator
     Ort::AllocatorWithDefaultOptions allocator;
 
-    // NOTE: we assume only one input node
-    size_t inputNodeIdx_;
-    size_t numInputNodes_;
-    char* inputName_;
-    std::vector<int64_t> inputLayerShape_;
-    std::vector<const char*> inputNodeNames_;
+    // input interface
+    size_t numInputs;
+    std::vector<char*> inputNames;
+    std::vector<Ort::Value> inputTensors;
+    std::vector<std::vector<int64_t>> inputLayerShapes;
 
-    // NOTE: we assume only one output node
-    size_t outputNodeIdx_;
-    size_t numOutputNodes_;
-    char* outputName_;
-    std::vector<int64_t> outputLayerShape_;
-    std::vector<const char*> outputNodeNames_;
+    // output interface
+    size_t numOutputs;
+    std::vector<char*> outputNames;
+    std::vector<Ort::Value> outputTensors;
+    std::vector<std::vector<int64_t>> outputLayerShapes;
 
-    // output data
-    std::vector<float> dataBuffer_;
 
 private:
-    void queryInputLayer();
+    void setupInputLayers();
 
-    void queryOutputLayer();
+    void setupOutputLayers();
+    void print_shape(const Ort::Value& t);
 };
 
 }  // namespace infero

@@ -18,6 +18,7 @@
 
 #include "infero/models/InferenceModelONNX.h"
 #include "infero/infero_utils.h"
+#include "InferenceModelONNX.h"
 
 
 using namespace eckit;
@@ -26,9 +27,7 @@ namespace infero {
 
 
 InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
-    InferenceModel(conf),
-    inputName_(nullptr),
-    outputName_(nullptr) {
+    InferenceModel(conf){
 
     std::string ModelPath(conf.getString("path"));
 
@@ -56,140 +55,215 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
     }
 
 
-    // query input/output layers
-    queryInputLayer();
-    queryOutputLayer();
+    // setup input/output interface
+    setupInputLayers();
+    setupOutputLayers();
 }
 
 InferenceModelONNX::~InferenceModelONNX() {
 
-    if (inputName_) {
-        delete inputName_;
-    }
-
-    if (outputName_) {
-        delete outputName_;
-    }
 }
 
 void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut) {
 
+    auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+
+    // only one input/output usable here
+    ASSERT(inputNames.size() == 1);
+    ASSERT(outputNames.size() == 1);
+
     if (tIn.isRight()) {
         Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
                     << "Transforming to left.." << std::endl;
-        ;
         tIn.toLeftLayout();
     }
-    Log::info() << "ONNX inference " << std::endl;
 
-    // make a copy of the input data
-    dataBuffer_.resize(tIn.size());
-    for (int i = 0; i < tIn.size(); i++) {
-        dataBuffer_[i] = tIn.data()[i];
+    auto shape_64 = utils::convert_shape<size_t, int64_t>(tIn.shape());
+    Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info,
+                                            tIn.data(),
+                                            tIn.size(),
+                                            shape_64.data(),
+                                            shape_64.size());
+    ASSERT(input_tensor.IsTensor());
+    Log::info() << "Input has shape: ";
+    print_shape(input_tensor);
+
+    auto output_tensors = session->Run(Ort::RunOptions{nullptr},
+                                       inputNames.data(),
+                                       &input_tensor,
+                                       numInputs,
+                                       outputNames.data(),
+                                       numOutputs);
+
+    // output tensors
+    ASSERT(output_tensors.size() == 1 && output_tensors.front().IsTensor());
+
+    Log::info() << "Output has shape: ";
+    print_shape(output_tensors.front());
+
+    if (tOut.isRight()) {
+
+         // ONNX uses Left (C) tensor layouts, so we need to convert
+         auto out_shape = output_tensors.front().GetTensorTypeAndShapeInfo().GetShape();
+         TensorFloat tLeft(output_tensors.front().GetTensorData<float>(),
+                           utils::convert_shape<int64_t, size_t>(out_shape),
+                           false);  // wrap data
+
+         tOut = tLeft.transformLeftToRightLayout();
     }
+
+    else {
+         // ONNX uses Left (C) tensor layouts, so we can copy straight into memory of tOut
+         memcpy(tOut.data(), output_tensors.front().GetTensorData<float>(),
+                output_tensors.front().GetTensorTypeAndShapeInfo().GetElementCount() * sizeof(float));
+    }
+
+}
+
+void InferenceModelONNX::infer_mimo(std::vector<TensorFloat *> tIn, std::vector<char *> input_names,
+                                    std::vector<TensorFloat *> tOut, std::vector<char *> output_names)
+{
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
-    auto shape_64 = utils::convert_shape<size_t, int64_t>(tIn.shape());
-    Ort::Value input_tensor =
-        Ort::Value::CreateTensor<float>(memory_info, dataBuffer_.data(), tIn.size(), shape_64.data(), shape_64.size());
-    ASSERT(input_tensor.IsTensor());
+    // N Input tensors
+    size_t NInputs = input_names.size();
+    for (size_t i=0; i<NInputs; i++){
 
-    Ort::TensorTypeAndShapeInfo info = input_tensor.GetTensorTypeAndShapeInfo();
-    Log::info() << "Sample tensor shape: ";
-    for (auto i : info.GetShape())
-        Log::info() << i << ", ";
-    Log::info() << std::endl;
+        if (tIn[i]->isRight()) {
+            Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
+                        << "Transforming to left.." << std::endl;
+            tIn[i]->toLeftLayout();
+        }
 
-    auto output_tensors = session->Run(Ort::RunOptions{nullptr}, inputNodeNames_.data(), &input_tensor,
-                                       numInputNodes_, outputNodeNames_.data(), numOutputNodes_);
+        auto shape_64 = utils::convert_shape<size_t, int64_t>(tIn[i]->shape());
+        Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info,
+                                                tIn[i]->data(),
+                                                tIn[i]->size(),
+                                                shape_64.data(),
+                                                shape_64.size());
+        ASSERT(input_tensor.IsTensor());
+        Log::info() << "Input [" << i << "] " << " has shape: ";
+        print_shape(input_tensor);
 
-    ASSERT(output_tensors.size() == 1 && output_tensors.front().IsTensor());
+        inputTensors.emplace_back(std::move(input_tensor));
 
-
-    auto out_tensor_info = output_tensors.front().GetTensorTypeAndShapeInfo();
-    size_t out_size      = 1;
-    for (auto i : out_tensor_info.GetShape()) {
-        out_size *= i;
     }
 
-    Log::info() << "Prediction tensor shape: ";
-    for (auto i : out_tensor_info.GetShape())
-        Log::info() << i << ", ";
-    Log::info() << std::endl;
+    auto output_tensors = session->Run(Ort::RunOptions{nullptr},
+                                       inputNames.data(),
+                                       inputTensors.data(),
+                                       numInputs,
+                                       outputNames.data(),
+                                       numOutputs);
 
-    auto shape = utils::convert_shape<int64_t, size_t>(out_tensor_info.GetShape());
-    const float* floatarr = output_tensors.front().GetTensorMutableData<float>();
+    // output tensors
+    ASSERT(output_tensors.size() == numOutputs);
 
-    ASSERT(tOut.shape() == shape);
-    if (tOut.isRight()) {
-        // ONNX uses Left (C) tensor layouts, so we need to convert
-        TensorFloat tLeft(floatarr, shape, false);  // wrap data
-        tOut = tLeft.transformLeftToRightLayout();  // creates temporary tensor with data in left layout
+    for (size_t i=0; i<numOutputs; i++){
+
+         ASSERT(output_tensors[i].IsTensor());
+
+         Log::info() << "Output [" << i << "] " << " has shape: ";
+         print_shape(output_tensors[i]);
+
+         if (tOut[i]->isRight()) {
+
+             // ONNX uses Left (C) tensor layouts, so we need to convert
+             auto out_shape = output_tensors[i].GetTensorTypeAndShapeInfo().GetShape();
+             TensorFloat tLeft(output_tensors[i].GetTensorData<float>(),
+                               utils::convert_shape<int64_t, size_t>(out_shape),
+                               false);  // wrap data
+
+             *tOut[i] = tLeft.transformLeftToRightLayout();
+         }
+         else {
+             // ONNX uses Left (C) tensor layouts, so we can copy straight into memory of tOut
+             memcpy(tOut[i]->data(), output_tensors[i].GetTensorData<float>(),
+                    output_tensors[i].GetTensorTypeAndShapeInfo().GetElementCount() * sizeof(float));
+         }
+
     }
-    else {
-        // ONNX uses Left (C) tensor layouts, so we can copy straight into memory of tOut
-        memcpy(tOut.data(), floatarr, out_size * sizeof(float));
-    }
+
 }
 
 
-void InferenceModelONNX::queryInputLayer() {
-    numInputNodes_ = session->GetInputCount();
-
-    // note: for now we use the assumption
-    // that there is only one input tensor to the network
-    ASSERT(numInputNodes_ == 1);
-    inputNodeIdx_ = 0;
+void InferenceModelONNX::setupInputLayers() {
 
     // get input name
-    inputName_ = session->GetInputName(inputNodeIdx_, allocator);
-    inputNodeNames_.push_back(inputName_);
+    numInputs = session->GetInputCount();
 
-    Ort::TypeInfo type_info                               = session->GetInputTypeInfo(inputNodeIdx_);
-    Ort::Unowned<Ort::TensorTypeAndShapeInfo> tensor_info = type_info.GetTensorTypeAndShapeInfo();
+    Log::info() << "ONNX model has: " << numInputs << " inputs" << std::endl;
+    for (size_t i=0; i<numInputs; i++){
 
-    inputLayerShape_ = tensor_info.GetShape();
+        char* inputName_ = session->GetInputName(i, allocator);
+        inputNames.push_back(inputName_);
+
+        Ort::TypeInfo type_info = session->GetInputTypeInfo(i);
+        Ort::Unowned<Ort::TensorTypeAndShapeInfo> tensor_info = type_info.GetTensorTypeAndShapeInfo();
+
+        std::vector<int64_t> inputLayerShape_ = tensor_info.GetShape();
+        inputLayerShapes.push_back(inputLayerShape_);
+
+        Log::info() << "Layer [" << i << "] " << inputName_ << " has shape: ";
+        for (auto s: inputLayerShape_){
+            Log::info() << s << ", ";
+        }
+        Log::info() << std::endl;
+    }
 }
 
 
-void InferenceModelONNX::queryOutputLayer() {
-    numOutputNodes_ = session->GetOutputCount();
+void InferenceModelONNX::setupOutputLayers() {
 
-    // note: for now we use the assumption
-    // that there is only one input tensor to the network
-    ASSERT(numOutputNodes_ == 1);
-    outputNodeIdx_ = 0;
+    // get input name
+    numOutputs = session->GetOutputCount();
 
-    // print output node names
-    outputName_ = session->GetOutputName(outputNodeIdx_, allocator);
-    outputNodeNames_.push_back(outputName_);
+    Log::info() << "ONNX model has: " << numOutputs << " outputs" << std::endl;
+    for (size_t i=0; i<numOutputs; i++){
 
-    // NOTE: this is the shape of the output tensor as described by the model
-    // so it can be "dynamic" (with -1, meaning that accepts any tensor size on that axis)
-    Ort::TypeInfo type_info                               = session->GetOutputTypeInfo(outputNodeIdx_);
-    Ort::Unowned<Ort::TensorTypeAndShapeInfo> tensor_info = type_info.GetTensorTypeAndShapeInfo();
+        char* outputName_ = session->GetOutputName(i, allocator);
+        outputNames.push_back(outputName_);
 
-    // print output shapes/dims
-    outputLayerShape_ = tensor_info.GetShape();
+        Ort::TypeInfo type_info = session->GetOutputTypeInfo(i);
+        Ort::Unowned<Ort::TensorTypeAndShapeInfo> tensor_info = type_info.GetTensorTypeAndShapeInfo();
+
+        std::vector<int64_t> outputLayerShape_ = tensor_info.GetShape();
+        outputLayerShapes.push_back(outputLayerShape_);
+
+        Log::info() << "Layer [" << i << "] " << outputName_ << " has shape: ";
+        for (auto s: outputLayerShape_){
+            Log::info() << s << ", ";
+        }
+        Log::info() << std::endl;
+    }
+
 }
 
 
 void InferenceModelONNX::print(std::ostream& os) const {
 
-    os << "N input tensors: " << numInputNodes_ << std::endl;
-    os << "Input layer " << inputNodeNames_[0] << " expects a Tensor with " << inputLayerShape_.size()
-       << " dimensions" << std::endl;
+//    os << "N input tensors: " << numInputNodes_ << std::endl;
+//    os << "Input layer " << inputNodeNames_[0] << " expects a Tensor with " << inputLayerShape_.size()
+//       << " dimensions" << std::endl;
 
-    for (int j = 0; j < inputLayerShape_.size(); j++)
-        os << "dim [" << j << "]: " << inputLayerShape_[j] << std::endl;
+//    for (int j = 0; j < inputLayerShape_.size(); j++)
+//        os << "dim [" << j << "]: " << inputLayerShape_[j] << std::endl;
 
-    os << "N output tensors: " << numOutputNodes_ << std::endl;
-    os << "Output layer " << outputNodeNames_[0] << " expects a Tensor with " << outputLayerShape_.size()
-       << " dimensions" << std::endl;
+//    os << "N output tensors: " << numOutputNodes_ << std::endl;
+//    os << "Output layer " << outputNodeNames_[0] << " expects a Tensor with " << outputLayerShape_.size()
+//       << " dimensions" << std::endl;
 
-    for (int j = 0; j < outputLayerShape_.size(); j++)
-        os << "dim [" << j << "]: " << outputLayerShape_[j] << std::endl;
+//    for (int j = 0; j < outputLayerShape_.size(); j++)
+//        os << "dim [" << j << "]: " << outputLayerShape_[j] << std::endl;
+}
+
+
+void InferenceModelONNX::print_shape(const Ort::Value& t){
+    Ort::TensorTypeAndShapeInfo info = t.GetTensorTypeAndShapeInfo();
+    for (auto i : info.GetShape())
+        Log::info() << i << ", ";
+    Log::info() << std::endl;
 }
 
 }  // namespace infero
