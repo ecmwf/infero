@@ -14,6 +14,7 @@ from keras.layers import Input, Dense
 from keras.models import Model
 from keras.layers import concatenate
 import keras.initializers
+import tensorflow as tf
 
 import keras2onnx
 
@@ -57,8 +58,11 @@ if __name__ == "__main__":
 
     # Write in onnx format
     onnx_model = keras2onnx.convert_keras(model, "test_onnx")
-    file = open("test_onnx.onnx", "wb")
+    file = open("mimo_model.onnx", "wb")
     file.write(onnx_model.SerializeToString())
     file.close()
+    
+    # write in tf format
+    tf.keras.models.save_model(model, "mimo_model_tf", save_format="tf")
     
  
