@@ -21,3 +21,9 @@ ecbuild_add_executable( TARGET runner_tcyclone_ctensor
     CONDITION HAVE_BUILD_TOOLS
     INCLUDES  ${eckit_INCLUDE_DIRS}
     LIBS      inferoapi )
+
+ecbuild_add_executable( TARGET runner_mimo
+    SOURCES   runner_mimo.c
+    CONDITION HAVE_BUILD_TOOLS
+    INCLUDES  ${eckit_INCLUDE_DIRS}
+    LIBS      inferoapi )
