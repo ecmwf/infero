@@ -143,6 +143,77 @@ void infero_inference_float(infero_model_handle h,
     delete tOut;
 }
 
+
+// run a ML engine for inference
+void infero_inference_float_mimo(infero_model_handle h,
+                                 int nInputs,
+                                 char** iNames, int* iRanks, int** iShape, float** iData,
+                                 int nOutputs,
+                                 char** oNames, int* oRanks, int** oShape, float** oData) {
+
+    ASSERT(h);
+    InferenceModel* model = reinterpret_cast<InferenceModel*>(h);
+
+    std::cout << "infero_inference_float_mimo()" << std::endl;
+
+    // loop over INPUT tensors
+    ASSERT(nInputs >= 1);
+    std::vector<TensorFloat*> inputData(static_cast<size_t>(nInputs));
+    std::vector<char*>  inputNames(static_cast<size_t>(nInputs));
+    for (size_t i=0; i<static_cast<size_t>(nInputs); i++){
+
+        // rank
+        size_t rank = static_cast<size_t>(*(iRanks+i));
+        ASSERT(rank >= 1);
+
+        // shape
+        std::vector<size_t> shape_(rank);
+        for (size_t rr=0; rr<rank; rr++){
+            shape_[rr] = static_cast<size_t>(*(*(iShape+i)+rr));
+        }
+
+        // name and data
+        inputNames[i] = *(iNames+i);
+        inputData[i] = new TensorFloat(*(iData+i), shape_, true);
+    }
+
+    // loop over OUTPUT tensors
+    ASSERT(nOutputs >= 1);
+    std::vector<TensorFloat*> outputData(static_cast<size_t>(nOutputs));
+    std::vector<char*>  outputNames(static_cast<size_t>(nOutputs));
+    for (size_t i=0; i<static_cast<size_t>(nOutputs); i++){
+
+        // rank
+        size_t rank = static_cast<size_t>(*(oRanks+i));
+        ASSERT(rank >= 1);
+
+        // shape
+        std::vector<size_t> shape_(rank);
+        for (size_t rr=0; rr<rank; rr++){
+            shape_[rr] = static_cast<size_t>(*(*(oShape+i)+rr));
+        }
+
+        // name and data
+        outputNames[i] = *(oNames+i);
+        outputData[i] = new TensorFloat(*(oData+i), shape_, true);
+    }
+
+
+    // mimo inference
+    model->infer_mimo(inputData, inputNames, outputData, outputNames);
+
+    // delete memory for input tensors
+    for (size_t i=0; i<static_cast<size_t>(nInputs); i++){
+        delete inputData[i];
+    }
+
+    // delete memory for output tensors
+    for (size_t i=0; i<static_cast<size_t>(nOutputs); i++){
+        delete outputData[i];
+    }
+
+}
+
 // run a ML engine for inference
 void infero_inference_float_ctensor(infero_model_handle h,
                                    float data1[], int rank1, int shape1[],

@@ -44,6 +44,13 @@ void infero_inference_double_ctensor(infero_model_handle h, double data1[], int 
 void infero_inference_float(infero_model_handle h, float data1[], int rank1, int shape1[], float data2[], int rank2,
                             int shape2[]);
 
+// run a ML engine for inference (float) with multi-input and multi-output
+void infero_inference_float_mimo(infero_model_handle h,
+                                 int nInputs,
+                                 char** iNames, int* iRanks, int** iShape, float** iData,
+                                 int nOutputs,
+                                 char** oNames, int* oRanks, int** oShape, float** oData);
+
 // run a ML engine for inference (float) - for c-style input tensors
 void infero_inference_float_ctensor(infero_model_handle h, float data1[], int rank1, int shape1[], float data2[], int rank2,
                                    int shape2[]);
