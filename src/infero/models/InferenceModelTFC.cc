@@ -202,6 +202,7 @@ void InferenceModelTFC::infer_mimo(std::vector<TensorFloat*> tIn, std::vector<ch
     // array of outputs for output-operations
     TF_Output* Output = static_cast<TF_Output*>(malloc(sizeof(TF_Output) * NOutputs));
 
+    std::cout << "NOutputs: " << NOutputs << std::endl;
     for (size_t i=0; i<NOutputs; i++){
         Output[i] = getOperation(output_names[i]);
     }
@@ -248,7 +249,7 @@ void InferenceModelTFC::infer_mimo(std::vector<TensorFloat*> tIn, std::vector<ch
     // --------------- copy output -------------------
     for (size_t i=0; i<NOutputs; i++){
 
-        void* buff = TF_TensorData(OutputValues[1]);
+        void* buff = TF_TensorData(*(OutputValues+i));
         float* offsets = static_cast<float*>(buff);
 
         if (tOut[i]->isRight()) {
@@ -299,7 +300,7 @@ TF_Output InferenceModelTFC::getOperation(std::string name)
     }
 
     // op output
-    TF_Output t0 = {TF_GraphOperationByName(network_graph, name_text.c_str()), op_id};
+    TF_Output t0{TF_GraphOperationByName(network_graph, name_text.c_str()), op_id};
 
     int t0_ndims = TF_GraphGetTensorNumDims(network_graph, t0, err_status);
     check_status(err_status, "TF_GraphGetTensorNumDims");
