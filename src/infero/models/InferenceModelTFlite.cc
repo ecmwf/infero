@@ -137,6 +137,63 @@ void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg:
     // ====================================================================
 }
 
+void InferenceModelTFlite::infer_mimo(std::vector<TensorFloat*> tIn, std::vector<char*> input_names,
+                                      std::vector<TensorFloat*> tOut, std::vector<char*> output_names)
+{
+
+    // input tensors
+    size_t NInputs = input_names.size();
+    for (size_t i=0; i<NInputs; i++){
+
+        std::cout << "Processing input: " << input_names[i] << std::endl;
+        std::cout << "--> got input with name: " << interpreter_->input_tensor(i)->name << std::endl;
+
+        if (tIn[i]->isRight()) {
+            Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
+                        << "Transforming to left.." << std::endl;
+            tIn[i]->toLeftLayout();
+        }
+
+        interpreter_->ResizeInputTensor(interpreter_->inputs()[i],
+                                        utils::convert_shape<size_t, int>(tIn[i]->shape()));
+
+        // copy tensor data
+        float* input      = interpreter_->typed_input_tensor<float>(i);
+        const float* data = tIn[i]->data();
+        size_t data_size  = tIn[i]->size();
+        for (size_t i = 0; i < data_size; i++) {
+            *(input + i) = *(data + i);
+        }
+    }
+
+    // Run inference
+    INFERO_CHECK(interpreter_->Invoke() == kTfLiteOk);
+    interpreter_->AllocateTensors();
+
+
+    size_t NOutputs = output_names.size();
+    for (size_t i=0; i<NOutputs; i++){
+
+        std::cout << "Processing output: " << output_names[i] << std::endl;
+        std::cout << "--> got output with name: " << interpreter_->output_tensor(i)->name << std::endl;
+
+        float* output     = interpreter_->typed_output_tensor<float>(i);
+
+        // copy output data
+        Log::info() << "Copying output..." << std::endl;
+
+        if (tOut[i]->isRight()) {
+            // TFlite uses Left (C) tensor layouts, so we need to convert
+            TensorFloat tLeft(output, tOut[i]->shape(), false);  // wrap data
+            *tOut[i] = tLeft.transformLeftToRightLayout();  // creates temporary tensor with data in left layout
+        }
+        else {
+            // TFlite uses Left (C) tensor layouts, so we can copy straight into memory of tOut
+            memcpy(tOut[i]->data(), output, tOut[i]->size() * sizeof(float));
+        }
+    }
+}
+
 void InferenceModelTFlite::print(std::ostream &os) const
 {
     os << "A TFlite Model" << std::endl;

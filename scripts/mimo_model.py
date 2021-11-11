@@ -65,4 +65,13 @@ if __name__ == "__main__":
     # write in tf format
     tf.keras.models.save_model(model, "mimo_model_tf", save_format="tf")
     
+    # write in TFlite format
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    tflite_model_path = converter.convert()
+
+    # Save the model.
+    with open("mimo_model.tflite", 'wb') as f:
+        f.write(tflite_model_path)
+    
+    
  

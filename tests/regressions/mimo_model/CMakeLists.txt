@@ -23,3 +23,14 @@ if (HAVE_TF_C)
 
 endif()
 
+
+if (HAVE_TF_LITE)
+
+    ecbuild_configure_file(mimo_tflite.sh.in
+        mimo_tflite.sh @ONLY )
+
+    ecbuild_add_test(
+        TYPE     SCRIPT
+        COMMAND  mimo_tflite.sh )
+
+endif()
