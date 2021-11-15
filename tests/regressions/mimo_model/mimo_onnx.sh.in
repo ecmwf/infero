@@ -14,5 +14,8 @@ model_path=$datadir/mimo_model.onnx
 $exedir/runner_mimo \
   $model_path \
   $eng_type \
+  "input_1" \
+  "input_2" \
+  "dense_6" \
 
 

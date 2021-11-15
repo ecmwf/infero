@@ -7,8 +7,8 @@ bindir=@CMAKE_CURRENT_BINARY_DIR@
 datadir=@CMAKE_BINARY_DIR@/tests/data/mimo_model
 exedir=@CMAKE_BINARY_DIR@/bin
 
-eng_type=tflite
-model_path=$datadir/mimo_model.tflite
+eng_type=tensorrt
+model_path=$datadir/mimo_model.trt
 
 # run inference
 $exedir/runner_mimo \

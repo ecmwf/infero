@@ -62,12 +62,16 @@ int main(int argc, char** argv){
 
     char* model_path = argv[1];
     char* model_type = argv[2];
+    char* name_input1 = argv[3];
+    char* name_input2 = argv[4];
+    char* name_output = argv[5];
     char yaml_str[1024];
-
-    infero_model_handle infero_handle;
 
     printf("model_path %s \n", model_path);
     printf("model_type %s \n", model_type);
+    printf("name_input1 %s \n", name_input1);
+    printf("name_input2 %s \n", name_input2);
+    printf("name_output %s \n", name_output);
 
     sprintf(yaml_str, " path: %s\n type: %s", model_path, model_type);
     printf("yaml_str:\n%s\n", yaml_str);
@@ -80,8 +84,7 @@ int main(int argc, char** argv){
     int* iranks = malloc(sizeof(int) * n_inputs);
 
     // input 0
-//    *(input_names) = "input_1";
-    *(input_names) = "serving_default_input_1";
+    *(input_names) = name_input1;
     *(inputs) = (float*)malloc( sizeof (float) * 32);
     for (size_t i=0; i<32; i++){
         *(*(inputs)+i) = 1.;
@@ -92,8 +95,7 @@ int main(int argc, char** argv){
     *(*(input_shapes)+1) = 32;
 
     // input 1
-//    *(input_names+1) = "input_2";
-    *(input_names+1) = "serving_default_input_2";
+    *(input_names+1) = name_input2;
     *(inputs+1) = (float*)malloc( sizeof (float) * 128);
     for (size_t i=0; i<128; i++){
         *(*(inputs+1)+i) = 1.;
@@ -117,8 +119,7 @@ int main(int argc, char** argv){
     int** output_shapes = malloc(sizeof(int*) * n_outputs);
     int* oranks = malloc(sizeof(int) * n_outputs);
 
-//    *(output_names) = "dense_6";
-    *(output_names) = "StatefulPartitionedCall";
+    *(output_names) = name_output;
     *(outputs) = (float*)malloc( sizeof (float) * n_outputs);
     *(*(outputs)) = 1;
     *oranks = 2;
@@ -132,6 +133,8 @@ int main(int argc, char** argv){
                output_shapes,
                oranks);
     // ----------------------------------
+
+    infero_model_handle infero_handle;
 
     // 0) init infero
     infero_initialise(argc, argv);

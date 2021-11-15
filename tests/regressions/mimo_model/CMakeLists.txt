@@ -34,3 +34,14 @@ if (HAVE_TF_LITE)
         COMMAND  mimo_tflite.sh )
 
 endif()
+
+if (HAVE_TENSORRT)
+
+    ecbuild_configure_file(mimo_trt.sh.in
+        mimo_trt.sh @ONLY )
+
+    ecbuild_add_test(
+        TYPE     SCRIPT
+        COMMAND  mimo_trt.sh )
+
+endif()

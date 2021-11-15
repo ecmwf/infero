@@ -92,43 +92,89 @@ InferenceModelTRT::~InferenceModelTRT() {
 void InferenceModelTRT::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut){
 
 
+    Log::info() << "TRT inference " << std::endl;
+
     if (tIn.isRight()) {
         Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
                     << "Transforming to left.." << std::endl;
-        ;
         tIn.toLeftLayout();
-    }
-    Log::info() << "TRT inference " << std::endl;
+    }    
 
     // =================== prediction ======================
     // Create RAII buffer manager object
     samplesCommon::BufferManager buffers(Engine_);
     auto context = SampleUniquePtr<nvinfer1::IExecutionContext>(Engine_->createExecutionContext());
 
-    Log::info() << "mEngine->getNbBindings() " << Engine_->getNbBindings() << std::endl;
-    Log::info() << "mEngine->getBindingName(0) " << Engine_->getBindingName(0) << std::endl;
-    Log::info() << "mEngine->bindingIsInput(0) " << Engine_->bindingIsInput(0) << std::endl;
-    Log::info() << "mEngine->getBindingDimensions(0) " << Engine_->getBindingDimensions(0) << std::endl;
-    Log::info() << "mEngine->getBindingName(1) " << Engine_->getBindingName(1) << std::endl;
-    Log::info() << "mEngine->getBindingDimensions(1) " << Engine_->getBindingDimensions(1) << std::endl;
-
     std::string input_tensor_name  = Engine_->getBindingName(0);
     std::string output_tensor_name = Engine_->getBindingName(1);
-    //    Dims input_dims = mEngine->getBindingDimensions(0);
-    Dims output_dims = Engine_->getBindingDimensions(1);
-
-    //    auto output_tensor_name = network->getOutput(0)->getName();
-    //    Log::info() << "output_tensor_name " << output_tensor_name << std::endl;
 
     float* hostDataBuffer = static_cast<float*>(buffers.getHostBuffer(input_tensor_name));
-    float* data           = tIn.data();
-    size_t data_size      = tIn.size();
-    for (size_t i = 0; i < data_size; i++) {
-        hostDataBuffer[i] = *(data + i);
-    }
+    ::memcpy(hostDataBuffer, tIn.data(), sizeof(float) * tIn.size());
     // ======================================================
 
-    // Memcpy from host input buffers to device input buffers
+    //  Memcpy host 2 device
+    buffers.copyInputToDevice();
+
+    // inference
+    Log::info() << "executing inference.." << std::endl;
+    bool status = context->executeV2(buffers.getDeviceBindings().data());
+    if (!status) {
+        throw eckit::SeriousBug("inference FAILED!", Here());
+    }
+
+    // Memcpy device 2 host
+    buffers.copyOutputToHost();
+    // ======================================================
+
+    // ======================= output =======================    
+    Log::info() << "Copying output...";
+
+    // copy output data
+    float* output = static_cast<float*>(buffers.getHostBuffer(output_tensor_name));    
+    if (tOut.isRight()) {
+        // TRT uses Left (C) tensor layouts, so we need to convert
+        eckit::linalg::TensorFloat tLeft(output, tOut.shape(), false);  // wrap data
+        tOut = tLeft.transformLeftToRightLayout();  // creates temporary tensor with data in left layout
+    }
+    else {
+        // TRT uses Left (C) tensor layouts, so we can copy straight into memory of tOut
+        ::memcpy(tOut.data(), output, tOut.size() * sizeof(float));
+    }
+    // ======================================================
+}
+
+void InferenceModelTRT::print(ostream &os) const
+{
+    os << "A TRT Model" << std::endl;
+}
+
+void infero::InferenceModelTRT::infer_mimo(std::vector<eckit::linalg::TensorFloat *> tIn, std::vector<char *> input_names,
+                                           std::vector<eckit::linalg::TensorFloat *> tOut, std::vector<char *> output_names)
+{
+
+    Log::info() << "TRT inference " << std::endl;
+
+    samplesCommon::BufferManager buffers(Engine_);
+    auto context = SampleUniquePtr<nvinfer1::IExecutionContext>(Engine_->createExecutionContext());
+
+    // ====================== Input tensors ======================
+    size_t NInputs = input_names.size();
+    for (size_t i=0; i<NInputs; i++){
+
+        if (tIn[i]->isRight()) {
+            Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
+                        << "Transforming to left.." << std::endl;
+            tIn[i]->toLeftLayout();
+        }
+
+        // copy input data into buffer
+        float* hostDataBuffer = static_cast<float*>(buffers.getHostBuffer(input_names[i]));
+        ::memcpy(hostDataBuffer, tIn[i]->data(), sizeof(float) * tIn[i]->size());
+    }
+    // ===========================================================
+
+    // ======================== inference ========================
+    // Memcpy host 2 device
     buffers.copyInputToDevice();
 
     Log::info() << "executing inference.." << std::endl;
@@ -137,40 +183,33 @@ void InferenceModelTRT::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::Te
         throw eckit::SeriousBug("inference FAILED!", Here());
     }
 
-    // Memcpy from device output buffers to host output buffers
+    // Memcpy device 2 host
     buffers.copyOutputToHost();
-    // ======================================================
+    // ===========================================================
 
-    // ======================= output =======================
-    size_t shape_flat = 1;
-    std::vector<size_t> shape(output_dims.nbDims);
-    for (int i = 0; i < output_dims.nbDims; i++) {
-        shape[i] = output_dims.d[i];
-        shape_flat *= output_dims.d[i];
-        Log::info() << "output_dims.d[i] " << output_dims.d[i] << std::endl;
+    // ====================== Output tensors ======================
+    // N Output tensors
+    size_t NOutputs = output_names.size();
+    for (size_t i=0; i<NOutputs; i++){
+
+        // output buffer
+        float* output = static_cast<float*>(buffers.getHostBuffer(output_names[i]));
+
+        if (tOut[i]->isRight()) {
+
+            // TFC uses Left (C) tensor layouts, so we need to convert
+            eckit::linalg::TensorFloat tLeft(output, tOut[i]->shape(), false);  // wrap data
+
+            // creates temporary tensor with data in left layout
+            *tOut[i] = tLeft.transformLeftToRightLayout();
+
+        } else {
+
+            // TFC uses Left (C) tensor layouts, so we can copy straight into memory of tOut
+            Log::info() << "output size " << tOut[i]->size() << std::endl;
+            ::memcpy(tOut[i]->data(), output, tOut[i]->size() * sizeof(float));
+        }
     }
-
-    // copy output data
-    float* output = static_cast<float*>(buffers.getHostBuffer(output_tensor_name));
-
-    // copy output data
-    Log::info() << "Copying output...";
-    ASSERT(tOut.shape() == shape);
-    if (tOut.isRight()) {
-        // TRT uses Left (C) tensor layouts, so we need to convert
-        eckit::linalg::TensorFloat tLeft(output, shape, false);  // wrap data
-        tOut = tLeft.transformLeftToRightLayout();  // creates temporary tensor with data in left layout
-    }
-    else {
-        // TRT uses Left (C) tensor layouts, so we can copy straight into memory of tOut
-        memcpy(tOut.data(), output, shape_flat * sizeof(float));
-    }
-    // ======================================================
-}
-
-void InferenceModelTRT::print(ostream &os) const
-{
-    os << "A TRT Model" << std::endl;
 }
 
 
