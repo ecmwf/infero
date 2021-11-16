@@ -92,11 +92,7 @@ void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg:
 
     // =========================== copy tensor ============================
     float* input      = interpreter_->typed_input_tensor<float>(0);
-    const float* data = tIn.data();
-    size_t data_size  = tIn.size();
-    for (size_t i = 0; i < data_size; i++) {
-        *(input + i) = *(data + i);
-    }
+    ::memcpy(input, tIn.data(), sizeof(float) * tIn.size());
     // ====================================================================
 
     // ========================== Run inference ===========================
@@ -160,11 +156,8 @@ void InferenceModelTFlite::infer_mimo(std::vector<TensorFloat*> tIn, std::vector
 
         // copy tensor data
         float* input      = interpreter_->typed_input_tensor<float>(i);
-        const float* data = tIn[i]->data();
-        size_t data_size  = tIn[i]->size();
-        for (size_t i = 0; i < data_size; i++) {
-            *(input + i) = *(data + i);
-        }
+        ::memcpy(input, tIn[i]->data(), sizeof(float) * tIn[i]->size());
+
     }
 
     // Run inference
