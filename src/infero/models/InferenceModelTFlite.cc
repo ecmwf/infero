@@ -65,7 +65,8 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
 InferenceModelTFlite::~InferenceModelTFlite() {}
 
 
-void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut) {
+void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
+                                 std::string input_name, std::string output_name) {
 
     if (tIn.isRight()) {
         Log::info() << "Input Tensor has right-layout, but left-layout is needed. "

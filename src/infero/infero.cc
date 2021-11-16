@@ -18,6 +18,7 @@
 #include "eckit/runtime/Main.h"
 #include "eckit/serialisation/FileStream.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/utils/StringTools.h"
 
 #include "infero/models/InferenceModel.h"
 #include "infero/infero_utils.h"
@@ -50,6 +51,8 @@ int main(int argc, char** argv) {
     std::vector<Option*> options;
 
     options.push_back(new SimpleOption<std::string>("input", "Path to input file"));
+    options.push_back(new SimpleOption<std::string>("input_layer", "Name of model input layer"));
+    options.push_back(new SimpleOption<std::string>("output_layer", "Name of model output layer"));
     options.push_back(new SimpleOption<std::string>("output", "Path to output file"));
     options.push_back(new SimpleOption<std::string>("model", "Path to ML model"));
     options.push_back(new SimpleOption<std::string>("engine", "ML engine [onnx, tflite, trt, tf_c]"));
@@ -60,21 +63,19 @@ int main(int argc, char** argv) {
     CmdArgs args(&usage, options, 0, 0, true);
 
     // Input path
-    std::string input_path  = args.getString("input", "data.npy");
-    std::string model_path  = args.getString("model", "model.onnx");
-    std::string engine_type = args.getString("engine", "onnx");
-    std::string output_path = args.getString("output", "out.csv");
-    std::string ref_path    = args.getString("ref_path", "");
-    float threshold         = args.getFloat("threshold", 0.001f);
-    std::string out_shape   = args.getString("out_shape", "");
+    std::string input_path   = args.getString("input", "data.npy");
+    std::string input_layer  = args.getString("input_layer", "");
+    std::string output_layer = args.getString("output_layer", "");
+    std::string model_path   = args.getString("model", "model.onnx");
+    std::string engine_type  = args.getString("engine", "onnx");
+    std::string output_path  = args.getString("output", "out.csv");
+    std::string ref_path     = args.getString("ref_path", "");
+    float threshold          = args.getFloat("threshold", 0.001f);
+    std::string out_shape    = args.getString("out_shape", "");
 
     // Model configuration from CL
     LocalConfiguration local;
     local.set("path", model_path);
-
-    // Input data
-    std::unique_ptr<TensorFloat> inputT(tensor_from_file<float>(input_path));
-
 
     // Prepare output tensor
     // TODO : find a better way to pass output shape..
@@ -92,8 +93,11 @@ int main(int argc, char** argv) {
     std::unique_ptr<InferenceModel> engine(InferenceModel::create(engine_type, local));
     std::cout << *engine << std::endl;
 
+    // Input data
+    std::unique_ptr<TensorFloat> inputT(tensor_from_file<float>(input_path));
+
     // Run inference
-    engine->infer(*inputT, predT);
+    engine->infer(*inputT, predT, input_layer, output_layer);
 
     // Save output tensor to file
     if (args.has("output")) {

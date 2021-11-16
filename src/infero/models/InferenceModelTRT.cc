@@ -89,7 +89,8 @@ InferenceModelTRT::~InferenceModelTRT() {
 }
 
 
-void InferenceModelTRT::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut){
+void InferenceModelTRT::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
+                              std::string input_name, std::string output_name){
 
 
     Log::info() << "TRT inference " << std::endl;

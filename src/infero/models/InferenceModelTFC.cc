@@ -82,7 +82,8 @@ InferenceModelTFC::~InferenceModelTFC() {
 }
 
 
-void InferenceModelTFC::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut) {
+void InferenceModelTFC::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
+                              std::string input_name, std::string output_name) {
 
     // Input tensor (NB: implicitely assumed that we only have one input!)
     int NInputs = 1;
@@ -91,7 +92,7 @@ void InferenceModelTFC::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::Te
     TF_Output* Input = static_cast<TF_Output*>(malloc(sizeof(TF_Output) * NInputs));
 
     // allocate and output of input-operation
-    TF_Output t0 = {TF_GraphOperationByName(network_graph, "serving_default_input_1"), 0};
+    TF_Output t0 = {TF_GraphOperationByName(network_graph, input_name.c_str()), 0};
     INFERO_CHECK(t0.oper)
 
     Input[0] = t0;
@@ -104,7 +105,7 @@ void InferenceModelTFC::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::Te
     TF_Output* Output = static_cast<TF_Output*>(malloc(sizeof(TF_Output) * NOutputs));
 
     // allocate and output of output-operation
-    TF_Output t2 = {TF_GraphOperationByName(network_graph, "StatefulPartitionedCall"), 0};
+    TF_Output t2 = {TF_GraphOperationByName(network_graph, output_name.c_str()), 0};
     INFERO_CHECK(t2.oper)
 
     Output[0] = t2;

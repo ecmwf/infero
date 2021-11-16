@@ -64,7 +64,8 @@ InferenceModelONNX::~InferenceModelONNX() {
 
 }
 
-void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut) {
+void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut,
+                               std::string input_name, std::string output_name) {
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
