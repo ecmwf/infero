@@ -18,6 +18,18 @@ if (HAVE_ONNX)
 
 endif()
 
+if (HAVE_TF_C)
+
+    ecbuild_configure_file(orographic_drag_tf_c.sh.in
+        orographic_drag_tf_c.sh @ONLY )
+
+    ecbuild_add_test(
+        TYPE     SCRIPT
+        COMMAND  orographic_drag_tf_c.sh )
+
+endif()
+
+
 if (HAVE_TF_LITE)
 
     ecbuild_configure_file(orographic_drag_tflite.sh.in

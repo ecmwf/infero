@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+set -eux
+
+srcdir=@CMAKE_CURRENT_SOURCE_DIR@
+bindir=@CMAKE_CURRENT_BINARY_DIR@
+datadir=@CMAKE_BINARY_DIR@/tests/data/orographic_drag
+exedir=@CMAKE_BINARY_DIR@/bin
+
+
+eng_type=tf_c
+
+model_path=$datadir/model_tf
+input_path=$datadir/m36966_input.npy
+ref_pred=$datadir/ref_pred.csv
+output_path=$bindir/prediction_tflite.csv
+out_shape="8,126"
+
+
+# run inference
+$exedir/infero.x \
+--model=$model_path \
+--input=$input_path \
+--input_layer="serving_default_dense_21_input" \
+--output_layer="StatefulPartitionedCall" \
+--engine=$eng_type \
+--output=$output_path \
+--out_shape=$out_shape \
+--ref_path=$ref_pred
+
+
