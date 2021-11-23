@@ -1,0 +1,38 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "home_config",
+            "displayName": "GCC 7.5.0 x86_64-linux-gnu",
+            "generator": "Unix Makefiles",
+            "description": "Using compilers: C = /usr/bin/x86_64-linux-gnu-gcc-7, CXX = /usr/bin/x86_64-linux-gnu-g++-7",
+            "binaryDir": "$env{HOME}/builds/infero",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "CMAKE_INSTALL_PREFIX": "$env{HOME}/builds/infero/install/${presetName}",
+                "CMAKE_C_COMPILER": "/usr/bin/x86_64-linux-gnu-gcc-7",
+                "CMAKE_CXX_COMPILER": "/usr/bin/x86_64-linux-gnu-g++-7",
+                "CMAKE_MODULE_PATH": "$env{HOME}/local/ecbuild/cmake",
+                "eckit_ROOT": "$env{HOME}/builds/eckit",
+                "ENABLE_MPI": "OFF",
+                "ENABLE_TF_LITE": "ON",
+                "TENSORFLOWLITE_PATH": "$env{HOME}/local/tensorflow",
+                "TENSORFLOWLITE_ROOT": "$env{HOME}/builds/tflite",
+                "ENABLE_TF_C": "ON",
+                "TENSORFLOWC_ROOT": "$env{HOME}/local/tensorflow_c",
+                "ENABLE_ONNX": "ON",
+                "ONNX_ROOT": "$env{HOME}/local/onnx_rt",
+                "ENABLE_TENSORRT": "ON",
+                "TENSORRT_ROOT": "$env{HOME}/local/TensorRT-8.0.0.3"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "build",
+            "description": "",
+            "displayName": "home_build",
+            "configurePreset": "CMakePresets.json"
+        }
+    ]
+}
