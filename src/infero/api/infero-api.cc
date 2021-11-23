@@ -368,6 +368,93 @@ int infero_inference_float_mimo(infero_handle_t* h,
 }
 
 
+// run a ML engine for inference
+int infero_inference_float_mimo_ctensor(infero_handle_t* h,
+                                        int nInputs,
+                                        char** const iNames, 
+                                        int* const iRanks, 
+                                        int** const iShape, 
+                                        float** const iData,
+                                        int nOutputs,
+                                        char** const oNames, 
+                                        int* const oRanks, 
+                                        int** const oShape, 
+                                        float** const oData) {
+
+    return wrapApiFunction([h,
+                            nInputs, 
+                            iNames, 
+                            iRanks, 
+                            iShape, 
+                            iData, 
+                            nOutputs, 
+                            oNames, 
+                            oRanks, 
+                            oShape, 
+                            oData]{
+        ASSERT(h);
+
+        std::cout << "infero_inference_float_mimo()" << std::endl;
+
+        // loop over INPUT tensors
+        ASSERT(nInputs >= 1);
+        std::vector<TensorFloat*> inputData(static_cast<size_t>(nInputs));
+        std::vector<const char*>  inputNames(static_cast<size_t>(nInputs));
+        for (size_t i=0; i<static_cast<size_t>(nInputs); i++){
+
+            // rank
+            size_t rank = static_cast<size_t>(*(iRanks+i));
+            ASSERT(rank >= 1);
+
+            // shape
+            std::vector<size_t> shape_(rank);
+            for (size_t rr=0; rr<rank; rr++){
+                shape_[rr] = static_cast<size_t>(*(*(iShape+i)+rr));
+            }
+
+            // name and data
+            inputNames[i] = *(iNames+i);
+            inputData[i] = new TensorFloat(*(iData+i), shape_, false);
+        }
+
+        // loop over OUTPUT tensors
+        ASSERT(nOutputs >= 1);
+        std::vector<TensorFloat*> outputData(static_cast<size_t>(nOutputs));
+        std::vector<const char*>  outputNames(static_cast<size_t>(nOutputs));
+        for (size_t i=0; i<static_cast<size_t>(nOutputs); i++){
+
+            // rank
+            size_t rank = static_cast<size_t>(*(oRanks+i));
+            ASSERT(rank >= 1);
+
+            // shape
+            std::vector<size_t> shape_(rank);
+            for (size_t rr=0; rr<rank; rr++){
+                shape_[rr] = static_cast<size_t>(*(*(oShape+i)+rr));
+            }
+
+            // name and data
+            outputNames[i] = *(oNames+i);
+            outputData[i] = new TensorFloat(*(oData+i), shape_, false);
+        }
+
+
+        // mimo inference
+        h->impl_->infer_mimo(inputData, inputNames, outputData, outputNames);
+
+        // delete memory for input tensors
+        for (size_t i=0; i<static_cast<size_t>(nInputs); i++){
+            delete inputData[i];
+        }
+
+        // delete memory for output tensors
+        for (size_t i=0; i<static_cast<size_t>(nOutputs); i++){
+            delete outputData[i];
+        }
+
+    });
+}
+
 int infero_finalise(){    
     return wrapApiFunction([]{
         // nothing to do here..

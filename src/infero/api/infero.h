@@ -149,6 +149,21 @@ int infero_inference_float_mimo(infero_handle_t* h,
                                 int** const oShape, 
                                 float** const oData);
 
+/** run a ML engine for inference (float)
+* with multi-input and multi-output - for C-style tensors
+*/
+int infero_inference_float_mimo_ctensor(infero_handle_t* h,
+                                        int nInputs,
+                                        char** const iNames, 
+                                        int* const iRanks, 
+                                        int** const iShape, 
+                                        float** const iData,
+                                        int nOutputs,
+                                        char** const oNames, 
+                                        int* const oRanks, 
+                                        int** const oShape, 
+                                        float** const oData);                                
+
 /**
  * finalise the handle
  */

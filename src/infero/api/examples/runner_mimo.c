@@ -146,17 +146,17 @@ int main(int argc, char** argv){
     infero_open_handle(infero_handle);
 
     // 3) run inference
-    infero_inference_float_mimo(infero_handle,
-                                (int)n_inputs,
-                                input_names,
-                                iranks,
-                                input_shapes,
-                                inputs,
-                                (int)n_outputs,
-                                output_names,
-                                oranks,
-                                output_shapes,
-                                outputs);
+    infero_inference_float_mimo_ctensor(infero_handle,
+                                        (int)n_inputs,
+                                        input_names,
+                                        iranks,
+                                        input_shapes,
+                                        inputs,
+                                        (int)n_outputs,
+                                        output_names,
+                                        oranks,
+                                        output_shapes,
+                                        outputs);
 
     // print output
     print_data(n_outputs,
