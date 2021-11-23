@@ -120,7 +120,7 @@ int main(int argc, char** argv){
     int* oranks = malloc(sizeof(int) * n_outputs);
 
     *(output_names) = name_output;
-    *(outputs) = (float*)malloc( sizeof (float) * n_outputs);
+    *(outputs) = (float*)malloc( sizeof (float) * 1);
     *(*(outputs)) = 1;
     *oranks = 2;
     *(output_shapes) = (int*)malloc( sizeof (int) * 1);
@@ -134,13 +134,13 @@ int main(int argc, char** argv){
                oranks);
     // ----------------------------------
 
-    infero_model_handle infero_handle;
+    infero_handle_t* infero_handle;
 
     // 0) init infero
     infero_initialise(argc, argv);
 
     // 1) get a inference model handle
-    infero_handle = infero_create_handle_from_yaml_str(yaml_str);
+    infero_create_handle_from_yaml_str(yaml_str, &infero_handle);
 
     // 2) open the handle
     infero_open_handle(infero_handle);

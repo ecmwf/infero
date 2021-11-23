@@ -184,8 +184,8 @@ void InferenceModelTFC::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::Te
 
 }
 
-void InferenceModelTFC::infer_mimo(std::vector<TensorFloat*> tIn, std::vector<char*> input_names,
-                                   std::vector<TensorFloat*> tOut, std::vector<char*> output_names)
+void InferenceModelTFC::infer_mimo(std::vector<TensorFloat*> tIn, std::vector<const char*> input_names,
+                                   std::vector<TensorFloat*> tOut, std::vector<const char*> output_names)
 {
 
     // N Input tensors

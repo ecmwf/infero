@@ -33,8 +33,8 @@ protected:
     void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
                std::string input_name = "", std::string output_name = "");
 
-    virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> tIn, std::vector<char*> input_names,
-                            std::vector<eckit::linalg::TensorFloat*> tOut, std::vector<char*> output_names);
+    virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> tIn, std::vector<const char*> input_names,
+                            std::vector<eckit::linalg::TensorFloat*> tOut, std::vector<const char*> output_names);
 
     void print(std::ostream& os) const;
 

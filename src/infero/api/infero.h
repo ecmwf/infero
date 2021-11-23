@@ -12,51 +12,147 @@
 extern "C" {
 #endif
 
-typedef void* infero_model_handle;
+/* Error handling */
 
-// initialize infero library
-void infero_initialise(int argc, char** argv);
+/** Return codes */
+enum InferoErrorValues
+{
+    INFERO_SUCCESS                 = 0,
+    INFERO_ERROR_GENERAL_EXCEPTION = 1,
+    INFERO_ERROR_UNKNOWN_EXCEPTION = 2
+};
 
-// Creates an ML engine handle from a YAML string
-infero_model_handle infero_create_handle_from_yaml_str(char str[]);
+/** Returns a human-readable error message for the
+ * last error given an error code
+ * \param err Error code (#OdcErrorValues)
+ * \returns Error message
+ */
+const char* infero_error_string(int err);
 
-// Creates an ML engine handle from a YAML file
-infero_model_handle infero_create_handle_from_yaml_file(char path[]);
+/** Error handler callback function signature
+ * \param context Error handler context
+ * \param error_code Error code (#OdcErrorValues)
+ */
+typedef void (*infero_failure_handler_t)(void* context, int error_code);
 
-// open a ML engine handle
-void infero_open_handle(infero_model_handle);
+/** Sets an error handler which will be called on error
+ * with the supplied context and an error code
+ * \param handler Error handler function
+ * \param context Error handler context
+ *
+ * To be called like so:
+ * 
+ *     void handle_failure(void* context, int error_code) {
+ *        fprintf(stderr, "Error: %s\n", odc_error_string(error_code));
+ *        clean_up();
+ *        exit(1);
+ *    }
+ *    odc_set_failure_handler(handle_failure, NULL);
+ */
+int infero_set_failure_handler(infero_failure_handler_t handler, void* context);
 
-// close a ML engine handle
-void infero_close_handle(infero_model_handle);
+// -------------------------------------------------------------
 
-// Destroys the ML engine handle
-void infero_delete_handle(infero_model_handle);
+struct infero_tensors_t;
+typedef struct infero_tensors_t infero_tensors_t;
 
-// run a ML engine for inference (double)
-void infero_inference_double(infero_model_handle h, double data1[], int rank1, int shape1[], double data2[], int rank2,
-                             int shape2[]);
+struct infero_handle_t;
+typedef struct infero_handle_t infero_handle_t;
 
-// run a ML engine for inference (double) - for c-style input tensors
-void infero_inference_double_ctensor(infero_model_handle h, double data1[], int rank1, int shape1[], double data2[], int rank2,
-                                    int shape2[]);
+/**
+ * initialize infero library
+ */
+int infero_initialise(int argc, char** argv);
 
-// run a ML engine for inference (float)
-void infero_inference_float(infero_model_handle h, float data1[], int rank1, int shape1[], float data2[], int rank2,
-                            int shape2[]);
+/** 
+ * Creates an ML engine handle from a YAML string 
+ * */
+int infero_create_handle_from_yaml_str(const char str[], infero_handle_t** h);
 
-// run a ML engine for inference (float) with multi-input and multi-output
-void infero_inference_float_mimo(infero_model_handle h,
-                                 int nInputs,
-                                 char** iNames, int* iRanks, int** iShape, float** iData,
-                                 int nOutputs,
-                                 char** oNames, int* oRanks, int** oShape, float** oData);
+/** 
+ * Creates an ML engine handle from a YAML file 
+ * */
+int infero_create_handle_from_yaml_file(const char path[], infero_handle_t** h);
 
-// run a ML engine for inference (float) - for c-style input tensors
-void infero_inference_float_ctensor(infero_model_handle h, float data1[], int rank1, int shape1[], float data2[], int rank2,
-                                   int shape2[]);
+/**
+ * open a ML engine handle
+ */
+int infero_open_handle(infero_handle_t* h);
+
+/**
+ * close a ML engine handle
+ */
+int infero_close_handle(infero_handle_t* h);
+
+/**
+ * Destroys the ML engine handle
+ */
+int infero_delete_handle(infero_handle_t* h);
+
+/**
+ * run a ML engine for inference (double)
+ */
+int infero_inference_double(infero_handle_t* h, 
+                            int rank1, 
+                            const double data1[], 
+                            const int shape1[], 
+                            int rank2,
+                            double data2[], 
+                            const int shape2[]);
+
+/** run a ML engine for inference (double)
+ * for c-style input tensors
+ */
+int infero_inference_double_ctensor(infero_handle_t* h, 
+                                    int rank1, 
+                                    const double data1[], 
+                                    const int shape1[], 
+                                    int rank2,
+                                    double data2[], 
+                                    const int shape2[]);
+/**
+* run a ML engine for inference (float)
+*/
+int infero_inference_float(infero_handle_t* h, 
+                           int rank1, 
+                           const float data1[], 
+                           const int shape1[], 
+                           int rank2,
+                           float data2[], 
+                           const int shape2[]);
 
 
-void infero_finalise();
+/** run a ML engine for inference (float)
+ * for c-style input tensors
+ */
+int infero_inference_float_ctensor(infero_handle_t* h, 
+                                   int rank1, 
+                                   const float data1[], 
+                                   const int shape1[], 
+                                   int rank2,
+                                   float data2[], 
+                                   const int shape2[]);
+
+
+/** run a ML engine for inference (float)
+* with multi-input and multi-output
+*/
+int infero_inference_float_mimo(infero_handle_t* h,
+                                int nInputs,
+                                char** const iNames, 
+                                int* const iRanks, 
+                                int** const iShape, 
+                                float** const iData,
+                                int nOutputs,
+                                char** const oNames, 
+                                int* const oRanks, 
+                                int** const oShape, 
+                                float** const oData);
+
+/**
+ * finalise the handle
+ */
+int infero_finalise();
 
 #if defined(__cplusplus)
 }  // extern "C"

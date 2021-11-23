@@ -116,8 +116,8 @@ void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut,
 
 }
 
-void InferenceModelONNX::infer_mimo(std::vector<TensorFloat *> tIn, std::vector<char *> input_names,
-                                    std::vector<TensorFloat *> tOut, std::vector<char *> output_names)
+void InferenceModelONNX::infer_mimo(std::vector<TensorFloat *> tIn, std::vector<const char *> input_names,
+                                    std::vector<TensorFloat *> tOut, std::vector<const char *> output_names)
 {
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);

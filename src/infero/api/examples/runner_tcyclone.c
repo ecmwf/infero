@@ -33,7 +33,7 @@ int main(int argc, char** argv){
     double tmpval;
     int i;
 
-    infero_model_handle infero_handle;
+    infero_handle_t* infero_handle;
 
     assert(argc == 4);
 
@@ -94,22 +94,22 @@ int main(int argc, char** argv){
     infero_initialise(argc, argv);
 
     // 1) get a inference model handle
-    infero_handle = infero_create_handle_from_yaml_str(yaml_str);
+    infero_create_handle_from_yaml_str(yaml_str, &infero_handle);
 
     // 2) open the handle
     infero_open_handle(infero_handle);
 
-    // 3) run inference
-    infero_inference_float_ctensor( infero_handle,
-                                    input_tensor, 4, input_size,
-                                    output_tensor, 4, output_size );
+// //    // 3) run inference
+// //    infero_inference_float_ctensor( infero_handle,
+// //                                    input_tensor, 4, input_size,
+// //                                    output_tensor, 4, output_size );
 
     // 4) close and delete the handle
     infero_close_handle( infero_handle );
     infero_delete_handle( infero_handle );
 
     // 5) finalise
-    infero_finalise();
+    infero_finalise(); 
 
 
     // print sum of tensor output
