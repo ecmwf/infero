@@ -81,6 +81,32 @@ else
 fi
 # =============================================
 
+
+# =============== TF C-API ====================
+if [ ! -d ${TF_C_SOURCE_DIR} ] && [ ${WITH_TF_C_RUNTIME} == ON ]; then
+
+  # clone ONNXRT
+  echo "Creating dir ${TF_C_SOURCE_DIR}.."
+  mkdir -p ${TF_C_SOURCE_DIR}
+
+  echo "Downloading TF C-API in ${TF_C_SOURCE_DIR}.."
+  wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-2.6.0.tar.gz -P ${TF_C_SOURCE_DIR}
+  cd ${TF_C_SOURCE_DIR}
+  tar xzvf libtensorflow-cpu-linux-x86_64-2.6.0.tar.gz
+
+else
+    echo "Skipping ${TF_C_SOURCE_DIR}.."
+fi
+
+if [ ! -d ${TFLITE_BUILD_DIR} ] && [ ${WITH_TFLITE_RUNTIME} == ON ]; then
+  echo "TF C-API in ${TFLITE_BUILD_DIR} already built. Nothing to do."
+else
+    echo "Skipping ${TFLITE_BUILD_DIR}.."
+fi
+# =============================================
+
+
+
 # =========== Clone Tensorflow-LITE ===========
 if [ ! -d ${TFLITE_SOURCE_DIR} ] && [ ${WITH_TFLITE_RUNTIME} == ON ]; then
 

@@ -46,5 +46,3 @@ fi
 ${INFERO_CMAKE_CMD} && ${INFERO_MAKE_CMD}
 
 echo "all done."
-
-#-DTENSORFLOWC_PATH=${TF_C_SOURCE_DIR} \
