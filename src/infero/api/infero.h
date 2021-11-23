@@ -24,14 +24,14 @@ enum InferoErrorValues
 
 /** Returns a human-readable error message for the
  * last error given an error code
- * \param err Error code (#OdcErrorValues)
+ * \param err Error code
  * \returns Error message
  */
 const char* infero_error_string(int err);
 
 /** Error handler callback function signature
  * \param context Error handler context
- * \param error_code Error code (#OdcErrorValues)
+ * \param error_code Error code
  */
 typedef void (*infero_failure_handler_t)(void* context, int error_code);
 
@@ -43,11 +43,11 @@ typedef void (*infero_failure_handler_t)(void* context, int error_code);
  * To be called like so:
  * 
  *     void handle_failure(void* context, int error_code) {
- *        fprintf(stderr, "Error: %s\n", odc_error_string(error_code));
+ *        fprintf(stderr, "Error: %s\n", infero_error_string(error_code));
  *        clean_up();
  *        exit(1);
  *    }
- *    odc_set_failure_handler(handle_failure, NULL);
+ *    infero_set_failure_handler(handle_failure, NULL);
  */
 int infero_set_failure_handler(infero_failure_handler_t handler, void* context);
 

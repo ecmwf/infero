@@ -98,7 +98,7 @@ int infero_set_failure_handler(infero_failure_handler_t handler, void* context) 
     return wrapApiFunction([handler, context] {
         g_failure_handler = handler;
         g_failure_handler_context = context;
-        eckit::Log::info() << "ODC setting failure handler fn." << std::endl;
+        eckit::Log::info() << "Infero setting failure handler fn." << std::endl;
     });
 }
 
