@@ -11,6 +11,9 @@
 import os
 import numpy as np
 import pyinfero
+from pyinfero.pyinfero import InferoException
+
+import pytest
 
 def test_mimo():
 
@@ -18,7 +21,7 @@ def test_mimo():
     this_dir = os.path.abspath(os.path.dirname(__file__))
     data_dir = os.path.join(this_dir, "../../../../../tests/data/mimo_model")
 
-    model_path = os.path.join(data_dir, "mimo_model.tflite") 
+    model_path = os.path.join(data_dir, "mimo_model.tflite")
     model_type = "tflite" 
 
     input_tensors = {
@@ -32,9 +35,7 @@ def test_mimo():
 
     # inference
     infero = pyinfero.Infero(model_path, model_type)
-    infero.initialise()
     output_tensors = infero.infer_mimo(input_tensors, output_shapes)
-    infero.finalise()
 
     # check output
     assert np.abs(output_tensors['dense_6'] - 5112.6704) < 0.01

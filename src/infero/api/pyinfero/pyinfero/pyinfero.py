@@ -65,9 +65,9 @@ class PatchedLib:
 
         def wrapped_fn(*args, **kwargs):
             retval = fn(*args, **kwargs)
-            # if retval != self.__lib.FDB_SUCCESS:
-            if retval != 0:
-                error_str = "Error in function {}: {}".format(name, self.__lib.infero_error_string(retval))
+            if retval != self.__lib.INFERO_SUCCESS:
+                c_err = ffi.string(self.__lib.infero_error_string(retval))
+                error_str = "Error in function {}: {}".format(name, c_err)
                 raise InferoException(error_str)
             return retval
 
@@ -99,29 +99,35 @@ class Infero:
         # C API handle
         self.infero_hdl = None
 
+        # implicitely initialise infero
+        self._initialised = False
+        self.initialise()
+
     def initialise(self):
         """
         Initialise the library
         :return:
         """
 
-        # main args not directly used by the API
-        args = [""]
-        cargs = [ffi.new("char[]", ar.encode('ascii')) for ar in args]
-        argv = ffi.new(f'char*[]', cargs)
+        if not self._initialised:
 
-        # init infero lib
-        lib.infero_initialise(len(cargs), argv)
-        config_cstr = ffi.new("char[]", self.config_str.encode('ascii'))
+            # main args not directly used by the API
+            args = [""]
+            cargs = [ffi.new("char[]", ar.encode('ascii')) for ar in args]
+            argv = ffi.new(f'char*[]', cargs)
 
-        # get infero handle
-        self.infero_hdl = ffi.new('infero_handle_t**')
+            # init infero lib
+            lib.infero_initialise(len(cargs), argv)
+            config_cstr = ffi.new("char[]", self.config_str.encode('ascii'))
 
-        # self.infero_hdl = ffi.new('int*')
-        lib.infero_create_handle_from_yaml_str(config_cstr, self.infero_hdl)
+            # get infero handle
+            self.infero_hdl = ffi.new('infero_handle_t**')
 
-        # open the handle
-        lib.infero_open_handle(self.infero_hdl[0])
+            # self.infero_hdl = ffi.new('int*')
+            lib.infero_create_handle_from_yaml_str(config_cstr, self.infero_hdl)
+
+            # open the handle
+            lib.infero_open_handle(self.infero_hdl[0])
 
     def infer(self, input_data, output_shape):
         """

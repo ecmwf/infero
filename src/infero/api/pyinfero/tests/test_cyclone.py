@@ -27,9 +27,7 @@ def test_cyclone():
 
     # inference
     infero = pyinfero.Infero(model_path, model_type)
-    infero.initialise()
     output_tensor = infero.infer(input_tensor, model_output_shape)
-    infero.finalise()
 
     # save output
     # np.save("output_cyclone.npy", output_tensor)
