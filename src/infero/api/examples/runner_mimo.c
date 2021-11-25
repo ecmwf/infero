@@ -148,14 +148,14 @@ int main(int argc, char** argv){
     // 3) run inference
     infero_inference_float_mimo_ctensor(infero_handle,
                                         (int)n_inputs,
-                                        input_names,
-                                        iranks,
-                                        input_shapes,
-                                        inputs,
+                                        (const char**)input_names,
+                                        (const int*)iranks,
+                                        (const int**)input_shapes,
+                                        (const float**)inputs,
                                         (int)n_outputs,
-                                        output_names,
-                                        oranks,
-                                        output_shapes,
+                                        (const char**)output_names,
+                                        (const int*)oranks,
+                                        (const int**)output_shapes,
                                         outputs);
 
     // print output
