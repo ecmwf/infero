@@ -150,6 +150,80 @@ class Infero:
 
         return return_output
 
+    def infer_mimo(self, input_data, output_shapes):
+        """
+        Run multi-input multi-output inference
+        :param input_data:
+        :param output_shape:
+        :return:
+        """
+
+        # ---------- inputs --------------
+        n_inputs = len(input_data)
+        cdata_ptrs = []
+        cshape_ptrs = []
+        cname_ptrs = []
+        for iname, idata in input_data.items():
+
+            # input set to Fortran order
+            odata_c = np.array(idata, order='C', dtype=np.float32)
+
+            cdata_ptr = ffi.cast("float *", odata_c.ctypes.data)
+            cshape_ptr = ffi.new("int[]", odata_c.shape)
+            cname_ptr = ffi.new("char[]", iname.encode('ascii'))
+
+            cdata_ptrs.append(cdata_ptr)
+            cshape_ptrs.append(cshape_ptr)
+            cname_ptrs.append(cname_ptr)
+
+        data_ptr2ptrs = ffi.new("float*[]", cdata_ptrs)
+        shape_ptr2ptrs = ffi.new("int*[]", cshape_ptrs)
+        name_ptr2ptrs = ffi.new("char*[]", cname_ptrs)
+        iranks = ffi.new("int[]", [len(t.shape) for t in input_data.values()])
+
+        # ---------- outputs --------------
+        n_output = len(output_shapes)
+        out_cdata_ptrs = []
+        out_cshape_ptrs = []
+        out_cname_ptrs = []
+        for oname, oshape in output_shapes.items():
+
+            # input set to Fortran order
+            odata_c = np.zeros(oshape, order='C', dtype=np.float32)
+
+            out_cdata_ptr = ffi.cast("float *", odata_c.ctypes.data)
+            out_cshape_ptr = ffi.new("int[]", odata_c.shape)
+            out_cname_ptr = ffi.new("char[]", oname.encode('ascii'))
+
+            out_cdata_ptrs.append(out_cdata_ptr)
+            out_cshape_ptrs.append(out_cshape_ptr)
+            out_cname_ptrs.append(out_cname_ptr)
+
+        out_data_ptr2ptrs = ffi.new("float*[]", out_cdata_ptrs)
+        out_shape_ptr2ptrs = ffi.new("int*[]", out_cshape_ptrs)
+        out_name_ptr2ptrs = ffi.new("char*[]", out_cname_ptrs)
+        oranks = ffi.new("int[]", [len(t) for t in output_shapes.values()])
+
+        lib.infero_inference_float_mimo_ctensor(self.infero_hdl[0],
+                                                n_inputs,
+                                                name_ptr2ptrs,
+                                                iranks,
+                                                shape_ptr2ptrs,
+                                                data_ptr2ptrs,
+                                                n_output,
+                                                out_name_ptr2ptrs,
+                                                oranks,
+                                                out_shape_ptr2ptrs,
+                                                out_data_ptr2ptrs)
+
+        output_tensors = {}
+        for tidx, t in enumerate(out_data_ptr2ptrs):            
+            oname = list(output_shapes.keys())[tidx]            
+            output_tensors.update({oname: np.frombuffer(ffi.buffer(t), dtype=np.float32) })
+
+        return output_tensors
+
+
     def finalise(self):
         """
         Finalise the Infero API
