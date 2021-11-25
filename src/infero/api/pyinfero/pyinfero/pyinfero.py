@@ -44,7 +44,6 @@ class PatchedLib:
         # All of the executable members of the CFFI-loaded library are functions in the Infero
         # C API. These should be wrapped with the correct error handling. Otherwise forward
         # these on directly.
-
         for f in dir(self.__lib):
             try:
                 attr = getattr(self.__lib, f)
@@ -52,6 +51,26 @@ class PatchedLib:
             except Exception as e:
                 print(e)
                 print("Error retrieving attribute", f, "from library")
+
+        # initialisation flag
+        self._initialised = False
+
+        # initialise infero lib
+        self.__initialise_lib()
+
+    def __initialise_lib(self):
+
+        if not self._initialised:
+
+            # main args not directly used by the API
+            args = [""]
+            cargs = [ffi.new("char[]", ar.encode('ascii')) for ar in args]
+            argv = ffi.new(f'char*[]', cargs)
+
+            # init infero lib
+            self.__lib.infero_initialise(len(cargs), argv)
+
+            self._initialised = True
 
     def __read_header(self):
         with open(os.path.join(os.path.dirname(__file__), 'pyinfero-headers.h'), 'r') as f:
@@ -72,6 +91,14 @@ class PatchedLib:
             return retval
 
         return wrapped_fn
+
+    def __del__(self):
+        """
+        Finalise infero lib
+        """
+
+        if self._initialised:
+            self.__lib.infero_finalise()
 
 
 # Bootstrap the library
@@ -97,10 +124,12 @@ class Infero:
         self.config_str = f"path: {self.model_path}\ntype: {self.model_type}"
 
         # C API handle
-        self.infero_hdl = None
+        self.infero_hdl = None  
 
-        # implicitely initialise infero
+        # initialised flag
         self._initialised = False
+
+        # initialise (create/open handle)
         self.initialise()
 
     def initialise(self):
@@ -111,13 +140,6 @@ class Infero:
 
         if not self._initialised:
 
-            # main args not directly used by the API
-            args = [""]
-            cargs = [ffi.new("char[]", ar.encode('ascii')) for ar in args]
-            argv = ffi.new(f'char*[]', cargs)
-
-            # init infero lib
-            lib.infero_initialise(len(cargs), argv)
             config_cstr = ffi.new("char[]", self.config_str.encode('ascii'))
 
             # get infero handle
@@ -128,6 +150,9 @@ class Infero:
 
             # open the handle
             lib.infero_open_handle(self.infero_hdl[0])
+
+            self._initialised = True
+
 
     def infer(self, input_data, output_shape):
         """
@@ -236,11 +261,13 @@ class Infero:
         :return:
         """
 
-        # close the handle
-        lib.infero_close_handle(self.infero_hdl[0])
+        if self._initialised:
 
-        # delete the handle
-        lib.infero_delete_handle(self.infero_hdl[0])
+            # close the handle
+            lib.infero_close_handle(self.infero_hdl[0])
 
-        # finalise
-        lib.infero_finalise()
+            # delete the handle
+            lib.infero_delete_handle(self.infero_hdl[0])
+
+    def __del__(self):
+        self.finalise()
