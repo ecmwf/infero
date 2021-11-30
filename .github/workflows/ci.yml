@@ -10,12 +10,17 @@ on:
     tags-ignore:
     - '**'
 
+  # Trigger the workflow on all pull requests
+  pull_request: ~
+
   # Allow workflow to be dispatched on demand
   workflow_dispatch: ~
 
 jobs:
-  ci:
-    name: ci
+
+  # Prepares dependency cache for subsequent job.
+  deps:
+    name: deps
     strategy:
       matrix:
         name:
@@ -77,27 +82,32 @@ jobs:
       ONNXRUNTIME_SRC_DIR: ${{ github.workspace }}/onnxruntime
       TENSORFLOW_VERSION: v2.6.0
       TENSORFLOW_SRC_DIR: ${{ github.workspace }}/tensorflow
-
+    outputs:
+      deps-cache-key: ${{ steps.setup-environment.outputs.deps-cache-key }}
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v2
-
     - name: Setup Environment
+      id: setup-environment
       shell: bash -eux {0}
       run: |
-        echo "ONNXRUNTIME_PATH=${{ runner.temp }}/install/onnxruntime" >> $GITHUB_ENV
-        echo "TENSORFLOW_PATH=${{ runner.temp }}/install/tensorflow" >> $GITHUB_ENV
-        echo "TFLITE_PATH=${{ runner.temp }}/install/tensorflow/tensorflow/lite/build" >> $GITHUB_ENV
+        DEPS_PATH="${{ runner.temp }}/deps"
+        ONNXRUNTIME_PATH="$DEPS_PATH/onnxruntime"
+        TENSORFLOW_PATH="$DEPS_PATH/tensorflow"
+        TFLITE_PATH="$DEPS_PATH/tensorflow/tensorflow/lite/build"
+        DEPS_ENV="DEPS_PATH=$DEPS_PATH"$'\n'"ONNXRUNTIME_PATH=$ONNXRUNTIME_PATH"$'\n'"TENSORFLOW_PATH=$TENSORFLOW_PATH"$'\n'"TFLITE_PATH=$TFLITE_PATH"
+        mkdir -p $DEPS_PATH
+        echo "$DEPS_ENV" > $DEPS_PATH/.env
+        echo "$DEPS_ENV" >> $GITHUB_ENV
+        echo ::set-output name=deps-cache-key::"deps-onnxruntime-${{ env.ONNXRUNTIME_VERSION }}-tensorflow-${{ env.TENSORFLOW_VERSION }}-"
 
-    - name: Check for ONNX Runtime Cache
-      id: onnxruntime-cache
+    - name: Check for Dependency Cache
+      id: deps-cache
       uses: actions/cache@v2
       with:
-        path: ${{ env.ONNXRUNTIME_PATH }}
-        key: onnxruntime-${{ env.ONNXRUNTIME_VERSION }}-${{ matrix.compiler }}@${{ matrix.os }}
+        path: ${{ env.DEPS_PATH }}
+        key: ${{ steps.setup-environment.outputs.deps-cache-key }}${{ matrix.compiler }}@${{ matrix.os }}
 
     - name: Checkout ONNX Runtime Repository
-      if: steps.onnxruntime-cache.outputs.cache-hit != 'true'
+      if: steps.deps-cache.outputs.cache-hit != 'true'
       uses: actions/checkout@v2
       with:
         repository: Microsoft/onnxruntime
@@ -105,7 +115,7 @@ jobs:
         path: ${{ env.ONNXRUNTIME_SRC_DIR }}
 
     - name: Build ONNX Runtime
-      if: steps.onnxruntime-cache.outputs.cache-hit != 'true'
+      if: steps.deps-cache.outputs.cache-hit != 'true'
       env:
         CC: ${{ matrix.compiler_cc }}
         CXX: ${{ matrix.compiler_cxx }}
@@ -117,15 +127,8 @@ jobs:
         mkdir -p ${{ env.ONNXRUNTIME_PATH }}
         mv build include ${{ env.ONNXRUNTIME_PATH }}
 
-    - name: Check for TensorFlow Cache
-      id: tensorflow-cache
-      uses: actions/cache@v2
-      with:
-        path: ${{ env.TENSORFLOW_PATH }}
-        key: tensorflow-${{ env.TENSORFLOW_VERSION }}-${{ matrix.compiler }}@${{ matrix.os }}
-
     - name: Checkout TensorFlow Repository
-      if: steps.tensorflow-cache.outputs.cache-hit != 'true'
+      if: steps.deps-cache.outputs.cache-hit != 'true'
       uses: actions/checkout@v2
       with:
         repository: tensorflow/tensorflow
@@ -133,7 +136,7 @@ jobs:
         path: ${{ env.TENSORFLOW_SRC_DIR }}
 
     - name: Build TensorFlow Lite
-      if: steps.tensorflow-cache.outputs.cache-hit != 'true'
+      if: steps.deps-cache.outputs.cache-hit != 'true'
       env:
         CC: ${{ matrix.compiler_cc }}
         CXX: ${{ matrix.compiler_cxx }}
@@ -151,32 +154,26 @@ jobs:
         cmake -DCMAKE_PREFIX_PATH=$INSTALL_DIR -DBUILD_SHARED_LIBS=ON $SRC_DIR
         cmake --build . -j2
 
-    - name: Build & Test
-      id: build-test
-      uses: ecmwf-actions/build-package@v2
-      with:
-        self_coverage: true
-        cmake_options: -DENABLE_MPI=OFF -DENABLE_TF_LITE=ON -DTENSORFLOWLITE_PATH=${{ env.TENSORFLOW_PATH }} -DTENSORFLOWLITE_ROOT=${{ env.TFLITE_PATH }} -DENABLE_ONNX=ON -DONNX_ROOT=${{ env.ONNXRUNTIME_PATH }} -DENABLE_TENSORRT=OFF
+  # Calls a reusable CI workflow to build & test the current repository.
+  #   It will pull in all needed dependencies and produce a code coverage report on success.
+  #   We also pass the cache key of additional dependencies which were built in the previous job.
+  ci:
+    name: ci
+    uses: ecmwf-actions/reusable-workflows/.github/workflows/ci.yml@v1
+    needs:
+    - deps
+    with:
+      skip_matrix_jobs: |
+        gnu-10@macos-10.15
+        clang-12@macos-10.15
+      codecov_upload: true
+      notify_teams: true
+      deps_cache_key: ${{ needs.deps.outputs.deps-cache-key }}
+      build_package_inputs: |
+        cmake_options: -DENABLE_MPI=OFF -DENABLE_TF_LITE=ON -DTENSORFLOWLITE_PATH=$TENSORFLOW_PATH -DTENSORFLOWLITE_ROOT=$TFLITE_PATH -DENABLE_ONNX=ON -DONNX_ROOT=$ONNXRUNTIME_PATH -DENABLE_TENSORRT=OFF
         dependencies: |
           ecmwf/ecbuild
           ecmwf/eckit
         dependency_branch: develop
-
-    - name: Codecov Upload
-      if: steps.build-test.outputs.coverage_file && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
-      uses: codecov/codecov-action@v2
-      with:
-        files: ${{ steps.build-test.outputs.coverage_file }}
-
-  notify:
-    name: notify
-    runs-on: ubuntu-20.04
-    needs:
-    - ci
-    if: always() && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/develop')
-    steps:
-    - name: Notify Teams
-      uses: ecmwf-actions/notify-teams@v1
-      with:
-        incoming_webhook: ${{ secrets.MS_TEAMS_INCOMING_WEBHOOK }}
-        needs_context: ${{ toJSON(needs) }}
+    secrets:
+      incoming_webhook: ${{ secrets.MS_TEAMS_INCOMING_WEBHOOK }}
