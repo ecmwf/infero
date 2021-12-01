@@ -9,20 +9,40 @@
  */
 
 module inferof
+use, intrinsic :: iso_c_binding
+
 implicit none
+
 private
 
+
+! infero handle type that wraps the c-handle
+type infero_handle
+  type(c_ptr) :: impl = c_null_ptr
+contains
+  procedure :: from_yaml_string => infero_create_handle_from_yaml_string
+  procedure :: from_yaml_file => infero_create_handle_from_yaml_file
+  procedure :: open => infero_open_handle
+  ! procedure :: infer => infero_inference
+  procedure :: close => infero_close_handle
+  procedure :: delete => infero_delete_handle
+end type
+
+
+public :: infero_handle
 public :: infero_initialise
 public :: infero_inference
-public :: infero_create_handle_from_yaml_str
-public :: infero_create_handle_from_yaml_file
-public :: infero_open_handle
-public :: infero_close_handle
-public :: infero_delete_handle
 public :: infero_finalise
+
+public :: print_tensor
 
 
 interface
+
+!=========================================================================
+!=========================================================================
+!=========================================================================
+
 
   !-----------------------------------------------------------------------------------------
   ! void infero_inference_real32( void* handle,
@@ -31,106 +51,93 @@ interface
   !
   ! ( must be defined within `extern "C" { ... }` scope )
   !-----------------------------------------------------------------------------------------
-  subroutine infero_inference_real32( handle, data1, rank1, shape1, data2, rank2, shape2 ) &
+  function infero_inference_real32( handle_impl, rank1, data1, shape1, rank2, data2, shape2 ) result(err) &
     & bind(C,name="infero_inference_float")
     use iso_c_binding, only: c_int, c_ptr, c_float, c_char, c_null_char
-    type(c_ptr), value :: handle
-    real(c_float), dimension(*) :: data1
+    
+    type(c_ptr), intent(in), value :: handle_impl
+    
     integer(c_int), value :: rank1
+    real(c_float), dimension(*) :: data1    
     integer(c_int), dimension(*) :: shape1
-    real(c_float), dimension(*) :: data2
-    integer(c_int), value :: rank2
-    integer(c_int), dimension(*) :: shape2
-  end subroutine
 
-  subroutine infero_inference_real64( handle, data1, rank1, shape1, data2, rank2, shape2 ) &
+    integer(c_int), value :: rank2
+    real(c_float), dimension(*) :: data2    
+    integer(c_int), dimension(*) :: shape2
+    integer(c_int) :: err
+  end function
+
+  function infero_inference_real64( handle_impl, rank1, data1, shape1, rank2, data2, shape2 ) result(err) &
     & bind(C,name="infero_inference_double")
     use iso_c_binding, only: c_int, c_ptr, c_double, c_char, c_null_char
-    type(c_ptr), value :: handle
-    real(c_double), dimension(*) :: data1
+
+    type(c_ptr), intent(in), value :: handle_impl
+    
     integer(c_int), value :: rank1
+    real(c_double), dimension(*) :: data1        
     integer(c_int), dimension(*) :: shape1
-    real(c_double), dimension(*) :: data2
+        
     integer(c_int), value :: rank2
+    real(c_double), dimension(*) :: data2
     integer(c_int), dimension(*) :: shape2
-  end subroutine
+    integer(c_int) :: err
+  end function
 
-end interface
-
-
-interface
-  subroutine infero_initialise_interf( argc, argv ) &
+  function infero_initialise_interf( argc, argv ) result(err) &
     & bind(C,name="infero_initialise")
     use iso_c_binding, only: c_int, c_ptr
     integer(c_int), value :: argc
     type(c_ptr) :: argv(15)
-  end subroutine
-end interface
+    integer(c_int) :: err
+  end function
 
-interface
-  type(c_ptr) function infero_create_handle_from_yaml_str_interf( config_str ) &
+  function infero_create_handle_from_yaml_str_interf( config_str, handle_impl ) result(err) &
     & bind(C,name="infero_create_handle_from_yaml_str")
     use iso_c_binding, only: c_char, c_int, c_ptr
     character(c_char) :: config_str
+    type(c_ptr), intent(out) :: handle_impl
+    integer(c_int) :: err
   end function
-end interface
 
-interface
-  type(c_ptr) function infero_create_handle_from_yaml_file_interf( config_str ) &
+  function infero_create_handle_from_yaml_file_interf( config_str, handle_impl ) result(err) &
     & bind(C,name="infero_create_handle_from_yaml_file")
     use iso_c_binding, only: c_char, c_int, c_ptr
     character(c_char) :: config_str
+    type(c_ptr), intent(out) :: handle_impl
+    integer(c_int) :: err
   end function
-end interface
 
-interface
-  subroutine infero_open_handle_interf( handle ) &
+  function infero_open_handle_interf( handle_impl ) result(err) &
     & bind(C,name="infero_open_handle")
     use iso_c_binding, only: c_int, c_ptr
-    type(c_ptr), value :: handle
-  end subroutine
-end interface
+    type(c_ptr), intent(in), value :: handle_impl
+    integer(c_int) :: err
+  end function
 
-interface
-  subroutine infero_close_handle_interf( handle ) &
+  function infero_close_handle_interf( handle_impl ) result(err) &
     & bind(C,name="infero_close_handle")
     use iso_c_binding, only: c_int, c_ptr
-    type(c_ptr), value :: handle
-  end subroutine
-end interface
+    type(c_ptr), intent(in), value :: handle_impl
+    integer(c_int) :: err
+  end function
 
-interface
-  subroutine infero_delete_handle_interf( handle ) &
+  function infero_delete_handle_interf( handle_impl ) result(err) &
     & bind(C,name="infero_delete_handle")
     use iso_c_binding, only: c_int, c_ptr
-    type(c_ptr), value :: handle
-  end subroutine
-end interface
+    type(c_ptr), intent(in), value :: handle_impl
+    integer(c_int) :: err
+  end function
 
-interface
-  subroutine infero_finalise_interf( ) &
+  function infero_finalise_interf( ) result(err) &
     & bind(C,name="infero_finalise")
     use iso_c_binding
-  end subroutine
-end interface
+    integer(c_int) :: err
+  end function
 
-
-! Array views API
-
-interface array_view1d ! function overloading
-  module procedure array_view1d_real32_r2  
-  module procedure array_view1d_real64_r2
-
-  module procedure array_view1d_real32_r3
-  module procedure array_view1d_real64_r3
-
-  module procedure array_view1d_real32_r4
-  module procedure array_view1d_real64_r4
 end interface
 
 
 ! Inference API
-
 interface infero_inference ! function overloading
   module procedure infero_inference_real32_rank2_rank2
   module procedure infero_inference_real64_rank2_rank2  
@@ -146,78 +153,204 @@ interface infero_initialise
   module procedure infero_initialise_func
 end interface
 
-interface infero_create_handle_from_yaml_str
-  module procedure infero_create_handle_from_yaml_str_func
-end interface
-
-interface infero_create_handle_from_yaml_file
-  module procedure infero_create_handle_from_yaml_file_func
-end interface
-
-interface infero_open_handle
-  module procedure infero_open_handle_func
-end interface
-
-interface infero_close_handle
-  module procedure infero_close_handle_func
-end interface
-
-interface infero_delete_handle
-  module procedure infero_delete_handle_func
-end interface
-
 interface infero_finalise
   module procedure infero_finalise_func
+end interface
+
+! Array views API
+
+interface array_view1d ! function overloading
+  module procedure array_view1d_real32_r2  
+  module procedure array_view1d_real64_r2
+
+  module procedure array_view1d_real32_r3
+  module procedure array_view1d_real64_r3
+
+  module procedure array_view1d_real32_r4
+  module procedure array_view1d_real64_r4
+end interface
+
+interface print_tensor
+  module procedure print_tensor_rank2
 end interface
 
 
 contains
 
 !-----------------------------------------------------------------------------------------------------------------------
-
-type(c_ptr) function infero_create_handle_from_yaml_str_func( config_str )
-  use iso_c_binding, only: c_char, c_int, c_ptr
-  character(c_char) :: config_str
-  infero_create_handle_from_yaml_str_func = infero_create_handle_from_yaml_str_interf(config_str)
-end function
-
-type(c_ptr) function infero_create_handle_from_yaml_file_func( config_str )
-  use iso_c_binding, only: c_char, c_int, c_ptr
-  character(c_char) :: config_str
-  infero_create_handle_from_yaml_file_func = infero_create_handle_from_yaml_file_interf(config_str)
-end function
-
-subroutine infero_initialise_func( )
+function infero_initialise_func( ) result(err)
   use iso_c_binding, only: c_int, c_ptr
   integer(c_int) :: argc
   type(c_ptr) :: argv(15)
+  integer :: err
   call get_c_commandline_arguments(argc,argv)
-  call infero_initialise_interf( argc,argv )
-end subroutine
+  err = infero_initialise_interf( argc,argv )
+end function
 
-subroutine infero_open_handle_func( handle )
-  use iso_c_binding, only: c_ptr
-  type(c_ptr), value :: handle
-  call infero_open_handle_interf( handle )
-end subroutine
-
-subroutine infero_close_handle_func( handle )
-  use iso_c_binding, only: c_ptr
-  type(c_ptr), value :: handle
-  call infero_close_handle_interf( handle )
-end subroutine
-
-subroutine infero_delete_handle_func( handle )
-  use iso_c_binding, only: c_ptr
-  type(c_ptr), value :: handle
-  call infero_delete_handle_interf( handle )
-end subroutine
-
-subroutine infero_finalise_func( )
+function infero_finalise_func( ) result(err)
   use iso_c_binding
-  call infero_finalise_interf( )
-end subroutine
+  integer :: err
+  err = infero_finalise_interf( )
+end function
 
+function infero_create_handle_from_yaml_string(handle, config_str) result(err)
+  class(infero_handle), intent(inout) :: handle
+  character(c_char) :: config_str
+  integer :: err
+  err = infero_create_handle_from_yaml_str_interf(config_str, handle%impl)
+end function
+
+function infero_create_handle_from_yaml_file(handle, config_str ) result(err)
+  use iso_c_binding, only: c_char, c_int, c_ptr
+  class(infero_handle), intent(inout) :: handle
+  character(c_char) :: config_str
+  integer :: err
+  err = infero_create_handle_from_yaml_file_interf(config_str, handle%impl)
+end function
+
+function infero_open_handle( handle ) result(err)
+  use iso_c_binding, only: c_ptr
+  class(infero_handle), intent(inout) :: handle
+  integer :: err
+  err = infero_open_handle_interf( handle%impl )
+end function
+
+function infero_close_handle( handle ) result(err)
+  use iso_c_binding, only: c_ptr
+  class(infero_handle), intent(inout) :: handle
+  integer :: err
+  err = infero_close_handle_interf( handle%impl )
+end function
+
+function infero_delete_handle( handle ) result(err)
+  use iso_c_binding, only: c_ptr
+  class(infero_handle), intent(inout) :: handle
+  integer :: err
+  err = infero_delete_handle_interf( handle%impl )
+end function
+
+function infero_handle_infer( handle ) result(err)
+  use iso_c_binding, only: c_ptr
+  class(infero_handle), intent(inout) :: handle
+  integer :: err
+  err = infero_delete_handle_interf( handle%impl )
+end function
+
+!!! Inference
+
+function infero_inference_real32_rank2_rank2(handle, array1, array2 ) result(err)
+  use, intrinsic :: iso_c_binding
+  class(infero_handle), intent(in) :: handle
+  integer :: err
+  real(c_float), intent(inout) :: array1(:,:)
+  real(c_float), intent(inout) :: array2(:,:)
+  integer(c_int) :: shape1(2)
+  integer(c_int) :: shape2(2)
+  real(c_float), pointer :: data1(:)
+  real(c_float), pointer :: data2(:)  
+
+  shape1 = shape(array1)
+  data1  => array_view1d( array1 )
+  shape2 = shape(array2)
+  data2  => array_view1d( array2 )
+
+  err = infero_inference_real32(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+end function
+
+function infero_inference_real64_rank2_rank2(handle, array1, array2 ) result(err)
+  use, intrinsic :: iso_c_binding
+  class(infero_handle), intent(in) :: handle
+  integer :: err
+  real(c_double), intent(inout) :: array1(:,:)
+  real(c_double), intent(inout) :: array2(:,:)
+  integer(c_int) :: shape1(2)
+  integer(c_int) :: shape2(2)
+  real(c_double), pointer :: data1(:)
+  real(c_double), pointer :: data2(:)
+
+  shape1 = shape(array1)
+  data1  => array_view1d( array1 )
+  shape2 = shape(array2)
+  data2  => array_view1d( array2 )
+
+  err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+end function
+
+function infero_inference_real32_rank3_rank2(handle, array1, array2 ) result(err)
+  use, intrinsic :: iso_c_binding
+  class(infero_handle), intent(in) :: handle
+  integer :: err
+  real(c_float), intent(inout) :: array1(:,:,:)
+  real(c_float), intent(inout) :: array2(:,:)
+  integer(c_int) :: shape1(3)
+  integer(c_int) :: shape2(2)
+  real(c_float), pointer :: data1(:)
+  real(c_float), pointer :: data2(:)
+
+  shape1 = shape(array1)
+  data1  => array_view1d( array1 )
+  shape2 = shape(array2)
+  data2  => array_view1d( array2 )
+
+  err = infero_inference_real32(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+end function
+
+function infero_inference_real64_rank3_rank2(handle, array1, array2 ) result(err)
+  use, intrinsic :: iso_c_binding
+  class(infero_handle), intent(in) :: handle
+  integer :: err
+  real(c_double), intent(inout) :: array1(:,:,:)
+  real(c_double), intent(inout) :: array2(:,:)
+  integer(c_int) :: shape1(3)
+  integer(c_int) :: shape2(2)
+  real(c_double), pointer :: data1(:)
+  real(c_double), pointer :: data2(:)
+
+  shape1 = shape(array1)
+  data1  => array_view1d( array1 )
+  shape2 = shape(array2)
+  data2  => array_view1d( array2 )
+
+  err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+end function
+
+function infero_inference_real32_rank4_rank4(handle, array1, array2 ) result(err)
+  use, intrinsic :: iso_c_binding
+  class(infero_handle), intent(in) :: handle
+  integer :: err
+  real(c_float), intent(inout) :: array1(:,:,:,:)
+  real(c_float), intent(inout) :: array2(:,:,:,:)
+  integer(c_int) :: shape1(4)
+  integer(c_int) :: shape2(4)
+  real(c_float), pointer :: data1(:)
+  real(c_float), pointer :: data2(:)
+
+  shape1 = shape(array1)
+  data1  => array_view1d( array1 )
+  shape2 = shape(array2)
+  data2  => array_view1d( array2 )
+
+  err = infero_inference_real32(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+end function
+
+function infero_inference_real64_rank4_rank4(handle, array1, array2 ) result(err)
+  use, intrinsic :: iso_c_binding
+  class(infero_handle), intent(in) :: handle
+  integer :: err
+  real(c_double), intent(inout) :: array1(:,:,:,:)
+  real(c_double), intent(inout) :: array2(:,:,:,:)
+  integer(c_int) :: shape1(4)
+  integer(c_int) :: shape2(4)
+  real(c_double), pointer :: data1(:)
+  real(c_double), pointer :: data2(:)
+
+  shape1 = shape(array1)
+  data1  => array_view1d( array1 )
+  shape2 = shape(array2)
+  data2  => array_view1d( array2 )
+
+  err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+end function
 !-----------------------------------------------------------------------------------------------------------------------
 
 !!! Fortran to C addresses
@@ -304,123 +437,6 @@ end function
 
 !-----------------------------------------------------------------------------------------------------------------------
 
-!!! Inference
-
-subroutine infero_inference_real32_rank2_rank2(handle, array1, array2 )
-  use, intrinsic :: iso_c_binding
-  type(c_ptr) :: handle
-  real(c_float), intent(inout) :: array1(:,:)
-  real(c_float), intent(inout) :: array2(:,:)
-  integer(c_int) :: shape1(2)
-  integer(c_int) :: shape2(2)
-  real(c_float), pointer :: data1(:)
-  real(c_float), pointer :: data2(:)
-
-  integer(c_int) :: i
-
-  shape1 = shape(array1)
-  data1  => array_view1d( array1 )
-  shape2 = shape(array2)
-  data2  => array_view1d( array2 )
-
-  call infero_inference_real32(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
-end subroutine
-
-subroutine infero_inference_real64_rank2_rank2(handle, array1, array2 )
-  use, intrinsic :: iso_c_binding
-  type(c_ptr) :: handle
-  real(c_double), intent(inout) :: array1(:,:)
-  real(c_double), intent(inout) :: array2(:,:)
-  integer(c_int) :: shape1(2)
-  integer(c_int) :: shape2(2)
-  real(c_double), pointer :: data1(:)
-  real(c_double), pointer :: data2(:)
-
-  shape1 = shape(array1)
-  data1  => array_view1d( array1 )
-  shape2 = shape(array2)
-  data2  => array_view1d( array2 )
-
-  call infero_inference_real64(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
-end subroutine
-
-subroutine infero_inference_real32_rank3_rank2(handle, array1, array2 )
-  use, intrinsic :: iso_c_binding
-  type(c_ptr) :: handle
-  real(c_float), intent(inout) :: array1(:,:,:)
-  real(c_float), intent(inout) :: array2(:,:)
-  integer(c_int) :: shape1(3)
-  integer(c_int) :: shape2(2)
-  real(c_float), pointer :: data1(:)
-  real(c_float), pointer :: data2(:)
-
-  shape1 = shape(array1)
-  data1  => array_view1d( array1 )
-  shape2 = shape(array2)
-  data2  => array_view1d( array2 )
-
-  call infero_inference_real32(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
-end subroutine
-
-subroutine infero_inference_real64_rank3_rank2(handle, array1, array2 )
-  use, intrinsic :: iso_c_binding
-  type(c_ptr) :: handle
-  real(c_double), intent(inout) :: array1(:,:,:)
-  real(c_double), intent(inout) :: array2(:,:)
-  integer(c_int) :: shape1(3)
-  integer(c_int) :: shape2(2)
-  real(c_double), pointer :: data1(:)
-  real(c_double), pointer :: data2(:)
-
-  shape1 = shape(array1)
-  data1  => array_view1d( array1 )
-  shape2 = shape(array2)
-  data2  => array_view1d( array2 )
-
-  call infero_inference_real64(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
-end subroutine
-
-
-
-
-subroutine infero_inference_real32_rank4_rank4(handle, array1, array2 )
-  use, intrinsic :: iso_c_binding
-  type(c_ptr) :: handle
-  real(c_float), intent(inout) :: array1(:,:,:,:)
-  real(c_float), intent(inout) :: array2(:,:,:,:)
-  integer(c_int) :: shape1(4)
-  integer(c_int) :: shape2(4)
-  real(c_float), pointer :: data1(:)
-  real(c_float), pointer :: data2(:)
-
-  shape1 = shape(array1)
-  data1  => array_view1d( array1 )
-  shape2 = shape(array2)
-  data2  => array_view1d( array2 )
-
-  call infero_inference_real32(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
-end subroutine
-
-subroutine infero_inference_real64_rank4_rank4(handle, array1, array2 )
-  use, intrinsic :: iso_c_binding
-  type(c_ptr) :: handle
-  real(c_double), intent(inout) :: array1(:,:,:,:)
-  real(c_double), intent(inout) :: array2(:,:,:,:)
-  integer(c_int) :: shape1(4)
-  integer(c_int) :: shape2(4)
-  real(c_double), pointer :: data1(:)
-  real(c_double), pointer :: data2(:)
-
-  shape1 = shape(array1)
-  data1  => array_view1d( array1 )
-  shape2 = shape(array2)
-  data2  => array_view1d( array2 )
-
-  call infero_inference_real64(handle, data1, size(shape1), shape1, data2, size(shape2), shape2 )
-end subroutine
-
-
-
 !======================== utility tools =========================
 
 subroutine get_c_commandline_arguments(argc,argv)
@@ -454,6 +470,27 @@ subroutine get_c_commandline_arguments(argc,argv)
     argv(iarg+1) = c_loc(args(argpos))
   enddo
 
+end subroutine
+
+
+
+subroutine print_tensor_rank2(t, name)
+  use, intrinsic :: iso_c_binding
+  real(c_float), intent(in) :: t(:,:)
+  character(len=*), intent(in) :: name
+  
+  real(c_float), pointer :: data_vec(:)
+  integer(c_int) :: shape_vec(2)
+  integer(c_int) :: rank
+
+  data_vec => array_view1d( t )
+  shape_vec = shape(t)
+  rank = size(shape_vec)
+
+  print*, "name = ", name
+  print*, "name len= ", len(name)
+  print*, "shape_vec = ", shape_vec
+  print*, "rank = ", rank
 end subroutine
 
 end module

@@ -20,7 +20,7 @@ character(1024) :: input_path
 character(1024) :: yaml_config
 
 ! handle of infero model
-type(c_ptr) :: handle
+type(infero_handle) :: handle
 
 ! indexes and Tensor dimensions
 integer :: ss, i, j, ch
@@ -34,6 +34,8 @@ integer :: output_dim_0
 integer :: output_dim_1
 integer :: output_dim_2
 integer :: output_dim_3
+
+integer :: err
 
 real*8 input_sum
 real*8 tmp_input
@@ -90,23 +92,25 @@ yaml_config = "---"//NEW_LINE('A') &
   //"  type: "//TRIM(model_type)//c_null_char
 
 ! 0) init infero
-call infero_initialise()
+err = infero_initialise()
 
-! 1) get a inference model handle
-handle = infero_create_handle_from_yaml_str(yaml_config)
+! 1) get a infero handle
+err = handle%from_yaml_string(yaml_config)
 
 ! 2) open the handle
-call infero_open_handle(handle)
+err = handle%open()
 
 ! 3) run inference
-call infero_inference( handle, it2f, ot2f )
+err = infero_inference( handle, it2f, ot2f )
 
-! 4) close and delete the handle
-call infero_close_handle( handle )
-call infero_delete_handle( handle )
+! 4) close the handle
+err = handle%close()
 
-! 5) finalise
-call infero_finalise()
+! 5) delete the handle
+err = handle%delete()
+
+! 6) finalise infero
+err = infero_finalise()
 
 
 ! print output tensor (Prediction of Infero model)

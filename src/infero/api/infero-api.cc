@@ -109,11 +109,11 @@ extern "C" {
 #endif
 
 // tensors to be used for inference input/output
-struct infero_tensors_t {
-    infero_tensors_t() {}
-    ~infero_tensors_t() noexcept(false) {}
-    std::vector<TensorFloat*> tensors;
-    std::vector<char*> input_names;
+struct infero_tensor_set_t {
+    infero_tensor_set_t() {}
+    ~infero_tensor_set_t() noexcept(false) {}
+    std::vector<TensorFloat> tensors;
+    std::vector<const char*> input_names;
 };
 
 // model handle
@@ -234,8 +234,6 @@ int infero_inference_float(infero_handle_t* h,
 
     return wrapApiFunction([h, rank1, data1, shape1, rank2, data2, shape2]{
         ASSERT(h);
-
-        std::cout << "infero_inference_float()" << std::endl;
 
         std::vector<size_t> shape1_vec(shape1,shape1+rank1);
         std::vector<size_t> shape2_vec(shape2,shape2+rank2); 
@@ -459,6 +457,35 @@ int infero_finalise(){
     return wrapApiFunction([]{
         // nothing to do here..
    });    
+}
+
+// -----------------------------------------------------------------------
+
+// infero tensor_set
+int infero_create_tensor_set(infero_tensor_set_t** h) {
+    return wrapApiFunction([h]{
+        *h = new infero_tensor_set_t;
+    });
+}
+
+int infero_delete_tensor_set(infero_tensor_set_t* h) {
+    return wrapApiFunction([h]{
+        delete h;
+    });
+}
+
+int infero_add_tensor(infero_tensor_set_t* h, 
+                      int rank,
+                      int* shape,
+                      float* data,                                            
+                      const char* name
+                      ) {
+    return wrapApiFunction([h, rank, shape, data, name]{
+        
+        h->tensors.push_back(TensorFloat(data, std::vector<size_t>(shape, shape+rank), true));
+
+        h->input_names.push_back(name);
+    });
 }
 
 #ifdef __cplusplus

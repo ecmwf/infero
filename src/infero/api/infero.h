@@ -53,8 +53,8 @@ int infero_set_failure_handler(infero_failure_handler_t handler, void* context);
 
 // -------------------------------------------------------------
 
-struct infero_tensors_t;
-typedef struct infero_tensors_t infero_tensors_t;
+struct infero_tensor_set_t;
+typedef struct infero_tensor_set_t infero_tensor_set_t;
 
 struct infero_handle_t;
 typedef struct infero_handle_t infero_handle_t;
@@ -168,6 +168,19 @@ int infero_inference_float_mimo_ctensor(infero_handle_t* h,
  * finalise the handle
  */
 int infero_finalise();
+
+
+// infero tensor_set
+int infero_create_tensor_set(infero_tensor_set_t** h);
+
+int infero_add_tensor(infero_tensor_set_t* h, 
+                      int rank,
+                      int* shape,
+                      float* data,                                            
+                      const char* name
+                      );
+
+int infero_delete_tensor_set(infero_tensor_set_t* h);                      
 
 #if defined(__cplusplus)
 }  // extern "C"
