@@ -45,9 +45,13 @@ interface
 
 
   !-----------------------------------------------------------------------------------------
-  ! void infero_inference_real32( void* handle,
-  !                               double data1[], int rank1, int shape1[],
-  !                               double data2[], int rank2, int shape2[]  );
+  ! int infero_inference_float(infero_handle_t* h, 
+  !                            int rank1, 
+  !                            const float data1[], 
+  !                            const int shape1[], 
+  !                            int rank2,
+  !                            float data2[], 
+  !                            const int shape2[]);
   !
   ! ( must be defined within `extern "C" { ... }` scope )
   !-----------------------------------------------------------------------------------------
@@ -67,6 +71,15 @@ interface
     integer(c_int) :: err
   end function
 
+  !-----------------------------------------------------------------------------------------
+  ! int infero_inference_double(infero_handle_t* h, 
+  !                             int rank1, 
+  !                             const double data1[], 
+  !                             const int shape1[], 
+  !                             int rank2,
+  !                             double data2[], 
+  !                             const int shape2[]);
+  !-----------------------------------------------------------------------------------------
   function infero_inference_real64( handle_impl, rank1, data1, shape1, rank2, data2, shape2 ) result(err) &
     & bind(C,name="infero_inference_double")
     use iso_c_binding, only: c_int, c_ptr, c_double, c_char, c_null_char
@@ -135,7 +148,6 @@ interface
   end function
 
 end interface
-
 
 ! Inference API
 interface infero_inference ! function overloading
@@ -393,7 +405,6 @@ function array_view1d_real64_r2(array) result( view )
   call c_f_pointer ( array_c_ptr , view , (/size(array)/) )
 end function
 
-
 function array_view1d_real32_r3(array) result( view )
   use, intrinsic :: iso_c_binding
   real(c_float), intent(in), target :: array(:,:,:)
@@ -413,7 +424,6 @@ function array_view1d_real64_r3(array) result( view )
   array_c_ptr = c_loc_real64(array(1,1,1))
   call c_f_pointer ( array_c_ptr , view , (/size(array)/) )
 end function
-
 
 function array_view1d_real32_r4(array) result( view )
   use, intrinsic :: iso_c_binding
@@ -437,7 +447,7 @@ end function
 
 !-----------------------------------------------------------------------------------------------------------------------
 
-!======================== utility tools =========================
+! utility tools
 
 subroutine get_c_commandline_arguments(argc,argv)
   use, intrinsic :: iso_c_binding
@@ -471,8 +481,6 @@ subroutine get_c_commandline_arguments(argc,argv)
   enddo
 
 end subroutine
-
-
 
 subroutine print_tensor_rank2(t, name)
   use, intrinsic :: iso_c_binding
