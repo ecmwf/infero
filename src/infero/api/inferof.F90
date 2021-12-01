@@ -446,7 +446,7 @@ subroutine get_c_commandline_arguments(argc,argv)
   character(kind=c_char,len=1), save, target :: args(255)
   character(kind=c_char,len=255), save, target :: cmd
   character(kind=c_char,len=255) :: arg
-  integer(c_int) :: iarg, arglen, pos, ich, argpos, i
+  integer(c_int) :: iarg, arglen, pos, ich, argpos
   call get_command(cmd)
   do ich=1,len(cmd)
     if (cmd(ich:ich) == " ") then
