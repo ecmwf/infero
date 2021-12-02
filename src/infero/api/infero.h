@@ -164,6 +164,13 @@ int infero_inference_float_mimo_ctensor(infero_handle_t* h,
                                         const int** oShape, 
                                         float** oData);
 
+/** 
+ * Run mimo inference from tensor sets
+ */
+int infero_inference_float_tensor_set(infero_handle_t* h,
+                                      infero_tensor_set_t* iset,
+                                      infero_tensor_set_t* oset);
+
 /**
  * finalise the handle
  */
@@ -180,7 +187,9 @@ int infero_add_tensor(infero_tensor_set_t* h,
                       const char* name
                       );
 
-int infero_delete_tensor_set(infero_tensor_set_t* h);                      
+int infero_delete_tensor_set(infero_tensor_set_t* h);
+
+int infero_print_tensor_set(infero_tensor_set_t* h);
 
 #if defined(__cplusplus)
 }  // extern "C"

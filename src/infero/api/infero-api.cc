@@ -11,6 +11,7 @@
 #include <iostream>
 #include <vector>
 #include <memory>
+#include <string>
 
 #include "infero/api/infero.h"
 #include "infero/models/InferenceModel.h"
@@ -112,8 +113,8 @@ extern "C" {
 struct infero_tensor_set_t {
     infero_tensor_set_t() {}
     ~infero_tensor_set_t() noexcept(false) {}
-    std::vector<TensorFloat> tensors;
-    std::vector<const char*> input_names;
+    std::vector<TensorFloat*> tensors;
+    std::vector<std::string> tensor_names;
 };
 
 // model handle
@@ -453,6 +454,33 @@ int infero_inference_float_mimo_ctensor(infero_handle_t* h,
     });
 }
 
+
+int infero_inference_float_tensor_set(infero_handle_t* h,
+                                      infero_tensor_set_t* iset,
+                                      infero_tensor_set_t* oset){
+
+    return wrapApiFunction([h, iset, oset]{
+
+        ASSERT(h);
+        ASSERT(iset);
+        ASSERT(oset);
+
+        std::vector<const char*> input_names_c;
+        for (auto s: iset->tensor_names)
+            input_names_c.push_back(s.c_str());
+
+        std::vector<const char*> output_names_c;
+        for (auto s: oset->tensor_names)
+            output_names_c.push_back(s.c_str());
+
+        h->impl_->infer_mimo(iset->tensors, 
+                             input_names_c, 
+                             oset->tensors, 
+                             output_names_c);
+
+        });
+}
+
 int infero_finalise(){    
     return wrapApiFunction([]{
         // nothing to do here..
@@ -470,21 +498,44 @@ int infero_create_tensor_set(infero_tensor_set_t** h) {
 
 int infero_delete_tensor_set(infero_tensor_set_t* h) {
     return wrapApiFunction([h]{
+        for (auto v: h->tensors){
+            delete v;
+        }
         delete h;
     });
 }
 
-int infero_add_tensor(infero_tensor_set_t* h, 
+int infero_add_tensor(infero_tensor_set_t* h,
                       int rank,
                       int* shape,
-                      float* data,                                            
+                      float* data,
                       const char* name
                       ) {
     return wrapApiFunction([h, rank, shape, data, name]{
-        
-        h->tensors.push_back(TensorFloat(data, std::vector<size_t>(shape, shape+rank), true));
 
-        h->input_names.push_back(name);
+        // std::cout << "** h->tensor_names.size() " << h->tensor_names.size()
+        //           << ",  h->tensors.size() " << h->tensors.size()
+        //           << std::endl;
+        // std::cout << "** name " << name << std::endl;
+        // std::cout << "** rank " << rank << std::endl;
+        // for (int i=0; i<rank; i++){
+        //     std::cout << "** shape " << *(shape+i) << std::endl;
+        // }
+        // for (int i=0; i<128; i++){
+        //     std::cout << "** data " << *(data+i) << std::endl;
+        // }
+        h->tensors.push_back(new TensorFloat(data, std::vector<size_t>(shape, shape+rank), true));
+        h->tensor_names.push_back(name);
+    });
+}
+
+int infero_print_tensor_set(infero_tensor_set_t* h) {
+    return wrapApiFunction([h]{
+        eckit::Log::info() << "------- Tensor Set ---------" << std::endl;
+        for (int i=0; i< h->tensors.size(); i++){
+            eckit::Log::info() << i << ") Tensor: " << h->tensor_names[i] << std::endl;
+            eckit::Log::info() << *(h->tensors[i]) << std::endl;
+        }
     });
 }
 

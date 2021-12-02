@@ -28,8 +28,8 @@ ecbuild_add_executable( TARGET runner_mimo
    INCLUDES  ${eckit_INCLUDE_DIRS}
    LIBS      inferoapi )
 
-# ecbuild_add_executable( TARGET runner_mimo_f90
-#    SOURCES   runner_mimo.F90
-#    CONDITION HAVE_BUILD_TOOLS
-#    INCLUDES  ${eckit_INCLUDE_DIRS}
-#    LIBS      inferof )
+ecbuild_add_executable( TARGET runner_mimo_f90
+   SOURCES   runner_mimo.F90
+   CONDITION HAVE_BUILD_TOOLS
+   INCLUDES  ${eckit_INCLUDE_DIRS}
+   LIBS      inferof )
