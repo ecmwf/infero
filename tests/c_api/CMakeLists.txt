@@ -1,0 +1,29 @@
+# (C) Copyright 1996- ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+
+
+# test inference model
+ecbuild_add_test(TARGET        test_infero_init_c
+                 INCLUDES      ${eckit_INCLUDE_DIRS}
+                 SOURCES       test_infero_init.cc
+                 LIBS          inferoapi eckit
+)
+
+# test tensor set
+ecbuild_add_test(TARGET        test_tensor_set
+                 INCLUDES      ${eckit_INCLUDE_DIRS}
+                 SOURCES       test_tensor_set.cc
+                 LIBS          inferoapi eckit
+)
+
+# # test inference model
+# ecbuild_add_test(TARGET        test_inference_model_c
+#                  INCLUDES      ${eckit_INCLUDE_DIRS}
+#                  SOURCES       test_inference_model.cc
+#                  LIBS          inferoapi eckit
+# )

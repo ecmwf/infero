@@ -39,6 +39,8 @@ using eckit::linalg::TensorFloat;
 static std::string g_current_error_str;
 static infero_failure_handler_t g_failure_handler = nullptr;
 static void* g_failure_handler_context = nullptr;
+static bool infero_initialised = false;
+
 
 /** Returns the error string */
 const char* infero_error_string(int err) {
@@ -126,18 +128,16 @@ struct infero_handle_t {
 
 int infero_initialise(int argc, char** argv){
     return wrapApiFunction([argc, argv]{
-        eckit::Main::initialise(argc, argv);
+        eckit::Main::initialise(argc, argv);        
 
-        static bool initialised = false;
-
-        if (initialised) {
+        if (infero_initialised) {
             Log::warning() << "Initialising Infero library twice" 
                            << std::endl;
         }
 
-        if (!initialised) {
+        if (!infero_initialised) {
             eckit::Main::initialise(1, const_cast<char**>(argv));
-            initialised = true;
+            infero_initialised = true;
         }
 
     });
@@ -483,7 +483,13 @@ int infero_inference_float_tensor_set(infero_handle_t* h,
 
 int infero_finalise(){    
     return wrapApiFunction([]{
-        // nothing to do here..
+
+        if (!infero_initialised) {
+            Log::warning() << "Infero library not initialised!" 
+                           << std::endl;
+        } else {
+            infero_initialised = false;
+        }
    });    
 }
 
@@ -509,9 +515,10 @@ int infero_add_tensor(infero_tensor_set_t* h,
                       int rank,
                       int* shape,
                       float* data,
-                      const char* name
+                      const char* name,
+                      bool right_layout
                       ) {
-    return wrapApiFunction([h, rank, shape, data, name]{
+    return wrapApiFunction([h, rank, shape, data, name, right_layout]{
 
         // std::cout << "** h->tensor_names.size() " << h->tensor_names.size()
         //           << ",  h->tensors.size() " << h->tensors.size()
@@ -524,7 +531,7 @@ int infero_add_tensor(infero_tensor_set_t* h,
         // for (int i=0; i<128; i++){
         //     std::cout << "** data " << *(data+i) << std::endl;
         // }
-        h->tensors.push_back(new TensorFloat(data, std::vector<size_t>(shape, shape+rank), true));
+        h->tensors.push_back(new TensorFloat(data, std::vector<size_t>(shape, shape+rank), right_layout));
         h->tensor_names.push_back(name);
     });
 }

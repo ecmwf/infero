@@ -175,7 +175,7 @@ interface
     integer(c_int) :: err
   end function
 
-  function infero_tensor_set_add_tensor_interf( handle_impl, rank, shape_vec, data_vec, name ) result(err) &
+  function infero_tensor_set_add_tensor_interf( handle_impl, rank, shape_vec, data_vec, name, right_layout ) result(err) &
     & bind(C,name="infero_add_tensor")
     use iso_c_binding
     
@@ -186,6 +186,7 @@ interface
     real(c_float), dimension(*)  :: data_vec
     ! character(len=*), intent(in) :: name
     character(c_char)            :: name
+    logical(c_bool)              :: right_layout
     
     integer(c_int) :: err    
   end function
@@ -587,7 +588,8 @@ function tensor_set_push_rank2( handle, tensor, name ) result(err)
   
   real(c_float), pointer :: data_vec(:)
   integer(c_int) :: shape_vec(2)
-  integer(c_int) :: rank
+  integer(c_int) :: rank  
+  logical(c_bool) :: right_layout = .TRUE.
   integer :: err
 
   data_vec => array_view1d( tensor )
@@ -599,7 +601,7 @@ function tensor_set_push_rank2( handle, tensor, name ) result(err)
   ! print*, "shape_vec = ", shape_vec
   ! print*, "rank = ", rank
   
-  err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char )
+  err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char, right_layout )
 end function
 
 function infero_print_tensor_set( handle ) result(err)

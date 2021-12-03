@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+#include <stdbool.h>
+
 /* Error handling */
 
 /** Return codes */
@@ -184,7 +186,8 @@ int infero_add_tensor(infero_tensor_set_t* h,
                       int rank,
                       int* shape,
                       float* data,                                            
-                      const char* name
+                      const char* name,
+                      bool right_layout
                       );
 
 int infero_delete_tensor_set(infero_tensor_set_t* h);

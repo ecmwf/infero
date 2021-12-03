@@ -25,3 +25,5 @@ add_custom_command(TARGET test_inference_model POST_BUILD
                    ${CMAKE_SOURCE_DIR}/tests/data
                    ${CMAKE_BINARY_DIR}/tests/data
                    )
+# c api
+add_subdirectory(c_api)
