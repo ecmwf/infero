@@ -72,7 +72,7 @@ err = handle%from_yaml_string(yaml_config)
 err = handle%open()
 
 ! 3) run inference
-err = infer_from_tensor_set(handle, it_set, ot_set)
+err = handle%infer_mimo(it_set, ot_set)
 
 ! 4) close and delete the handle
 err = handle%close()

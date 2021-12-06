@@ -23,7 +23,7 @@ contains
   procedure :: from_yaml_string => infero_create_handle_from_yaml_string
   procedure :: from_yaml_file => infero_create_handle_from_yaml_file
   procedure :: open => infero_open_handle
-  ! procedure :: infer => infero_inference
+  procedure :: infer_mimo => infer_from_tensor_set
   procedure :: close => infero_close_handle
   procedure :: delete => infero_delete_handle
 end type
