@@ -35,6 +35,7 @@ contains
   procedure :: initialise => infero_tensor_set_initialise
   procedure :: push_tensor_rank2 => infero_tensor_set_push_rank2
   procedure :: push_tensor_rank3 => infero_tensor_set_push_rank3
+  procedure :: push_tensor_rank4 => infero_tensor_set_push_rank4
   procedure :: print => infero_print_tensor_set
   procedure :: delete => infero_tensor_set_delete
 end type
@@ -235,10 +236,8 @@ end interface
 interface array_view1d ! function overloading
   module procedure array_view1d_real32_r2  
   module procedure array_view1d_real64_r2
-
   module procedure array_view1d_real32_r3
   module procedure array_view1d_real64_r3
-
   module procedure array_view1d_real32_r4
   module procedure array_view1d_real64_r4
 end interface
@@ -246,6 +245,7 @@ end interface
 interface tensor_set_push
   module procedure infero_tensor_set_push_rank2
   module procedure infero_tensor_set_push_rank3
+  module procedure infero_tensor_set_push_rank4
 end interface
 
 
@@ -523,11 +523,13 @@ function infero_tensor_set_initialise( handle ) result(err)
   err = infero_tensors_initialise_interf(handle%impl)
 end function
 
+
 function infero_tensor_set_delete( handle ) result(err)
   class(infero_tensor_set), intent(inout) :: handle
   integer :: err
   err = infero_tensors_delete_interf(handle%impl)
 end function
+
 
 function infero_tensor_set_push_rank2( handle, tensor, name ) result(err)
   use iso_c_binding
@@ -549,6 +551,7 @@ function infero_tensor_set_push_rank2( handle, tensor, name ) result(err)
   err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char, right_layout )
 end function
 
+
 function infero_tensor_set_push_rank3( handle, tensor, name ) result(err)
   use iso_c_binding
 
@@ -569,11 +572,34 @@ function infero_tensor_set_push_rank3( handle, tensor, name ) result(err)
   err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char, right_layout )
 end function
 
+
+function infero_tensor_set_push_rank4( handle, tensor, name ) result(err)
+  use iso_c_binding
+
+  class(infero_tensor_set), intent(inout) :: handle
+  real(c_float), intent(in) :: tensor(:,:,:,:)
+  character(len=*), intent(in) :: name
+  
+  real(c_float), pointer :: data_vec(:)
+  integer(c_int) :: shape_vec(4)
+  integer(c_int) :: rank  
+  logical(c_bool) :: right_layout = .TRUE.
+  integer :: err
+
+  data_vec => array_view1d( tensor )
+  shape_vec = shape(tensor)
+  rank = size(shape_vec)
+
+  err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char, right_layout )
+end function
+
+
 function infero_print_tensor_set( handle ) result(err)
   class(infero_tensor_set), intent(inout) :: handle
   integer :: err
   err = infero_print_tensor_set_interf(handle%impl)
 end function
+
 
 function infer_from_tensor_set( infero_h, iset_h, oset_h ) result(err)
   class(infero_handle),     intent(inout) :: infero_h
@@ -618,7 +644,6 @@ subroutine get_c_commandline_arguments(argc,argv)
     args(pos) = " ";          pos = pos+1
     argv(iarg+1) = c_loc(args(argpos))
   enddo
-
 end subroutine
 
 
