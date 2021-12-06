@@ -255,6 +255,9 @@ void InferenceModelTFC::infer_mimo(std::vector<TensorFloat*> tIn, std::vector<co
 
         if (tOut[i]->isRight()) {
 
+            Log::info() << i << "-th Output Tensor needs right-layout. "
+                        << "Transforming left to right.." << std::endl;
+
             // TFC uses Left (C) tensor layouts, so we need to convert
             TensorFloat tLeft(offsets, tOut[i]->shape(), false);  // wrap data
 
@@ -264,7 +267,6 @@ void InferenceModelTFC::infer_mimo(std::vector<TensorFloat*> tIn, std::vector<co
         } else {
 
             // TFC uses Left (C) tensor layouts, so we can copy straight into memory of tOut
-            Log::info() << "output size " << tOut[i]->size() << std::endl;
             memcpy(tOut[i]->data(), offsets, tOut[i]->size() * sizeof(float));
         }
     }
