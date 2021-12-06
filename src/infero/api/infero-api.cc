@@ -466,12 +466,14 @@ int infero_inference_float_tensor_set(infero_handle_t* h,
         ASSERT(oset);
 
         std::vector<const char*> input_names_c;
-        for (auto s: iset->tensor_names)
+        for (auto& s: iset->tensor_names){
             input_names_c.push_back(s.c_str());
+        }
 
         std::vector<const char*> output_names_c;
-        for (auto s: oset->tensor_names)
+        for (auto& s: oset->tensor_names){
             output_names_c.push_back(s.c_str());
+        }
 
         h->impl_->infer_mimo(iset->tensors, 
                              input_names_c, 
@@ -516,7 +518,7 @@ int infero_add_tensor(infero_tensor_set_t* h,
                       int* shape,
                       float* data,
                       const char* name,
-                      bool right_layout
+                      int right_layout
                       ) {
     return wrapApiFunction([h, rank, shape, data, name, right_layout]{
 

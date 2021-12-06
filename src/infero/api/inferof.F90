@@ -188,7 +188,7 @@ interface
     real(c_float), dimension(*)  :: data_vec
     ! character(len=*), intent(in) :: name
     character(c_char)            :: name
-    logical(c_bool)              :: right_layout
+    integer(c_int)               :: right_layout
     
     integer(c_int) :: err    
   end function
@@ -541,7 +541,7 @@ function infero_tensor_set_push_rank2( handle, tensor, name ) result(err)
   real(c_float), pointer :: data_vec(:)
   integer(c_int) :: shape_vec(2)
   integer(c_int) :: rank  
-  logical(c_bool) :: right_layout = .TRUE.
+  integer(c_int) :: right_layout = 1
   integer :: err
 
   data_vec => array_view1d( tensor )
@@ -562,7 +562,7 @@ function infero_tensor_set_push_rank3( handle, tensor, name ) result(err)
   real(c_float), pointer :: data_vec(:)
   integer(c_int) :: shape_vec(3)
   integer(c_int) :: rank  
-  logical(c_bool) :: right_layout = .TRUE.
+  integer(c_int) :: right_layout = 1
   integer :: err
 
   data_vec => array_view1d( tensor )
@@ -583,7 +583,7 @@ function infero_tensor_set_push_rank4( handle, tensor, name ) result(err)
   real(c_float), pointer :: data_vec(:)
   integer(c_int) :: shape_vec(4)
   integer(c_int) :: rank  
-  logical(c_bool) :: right_layout = .TRUE.
+  integer(c_int) :: right_layout = 1
   integer :: err
 
   data_vec => array_view1d( tensor )
