@@ -32,14 +32,14 @@ real*8 input_sum
 real*8 tmp_input
 real output_sum
 
-character(len=*), parameter :: itensor_1_name = "input_1"
-real(c_float) :: itensor_1(1,32) = 1
+character(len=*), parameter :: t1_name = "input_1"
+real(c_float) :: t1(1,32) = 1
 
-character(len=*), parameter :: itensor_2_name = "input_2"
-real(c_float) :: itensor_2(1,128) = 1
+character(len=*), parameter :: t2_name = "input_2"
+real(c_float) :: t2(1,128) = 1
 
-character(len=*), parameter :: otensor_1_name = "dense_6"
-real(c_float) :: otensor_1(1,1) = 0
+character(len=*), parameter :: t3_name = "dense_6"
+real(c_float) :: t3(1,1) = 0
 
 
 ! Get CL arguments
@@ -48,13 +48,13 @@ CALL get_command_argument(2, model_type)
 
 ! prapare input tensors for named layers
 err = it_set%initialise()
-err = it_set%push_tensor_rank2(itensor_1, itensor_1_name)
-err = it_set%push_tensor_rank2(itensor_2, itensor_2_name)
+err = it_set%push_tensor_rank2(t1, t1_name)
+err = it_set%push_tensor_rank2(t2, t2_name)
 err = it_set%print()
 
 ! prapare output tensors for named layers
 err = ot_set%initialise()
-err = ot_set%push_tensor_rank2(otensor_1, otensor_1_name)
+err = ot_set%push_tensor_rank2(t3, t3_name)
 err = ot_set%print()
 
 ! YAML config string
