@@ -36,6 +36,7 @@ contains
   procedure :: push_tensor_rank2 => infero_tensor_set_push_rank2
   procedure :: push_tensor_rank3 => infero_tensor_set_push_rank3
   procedure :: push_tensor_rank4 => infero_tensor_set_push_rank4
+  generic   :: push_tensor => push_tensor_rank2, push_tensor_rank3, push_tensor_rank4
   procedure :: print => infero_print_tensor_set
   procedure :: delete => infero_tensor_set_delete
 end type
