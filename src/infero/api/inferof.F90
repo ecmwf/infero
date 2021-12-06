@@ -33,6 +33,8 @@ type infero_tensor_set
   type(c_ptr) :: impl = c_null_ptr  
 contains
   procedure :: initialise => infero_tensor_set_initialise
+  procedure :: push_tensor_rank2 => infero_tensor_set_push_rank2
+  procedure :: push_tensor_rank3 => infero_tensor_set_push_rank3
   procedure :: print => infero_print_tensor_set
   procedure :: delete => infero_tensor_set_delete
 end type
@@ -45,7 +47,6 @@ public :: infero_finalise
 
 public :: infero_tensor_set
 public :: tensor_set_push
-public :: print_tensor
 public :: infer_from_tensor_set
 
 
@@ -242,18 +243,17 @@ interface array_view1d ! function overloading
   module procedure array_view1d_real64_r4
 end interface
 
-interface print_tensor
-  module procedure print_tensor_rank2
-end interface
-
 interface tensor_set_push
-  module procedure tensor_set_push_rank2
+  module procedure infero_tensor_set_push_rank2
+  module procedure infero_tensor_set_push_rank3
 end interface
 
 
 contains
 
-!-----------------------------------------------------------------------------------------------------------------------
+
+!---------------------------------------------------------------------------------
+
 function infero_initialise_func( ) result(err)
   use iso_c_binding, only: c_int, c_ptr
   integer(c_int) :: argc
@@ -427,7 +427,9 @@ function infero_inference_real64_rank4_rank4(handle, array1, array2 ) result(err
 
   err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
 end function
-!-----------------------------------------------------------------------------------------------------------------------
+
+
+!---------------------------------------------------------------------------------
 
 !!! Fortran to C addresses
 
@@ -445,7 +447,8 @@ function c_loc_real64(x)
   c_loc_real64 = c_loc(x)
 end function
 
-!-----------------------------------------------------------------------------------------------------------------------
+
+!---------------------------------------------------------------------------------
 
 !!! Fortran Arrays into C pointers
 
@@ -509,9 +512,81 @@ function array_view1d_real64_r4(array) result( view )
   call c_f_pointer ( array_c_ptr , view , (/size(array)/) )
 end function
 
-!-----------------------------------------------------------------------------------------------------------------------
 
-! utility tools
+!---------------------------------------------------------------------------------
+
+!!! tensor set
+
+function infero_tensor_set_initialise( handle ) result(err)
+  class(infero_tensor_set), intent(inout) :: handle
+  integer :: err
+  err = infero_tensors_initialise_interf(handle%impl)
+end function
+
+function infero_tensor_set_delete( handle ) result(err)
+  class(infero_tensor_set), intent(inout) :: handle
+  integer :: err
+  err = infero_tensors_delete_interf(handle%impl)
+end function
+
+function infero_tensor_set_push_rank2( handle, tensor, name ) result(err)
+  use iso_c_binding
+
+  class(infero_tensor_set), intent(inout) :: handle
+  real(c_float), intent(in) :: tensor(:,:)
+  character(len=*), intent(in) :: name
+  
+  real(c_float), pointer :: data_vec(:)
+  integer(c_int) :: shape_vec(2)
+  integer(c_int) :: rank  
+  logical(c_bool) :: right_layout = .TRUE.
+  integer :: err
+
+  data_vec => array_view1d( tensor )
+  shape_vec = shape(tensor)
+  rank = size(shape_vec)
+
+  err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char, right_layout )
+end function
+
+function infero_tensor_set_push_rank3( handle, tensor, name ) result(err)
+  use iso_c_binding
+
+  class(infero_tensor_set), intent(inout) :: handle
+  real(c_float), intent(in) :: tensor(:,:,:)
+  character(len=*), intent(in) :: name
+  
+  real(c_float), pointer :: data_vec(:)
+  integer(c_int) :: shape_vec(3)
+  integer(c_int) :: rank  
+  logical(c_bool) :: right_layout = .TRUE.
+  integer :: err
+
+  data_vec => array_view1d( tensor )
+  shape_vec = shape(tensor)
+  rank = size(shape_vec)
+
+  err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char, right_layout )
+end function
+
+function infero_print_tensor_set( handle ) result(err)
+  class(infero_tensor_set), intent(inout) :: handle
+  integer :: err
+  err = infero_print_tensor_set_interf(handle%impl)
+end function
+
+function infer_from_tensor_set( infero_h, iset_h, oset_h ) result(err)
+  class(infero_handle),     intent(inout) :: infero_h
+  class(infero_tensor_set), intent(inout) :: iset_h
+  class(infero_tensor_set), intent(inout) :: oset_h
+  integer :: err
+  err = infer_from_tensor_set_interf(infero_h%impl, iset_h%impl, oset_h%impl)
+end function
+
+
+!---------------------------------------------------------------------------------
+
+!!! utility tools
 
 subroutine get_c_commandline_arguments(argc,argv)
   use, intrinsic :: iso_c_binding
@@ -546,77 +621,6 @@ subroutine get_c_commandline_arguments(argc,argv)
 
 end subroutine
 
-subroutine print_tensor_rank2(t, name)
-  use, intrinsic :: iso_c_binding
-  real(c_float), intent(in) :: t(:,:)
-  character(len=*), intent(in) :: name
-  
-  real(c_float), pointer :: data_vec(:)
-  integer(c_int) :: shape_vec(2)
-  integer(c_int) :: rank
-
-  data_vec => array_view1d( t )
-  shape_vec = shape(t)
-  rank = size(shape_vec)
-
-  print*, "name = ", name
-  print*, "name len= ", len(name)
-  print*, "shape_vec = ", shape_vec
-  print*, "rank = ", rank
-end subroutine
-
-
-! ---------------------------------------
-function infero_tensor_set_initialise( handle ) result(err)
-  class(infero_tensor_set), intent(inout) :: handle
-  integer :: err
-  err = infero_tensors_initialise_interf(handle%impl)
-end function
-
-function infero_tensor_set_delete( handle ) result(err)
-  class(infero_tensor_set), intent(inout) :: handle
-  integer :: err
-  err = infero_tensors_delete_interf(handle%impl)
-end function
-
-function tensor_set_push_rank2( handle, tensor, name ) result(err)
-  use iso_c_binding
-
-  class(infero_tensor_set), intent(inout) :: handle
-  real(c_float), intent(in) :: tensor(:,:)
-  character(len=*), intent(in) :: name
-  
-  real(c_float), pointer :: data_vec(:)
-  integer(c_int) :: shape_vec(2)
-  integer(c_int) :: rank  
-  logical(c_bool) :: right_layout = .TRUE.
-  integer :: err
-
-  data_vec => array_view1d( tensor )
-  shape_vec = shape(tensor)
-  rank = size(shape_vec)
-
-  ! print*, "name = ", name
-  ! print*, "name len= ", len(name)
-  ! print*, "shape_vec = ", shape_vec
-  ! print*, "rank = ", rank
-  
-  err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char, right_layout )
-end function
-
-function infero_print_tensor_set( handle ) result(err)
-  class(infero_tensor_set), intent(inout) :: handle
-  integer :: err
-  err = infero_print_tensor_set_interf(handle%impl)
-end function
-
-function infer_from_tensor_set( infero_h, iset_h, oset_h ) result(err)
-  class(infero_handle),     intent(inout) :: infero_h
-  class(infero_tensor_set), intent(inout) :: iset_h
-  class(infero_tensor_set), intent(inout) :: oset_h
-  integer :: err
-  err = infer_from_tensor_set_interf(infero_h%impl, iset_h%impl, oset_h%impl)
-end function
 
 end module
 

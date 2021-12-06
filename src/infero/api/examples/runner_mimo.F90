@@ -18,8 +18,8 @@ character(1024) :: model_path
 character(1024) :: model_type
 character(1024) :: yaml_config
 
-type(infero_tensor_set) :: input_tensors
-type(infero_tensor_set) :: output_tensors
+type(infero_tensor_set) :: it_set
+type(infero_tensor_set) :: ot_set
 integer :: err
 
 ! handle of infero model
@@ -47,15 +47,15 @@ CALL get_command_argument(1, model_path)
 CALL get_command_argument(2, model_type)
 
 ! prapare input tensors for named layers
-err = input_tensors%initialise()
-err = tensor_set_push(input_tensors, itensor_1, itensor_1_name)
-err = tensor_set_push(input_tensors, itensor_2, itensor_2_name)
-err = input_tensors%print()
+err = it_set%initialise()
+err = it_set%push_tensor_rank2(itensor_1, itensor_1_name)
+err = it_set%push_tensor_rank2(itensor_2, itensor_2_name)
+err = it_set%print()
 
 ! prapare output tensors for named layers
-err = output_tensors%initialise()
-err = tensor_set_push(output_tensors, otensor_1, otensor_1_name)
-err = output_tensors%print()
+err = ot_set%initialise()
+err = ot_set%push_tensor_rank2(otensor_1, otensor_1_name)
+err = ot_set%print()
 
 ! YAML config string
 yaml_config = "---"//NEW_LINE('A') &
@@ -72,7 +72,7 @@ err = handle%from_yaml_string(yaml_config)
 err = handle%open()
 
 ! 3) run inference
-err = infer_from_tensor_set(handle, input_tensors, output_tensors)
+err = infer_from_tensor_set(handle, it_set, ot_set)
 
 ! 4) close and delete the handle
 err = handle%close()
@@ -81,12 +81,12 @@ err = handle%close()
 err = handle%delete()
 
 ! print output 
-err = output_tensors%print()
+err = ot_set%print()
 
 
 ! delete tensor sets
-err = input_tensors%delete()
-err = output_tensors%delete()
+err = it_set%delete()
+err = ot_set%delete()
 
 ! 6) finalise library
 err = infero_finalise()
