@@ -131,8 +131,7 @@ int infero_initialise(int argc, char** argv){
         eckit::Main::initialise(argc, argv);        
 
         if (infero_initialised) {
-            Log::warning() << "Initialising Infero library twice" 
-                           << std::endl;
+            throw eckit::UnexpectedState("Initialising Infero library twice!", Here());
         }
 
         if (!infero_initialised) {
@@ -487,8 +486,7 @@ int infero_finalise(){
     return wrapApiFunction([]{
 
         if (!infero_initialised) {
-            Log::warning() << "Infero library not initialised!" 
-                           << std::endl;
+            throw eckit::UnexpectedState("Infero library not initialised!", Here());
         } else {
             infero_initialised = false;
         }
