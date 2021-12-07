@@ -17,11 +17,17 @@ CASE("infero_handle"){
     const char* cfg_valid = "path: @CMAKE_BINARY_DIR@/tests/data/mimo_model/mimo_model_tf\ntype: tf_c";
     const char* cfg_invalid_path = "path: /non/existent/model\ntype: tf_c";
     const char* cfg_invalid_type = "path: @CMAKE_BINARY_DIR@/tests/data/mimo_model/mimo_model_tf\ntype: invalid-engine";
+    const char* cfg_empty = "";
 
     infero_handle_t* h;
     
     err = infero_initialise(argc, args);
     EXPECT_EQUAL(err, INFERO_SUCCESS);
+
+    // config with empty path
+    err = infero_create_handle_from_yaml_str(cfg_empty, &h);
+    EXPECT_EQUAL(err , INFERO_ERROR_GENERAL_EXCEPTION);
+    EXPECT_EQUAL(h , 0);
 
     // config with invalid path
     err = infero_create_handle_from_yaml_str(cfg_invalid_path, &h);
