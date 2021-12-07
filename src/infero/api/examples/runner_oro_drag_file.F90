@@ -18,7 +18,7 @@ character(1024) :: yaml_path
 character(1024) :: input_path
 
 ! handle of infero model
-type(c_ptr) :: handle
+type(infero_model) :: model
 
 ! indexes and Tensor dimensions
 integer :: i,j
@@ -44,6 +44,11 @@ output_jmax = 126
 ! Get CL arguments
 CALL get_command_argument(1, yaml_path)
 CALL get_command_argument(2, input_path)
+
+! init infero
+call infero_check(infero_initialise())
+
+
 yaml_path = TRIM(yaml_path)//c_null_char
 
 ! Allocate tensors
@@ -57,24 +62,17 @@ do i = 1,input_imax
   read(fu, *) (it2f(i, j), j = 1, input_jmax)
 end do
 
-! 0) init infero
-call infero_initialise()
+! get a infero model
+call infero_check(model%initialise_from_yaml_file(yaml_path))
 
-! 1) get a inference model handle
-handle = infero_create_handle_from_yaml_file(yaml_path)
+! un inference
+call infero_check(model%infer(it2f, ot2f ))
 
-! 2) open the handle
-call infero_open_handle(handle)
+! free the model
+call infero_check(model%free())
 
-! 3) run inference
-call infero_inference( handle, it2f, ot2f )
-
-! 4) close and delete the handle
-call infero_close_handle( handle )
-call infero_delete_handle( handle )
-
-! 5) finalise
-call infero_finalise()
+! finalise infero library
+call infero_check(infero_finalise())
 
 
 ! print output

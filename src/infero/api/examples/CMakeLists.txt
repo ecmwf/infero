@@ -1,14 +1,14 @@
-# ecbuild_add_executable( TARGET runner_oro_drag
-#    SOURCES   runner_oro_drag.F90
-#    CONDITION HAVE_BUILD_TOOLS
-#    INCLUDES  ${eckit_INCLUDE_DIRS}
-#    LIBS      inferof )
+ecbuild_add_executable( TARGET runner_oro_drag
+   SOURCES   runner_oro_drag.F90
+   CONDITION HAVE_BUILD_TOOLS
+   INCLUDES  ${eckit_INCLUDE_DIRS}
+   LIBS      inferof )
 
-# ecbuild_add_executable( TARGET runner_oro_drag_file
-#    SOURCES   runner_oro_drag_file.F90
-#    CONDITION HAVE_BUILD_TOOLS
-#    INCLUDES  ${eckit_INCLUDE_DIRS}
-#    LIBS      inferof )
+ecbuild_add_executable( TARGET runner_oro_drag_file
+   SOURCES   runner_oro_drag_file.F90
+   CONDITION HAVE_BUILD_TOOLS
+   INCLUDES  ${eckit_INCLUDE_DIRS}
+   LIBS      inferof )
 
 ecbuild_add_executable( TARGET runner_tcyclone
    SOURCES   runner_tcyclone.F90
