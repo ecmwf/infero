@@ -13,6 +13,14 @@ use, intrinsic :: iso_c_binding
 
 implicit none
 
+
+! Error values
+
+integer, public, parameter :: INFERO_SUCCESS = 0
+integer, public, parameter :: INFERO_ERROR_GENERAL_EXCEPTION = 1
+integer, public, parameter :: INFERO_ERROR_UNKNOWN_EXCEPTION = 2
+
+
 private
 
 
@@ -40,6 +48,8 @@ contains
 end type
 
 
+public :: infero_check
+
 public :: infero_model
 public :: infero_initialise
 public :: infero_inference
@@ -52,10 +62,9 @@ public :: infer_from_tensor_set
 
 interface
 
-!=========================================================================
-!=========================================================================
-!=========================================================================
-
+!===========================================================================================
+!===========================================================================================
+!===========================================================================================
 
   !-----------------------------------------------------------------------------------------
   ! int infero_inference_float(infero_model_t* h, 
@@ -248,8 +257,49 @@ interface tensor_set_push
 end interface
 
 
+! For utility
+interface
+  pure function strlen(str) result(len) bind(c)
+      use, intrinsic :: iso_c_binding
+      implicit none
+      type(c_ptr), intent(in), value :: str
+      integer(c_int) :: len
+  end function
+end interface
+
+! error handling
+interface
+  function infero_error_string_interf(err) result(error_string) bind(c, name='infero_error_string')
+    use, intrinsic :: iso_c_binding
+    implicit none
+    integer(c_int), intent(in), value :: err
+    type(c_ptr) :: error_string
+  end function
+end interface
+
+
 contains
 
+!===========================================================================================
+!===========================================================================================
+!===========================================================================================
+
+! error handling
+
+subroutine infero_check(err)
+  integer, intent(in) :: err
+
+  if (err /= INFERO_SUCCESS) then
+      print *, "Error: ", infero_error_string(err)
+      stop 1
+  end if
+end subroutine
+
+function infero_error_string(err) result(error_string)
+  integer, intent(in) :: err
+  character(:), allocatable, target :: error_string
+  error_string = fortranise_cstr(infero_error_string_interf(err))
+end function
 
 !---------------------------------------------------------------------------------
 
@@ -626,6 +676,18 @@ subroutine get_c_commandline_arguments(argc,argv)
     argv(iarg+1) = c_loc(args(argpos))
   enddo
 end subroutine
+
+function fortranise_cstr(cstr) result(fstr)
+  type(c_ptr), intent(in) :: cstr
+  character(:), allocatable, target :: fstr
+  character(c_char), pointer :: tmp(:)
+  integer :: length
+
+  length = strlen(cstr)
+  allocate(character(length) :: fstr)
+  call c_f_pointer(cstr, tmp, [length])
+  fstr = transfer(tmp(1:length), fstr)
+end function
 
 
 end module

@@ -9,8 +9,10 @@
  */
 
 program my_program
+
 use inferof
 use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
+
 implicit none
 
 ! Command line arguments
@@ -47,18 +49,18 @@ CALL get_command_argument(1, model_path)
 CALL get_command_argument(2, model_type)
 
 ! init infero library
-err = infero_initialise()
+call infero_check(infero_initialise())
 
 ! prepare input tensors for named layers
-err = iset%initialise()
-err = iset%push_tensor(t1, t1_name)
-err = iset%push_tensor(t2, t2_name)
-err = iset%print()
+call infero_check(iset%initialise())
+call infero_check(iset%push_tensor(t1, t1_name))
+call infero_check(iset%push_tensor(t2, t2_name))
+call infero_check(iset%print())
 
 ! prepare output tensors for named layers
-err = oset%initialise()
-err = oset%push_tensor(t3, t3_name)
-err = oset%print()
+call infero_check(oset%initialise())
+call infero_check(oset%push_tensor(t3, t3_name))
+call infero_check(oset%print())
 
 ! YAML config string
 yaml_config = "---"//NEW_LINE('A') &
@@ -66,23 +68,23 @@ yaml_config = "---"//NEW_LINE('A') &
   //"  type: "//TRIM(model_type)//c_null_char
 
 ! get a inference model model
-err = model%initialise_from_yaml_string(yaml_config)
+call infero_check(model%initialise_from_yaml_string(yaml_config))
 
 ! run inference
-err = model%infer_mimo(iset, oset)
+call infero_check(model%infer_mimo(iset, oset))
 
 ! print output 
-err = oset%print()
+call infero_check(oset%print())
 
 ! free tensor sets
-err = iset%free()
-err = oset%free()
+call infero_check(iset%free())
+call infero_check(oset%free())
 
 ! free the model
-err = model%free()
+call infero_check(model%free())
 
 ! finalise library
-err = infero_finalise()
+call infero_check(infero_finalise())
 
 end program
 

@@ -67,7 +67,7 @@ CALL get_command_argument(2, model_type)
 CALL get_command_argument(3, input_path)
 
 ! 0) init infero
-err = infero_initialise()
+call infero_check(infero_initialise())
 
 
 ! Allocate tensors
@@ -96,16 +96,16 @@ yaml_config = "---"//NEW_LINE('A') &
   //"  type: "//TRIM(model_type)//c_null_char
 
 ! get a infero model
-err = model%initialise_from_yaml_string(yaml_config)
+  call infero_check(model%initialise_from_yaml_string(yaml_config))
 
 ! un inference
-err = infero_inference( model, it2f, ot2f )
+  call infero_check(infero_inference( model, it2f, ot2f ))
 
 ! free the model
-err = model%free()
+  call infero_check(model%free())
 
 ! finalise infero library
-err = infero_finalise()
+  call infero_check(infero_finalise())
 
 ! print output tensor (Prediction of Infero model)
 output_sum = 0
