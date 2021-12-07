@@ -19,8 +19,8 @@ character(1024) :: model_type
 character(1024) :: input_path
 character(1024) :: yaml_config
 
-! handle of infero model
-type(infero_handle) :: handle
+! model of infero model
+type(infero_model) :: model
 
 ! indexes and Tensor dimensions
 integer :: ss, i, j, ch
@@ -66,6 +66,10 @@ CALL get_command_argument(1, model_path)
 CALL get_command_argument(2, model_type)
 CALL get_command_argument(3, input_path)
 
+! 0) init infero
+err = infero_initialise()
+
+
 ! Allocate tensors
 allocate( it2f(input_dim_0,input_dim_1,input_dim_2,input_dim_3) )
 allocate( ot2f(output_dim_0,output_dim_1,output_dim_2,output_dim_3) )
@@ -91,27 +95,17 @@ yaml_config = "---"//NEW_LINE('A') &
   //"  path: "//TRIM(model_path)//NEW_LINE('A') &
   //"  type: "//TRIM(model_type)//c_null_char
 
-! 0) init infero
-err = infero_initialise()
+! get a infero model
+err = model%initialise_from_yaml_string(yaml_config)
 
-! 1) get a infero handle
-err = handle%from_yaml_string(yaml_config)
+! un inference
+err = infero_inference( model, it2f, ot2f )
 
-! 2) open the handle
-err = handle%open()
+! free the model
+err = model%free()
 
-! 3) run inference
-err = infero_inference( handle, it2f, ot2f )
-
-! 4) close the handle
-err = handle%close()
-
-! 5) delete the handle
-err = handle%delete()
-
-! 6) finalise infero
+! finalise infero library
 err = infero_finalise()
-
 
 ! print output tensor (Prediction of Infero model)
 output_sum = 0

@@ -18,12 +18,12 @@ character(1024) :: model_path
 character(1024) :: model_type
 character(1024) :: yaml_config
 
-type(infero_tensor_set) :: it_set
-type(infero_tensor_set) :: ot_set
+type(infero_tensor_set) :: iset
+type(infero_tensor_set) :: oset
 integer :: err
 
-! handle of infero model
-type(infero_handle) :: handle
+! infero model
+type(infero_model) :: model
 
 ! indexes and Tensor dimensions
 integer :: ss, i, j, ch
@@ -46,49 +46,42 @@ real(c_float) :: t3(1,1) = 0
 CALL get_command_argument(1, model_path)
 CALL get_command_argument(2, model_type)
 
-! prapare input tensors for named layers
-err = it_set%initialise()
-err = it_set%push_tensor_rank2(t1, t1_name)
-err = it_set%push_tensor_rank2(t2, t2_name)
-err = it_set%print()
+! init infero library
+err = infero_initialise()
 
-! prapare output tensors for named layers
-err = ot_set%initialise()
-err = ot_set%push_tensor_rank2(t3, t3_name)
-err = ot_set%print()
+! prepare input tensors for named layers
+err = iset%initialise()
+err = iset%push_tensor(t1, t1_name)
+err = iset%push_tensor(t2, t2_name)
+err = iset%print()
+
+! prepare output tensors for named layers
+err = oset%initialise()
+err = oset%push_tensor(t3, t3_name)
+err = oset%print()
 
 ! YAML config string
 yaml_config = "---"//NEW_LINE('A') &
   //"  path: "//TRIM(model_path)//NEW_LINE('A') &
   //"  type: "//TRIM(model_type)//c_null_char
 
-! 0) init infero
-err = infero_initialise()
+! get a inference model model
+err = model%initialise_from_yaml_string(yaml_config)
 
-! 1) get a inference model handle
-err = handle%from_yaml_string(yaml_config)
-
-! 2) open the handle
-err = handle%open()
-
-! 3) run inference
-err = handle%infer_mimo(it_set, ot_set)
-
-! 4) close and delete the handle
-err = handle%close()
-
-! 5) delete the handle
-err = handle%delete()
+! run inference
+err = model%infer_mimo(iset, oset)
 
 ! print output 
-err = ot_set%print()
+err = oset%print()
 
+! free tensor sets
+err = iset%free()
+err = oset%free()
 
-! delete tensor sets
-err = it_set%delete()
-err = ot_set%delete()
+! free the model
+err = model%free()
 
-! 6) finalise library
+! finalise library
 err = infero_finalise()
 
 end program

@@ -17,15 +17,13 @@ private
 
 
 ! infero handle wrapper
-type infero_handle
+type infero_model
   type(c_ptr) :: impl = c_null_ptr
 contains
-  procedure :: from_yaml_string => infero_create_handle_from_yaml_string
-  procedure :: from_yaml_file => infero_create_handle_from_yaml_file
-  procedure :: open => infero_open_handle
+  procedure :: initialise_from_yaml_string => infero_create_handle_from_yaml_string
+  procedure :: initialise_from_yaml_file => infero_create_handle_from_yaml_file
   procedure :: infer_mimo => infer_from_tensor_set
-  procedure :: close => infero_close_handle
-  procedure :: delete => infero_delete_handle
+  procedure :: free => infero_free_handle
 end type
 
 ! tensor set wrapper
@@ -38,11 +36,11 @@ contains
   procedure :: push_tensor_rank4 => infero_tensor_set_push_rank4
   generic   :: push_tensor => push_tensor_rank2, push_tensor_rank3, push_tensor_rank4
   procedure :: print => infero_print_tensor_set
-  procedure :: delete => infero_tensor_set_delete
+  procedure :: free => infero_tensor_set_free
 end type
 
 
-public :: infero_handle
+public :: infero_model
 public :: infero_initialise
 public :: infero_inference
 public :: infero_finalise
@@ -60,7 +58,7 @@ interface
 
 
   !-----------------------------------------------------------------------------------------
-  ! int infero_inference_float(infero_handle_t* h, 
+  ! int infero_inference_float(infero_model_t* h, 
   !                            int rank1, 
   !                            const float data1[], 
   !                            const int shape1[], 
@@ -87,7 +85,7 @@ interface
   end function
 
   !-----------------------------------------------------------------------------------------
-  ! int infero_inference_double(infero_handle_t* h, 
+  ! int infero_inference_double(infero_model_t* h, 
   !                             int rank1, 
   !                             const double data1[], 
   !                             const int shape1[], 
@@ -171,7 +169,7 @@ interface
     integer(c_int) :: err
   end function
 
-  function infero_tensors_delete_interf( handle_impl ) result(err) &
+  function infero_tensors_free_interf( handle_impl ) result(err) &
     & bind(C,name="infero_delete_tensor_set")
     use iso_c_binding, only: c_int, c_ptr
     type(c_ptr), intent(in), value :: handle_impl
@@ -271,45 +269,27 @@ function infero_finalise_func( ) result(err)
 end function
 
 function infero_create_handle_from_yaml_string(handle, config_str) result(err)
-  class(infero_handle), intent(inout) :: handle
+  class(infero_model), intent(inout) :: handle
   character(c_char) :: config_str
   integer :: err
   err = infero_create_handle_from_yaml_str_interf(config_str, handle%impl)
+  err = infero_open_handle_interf( handle%impl )
 end function
 
 function infero_create_handle_from_yaml_file(handle, config_str ) result(err)
   use iso_c_binding, only: c_char, c_int, c_ptr
-  class(infero_handle), intent(inout) :: handle
+  class(infero_model), intent(inout) :: handle
   character(c_char) :: config_str
   integer :: err
   err = infero_create_handle_from_yaml_file_interf(config_str, handle%impl)
-end function
-
-function infero_open_handle( handle ) result(err)
-  use iso_c_binding, only: c_ptr
-  class(infero_handle), intent(inout) :: handle
-  integer :: err
   err = infero_open_handle_interf( handle%impl )
 end function
 
-function infero_close_handle( handle ) result(err)
+function infero_free_handle( handle ) result(err)
   use iso_c_binding, only: c_ptr
-  class(infero_handle), intent(inout) :: handle
+  class(infero_model), intent(inout) :: handle
   integer :: err
   err = infero_close_handle_interf( handle%impl )
-end function
-
-function infero_delete_handle( handle ) result(err)
-  use iso_c_binding, only: c_ptr
-  class(infero_handle), intent(inout) :: handle
-  integer :: err
-  err = infero_delete_handle_interf( handle%impl )
-end function
-
-function infero_handle_infer( handle ) result(err)
-  use iso_c_binding, only: c_ptr
-  class(infero_handle), intent(inout) :: handle
-  integer :: err
   err = infero_delete_handle_interf( handle%impl )
 end function
 
@@ -317,7 +297,7 @@ end function
 
 function infero_inference_real32_rank2_rank2(handle, array1, array2 ) result(err)
   use, intrinsic :: iso_c_binding
-  class(infero_handle), intent(in) :: handle
+  class(infero_model), intent(in) :: handle
   integer :: err
   real(c_float), intent(inout) :: array1(:,:)
   real(c_float), intent(inout) :: array2(:,:)
@@ -336,7 +316,7 @@ end function
 
 function infero_inference_real64_rank2_rank2(handle, array1, array2 ) result(err)
   use, intrinsic :: iso_c_binding
-  class(infero_handle), intent(in) :: handle
+  class(infero_model), intent(in) :: handle
   integer :: err
   real(c_double), intent(inout) :: array1(:,:)
   real(c_double), intent(inout) :: array2(:,:)
@@ -355,7 +335,7 @@ end function
 
 function infero_inference_real32_rank3_rank2(handle, array1, array2 ) result(err)
   use, intrinsic :: iso_c_binding
-  class(infero_handle), intent(in) :: handle
+  class(infero_model), intent(in) :: handle
   integer :: err
   real(c_float), intent(inout) :: array1(:,:,:)
   real(c_float), intent(inout) :: array2(:,:)
@@ -374,7 +354,7 @@ end function
 
 function infero_inference_real64_rank3_rank2(handle, array1, array2 ) result(err)
   use, intrinsic :: iso_c_binding
-  class(infero_handle), intent(in) :: handle
+  class(infero_model), intent(in) :: handle
   integer :: err
   real(c_double), intent(inout) :: array1(:,:,:)
   real(c_double), intent(inout) :: array2(:,:)
@@ -393,7 +373,7 @@ end function
 
 function infero_inference_real32_rank4_rank4(handle, array1, array2 ) result(err)
   use, intrinsic :: iso_c_binding
-  class(infero_handle), intent(in) :: handle
+  class(infero_model), intent(in) :: handle
   integer :: err
   real(c_float), intent(inout) :: array1(:,:,:,:)
   real(c_float), intent(inout) :: array2(:,:,:,:)
@@ -412,7 +392,7 @@ end function
 
 function infero_inference_real64_rank4_rank4(handle, array1, array2 ) result(err)
   use, intrinsic :: iso_c_binding
-  class(infero_handle), intent(in) :: handle
+  class(infero_model), intent(in) :: handle
   integer :: err
   real(c_double), intent(inout) :: array1(:,:,:,:)
   real(c_double), intent(inout) :: array2(:,:,:,:)
@@ -525,10 +505,10 @@ function infero_tensor_set_initialise( handle ) result(err)
 end function
 
 
-function infero_tensor_set_delete( handle ) result(err)
+function infero_tensor_set_free( handle ) result(err)
   class(infero_tensor_set), intent(inout) :: handle
   integer :: err
-  err = infero_tensors_delete_interf(handle%impl)
+  err = infero_tensors_free_interf(handle%impl)
 end function
 
 
@@ -603,7 +583,7 @@ end function
 
 
 function infer_from_tensor_set( infero_h, iset_h, oset_h ) result(err)
-  class(infero_handle),     intent(inout) :: infero_h
+  class(infero_model),     intent(inout) :: infero_h
   class(infero_tensor_set), intent(inout) :: iset_h
   class(infero_tensor_set), intent(inout) :: oset_h
   integer :: err
