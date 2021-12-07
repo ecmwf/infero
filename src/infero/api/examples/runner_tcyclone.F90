@@ -99,7 +99,7 @@ yaml_config = "---"//NEW_LINE('A') &
   call infero_check(model%initialise_from_yaml_string(yaml_config))
 
 ! un inference
-  call infero_check(infero_inference( model, it2f, ot2f ))
+  call infero_check(model%infer(it2f, ot2f ))
 
 ! free the model
   call infero_check(model%free())

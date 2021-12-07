@@ -9,7 +9,8 @@
  */
 
 module inferof
-use, intrinsic :: iso_c_binding
+
+  use, intrinsic :: iso_c_binding
 
 implicit none
 
@@ -30,7 +31,24 @@ type infero_model
 contains
   procedure :: initialise_from_yaml_string => infero_create_handle_from_yaml_string
   procedure :: initialise_from_yaml_file => infero_create_handle_from_yaml_file
+
   procedure :: infer_mimo => infer_from_tensor_set
+
+  procedure :: infero_inference_r2_r2_f => infero_inference_real32_rank2_rank2
+  procedure :: infero_inference_r2_r2_d => infero_inference_real64_rank2_rank2    
+  procedure :: infero_inference_r3_r2_f => infero_inference_real32_rank3_rank2
+  procedure :: infero_inference_r3_r2_d => infero_inference_real64_rank3_rank2  
+  procedure :: infero_inference_r4_r4_f => infero_inference_real32_rank4_rank4
+  procedure :: infero_inference_r4_r4_d => infero_inference_real64_rank4_rank4
+
+  generic   :: infer => infer_mimo, &
+                        infero_inference_r2_r2_f, &
+                        infero_inference_r2_r2_d, &
+                        infero_inference_r3_r2_f, &
+                        infero_inference_r3_r2_d, &
+                        infero_inference_r4_r4_f, &
+                        infero_inference_r4_r4_d
+
   procedure :: free => infero_free_handle
 end type
 

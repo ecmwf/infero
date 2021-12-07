@@ -71,7 +71,7 @@ yaml_config = "---"//NEW_LINE('A') &
 call infero_check(model%initialise_from_yaml_string(yaml_config))
 
 ! run inference
-call infero_check(model%infer_mimo(iset, oset))
+call infero_check(model%infer(iset, oset))
 
 ! print output 
 call infero_check(oset%print())
