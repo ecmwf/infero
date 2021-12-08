@@ -122,20 +122,26 @@ void InferenceModelONNX::infer_mimo(std::vector<TensorFloat *> tIn, std::vector<
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
+    // Make a copy to keep input data in a consistent state
+    std::vector<TensorFloat> itensors(tIn.size());
+    for (int i=0; i<tIn.size(); i++){
+        itensors[i] = *tIn[i];
+    }
+
     // N Input tensors
     size_t NInputs = input_names.size();
     for (size_t i=0; i<NInputs; i++){
 
-        if (tIn[i]->isRight()) {
+        if (itensors[i].isRight()) {
             Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
                         << "Transforming to left.." << std::endl;
-            tIn[i]->toLeftLayout();
+            itensors[i].toLeftLayout();
         }
 
-        auto shape_64 = utils::convert_shape<size_t, int64_t>(tIn[i]->shape());
+        auto shape_64 = utils::convert_shape<size_t, int64_t>(itensors[i].shape());
         Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info,
-                                                tIn[i]->data(),
-                                                tIn[i]->size(),
+                                                itensors[i].data(),
+                                                itensors[i].size(),
                                                 shape_64.data(),
                                                 shape_64.size());
         ASSERT(input_tensor.IsTensor());
