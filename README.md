@@ -60,9 +60,20 @@ Useful cmake arguments:
  - -DENABLE_TENSORRT=ON
  - -DTENSORRT_ROOT=</path/to/tensorRT/root/dir>
 
-### Installation (python scripts)
+
+### Step-by-Step Installation scripts
+Utility installation scripts are provided in the /dev directory and can be used for test/development installations of Infero.
+
+ - env.sh : defines installation environment
+ - 1_install_deps.sh : installs dependencies
+ - 2_install_infero.sh : installs Infero
+ - 3_run_tests.sh : run Infero tests
+
+
+ ### Installation of Python scripts
 Create and source a conda environment containing all the required dependencies:
 
 > cd scripts
 > 
 > source scripts_env.sh
+
