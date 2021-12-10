@@ -66,16 +66,14 @@ contains
 end type
 
 
-public :: infero_check
-
-public :: infero_model
 public :: infero_initialise
-public :: infero_inference
 public :: infero_finalise
 
+public :: infero_check
+public :: infero_error_string
+
+public :: infero_model
 public :: infero_tensor_set
-public :: tensor_set_push
-public :: infer_from_tensor_set
 
 
 interface
