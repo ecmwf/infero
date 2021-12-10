@@ -62,6 +62,13 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
 
 InferenceModelONNX::~InferenceModelONNX() {
 
+    for (auto& n: inputNames){
+        free (n);
+    }
+
+    for (auto& n: outputNames){
+        free (n);
+    }
 }
 
 void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut,

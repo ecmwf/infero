@@ -32,14 +32,14 @@ void print_data(size_t n_tensors,
         size_t n_values = 1;
         size_t shape_size = (size_t)(*(ranks+t));
         for (size_t s=0; s<shape_size; s++){
-            printf("shape [%li] %d \n", s, *(shape+s));
+            printf("shape [%lu] %d \n", s, *(shape+s));
             n_values *= (size_t)(*(shape+s));
         }
 
         // loop over values
         printf("Values:\n");
         for (size_t v=0; v<n_values; v++){
-            printf("value [%li] %f \n", v, *(*(data+t)+v));
+            printf("value [%lu] %f \n", v, *(*(data+t)+v));
         }
 
     }
@@ -123,7 +123,7 @@ int main(int argc, char** argv){
     *(outputs) = (float*)malloc( sizeof (float) * 1);
     *(*(outputs)) = 1;
     *oranks = 2;
-    *(output_shapes) = (int*)malloc( sizeof (int) * 1);
+    *(output_shapes) = (int*)malloc( sizeof (int) * 2);
     *(*(output_shapes)) = 1;
     *(*(output_shapes)+1) = 1;
 
@@ -193,7 +193,6 @@ int main(int argc, char** argv){
     printf("all done. Res: %f\n", res);
 
     // check against expected value 5112.6704
-
     if (fabs((double)res-5112.6704) < 0.1){
         return 0;
     } else {
