@@ -22,7 +22,6 @@ character(1024) :: yaml_config
 
 type(infero_tensor_set) :: iset
 type(infero_tensor_set) :: oset
-integer :: err
 
 ! infero model
 type(infero_model) :: model
