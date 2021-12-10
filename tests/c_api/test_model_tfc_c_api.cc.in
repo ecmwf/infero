@@ -27,17 +27,14 @@ CASE("infero_handle"){
     // config with empty path
     err = infero_create_handle_from_yaml_str(cfg_empty, &h);
     EXPECT_EQUAL(err , INFERO_ERROR_GENERAL_EXCEPTION);
-    EXPECT_EQUAL(h , 0);
 
     // config with invalid path
     err = infero_create_handle_from_yaml_str(cfg_invalid_path, &h);
     EXPECT_EQUAL(err , INFERO_ERROR_GENERAL_EXCEPTION);
-    EXPECT_EQUAL(h , 0);
 
     // config with invalid engine type
     err = infero_create_handle_from_yaml_str(cfg_invalid_type, &h);
     EXPECT_EQUAL(err , INFERO_ERROR_GENERAL_EXCEPTION);
-    EXPECT_EQUAL(h , 0);
 
     // valid config
     err = infero_create_handle_from_yaml_str(cfg_valid, &h);
