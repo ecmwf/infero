@@ -27,13 +27,6 @@ integer :: err
 ! infero model
 type(infero_model) :: model
 
-! indexes and Tensor dimensions
-integer :: ss, i, j, ch
-
-real*8 input_sum
-real*8 tmp_input
-real output_sum
-
 character(len=*), parameter :: t1_name = "input_1"
 real(c_float) :: t1(1,32) = 1
 
