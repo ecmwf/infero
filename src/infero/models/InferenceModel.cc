@@ -98,6 +98,28 @@ void InferenceModel::open()  {
 void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> tIn, std::vector<const char*> input_names,
                                 std::vector<eckit::linalg::TensorFloat*> tOut, std::vector<const char*> output_names)
 {
+    // Take copy of the input tensors
+    std::vector<eckit::linalg::TensorFloat*> inputTensors(tIn.begin(), tIn.end());
+
+    // For each tensor that needs re-ordering, do it into a copy
+    std::vector<std::unique_ptr<eckit::linalg::TensorFloat>> temporaryCopies;
+
+    for (int i = 0; i < inputTensors.size(); ++i) {
+        if (inputTensors[i]->isRight()) {
+            temporaryCopies.emplace_back(new eckit::linalg::TensorFloat(inputTensors[i]->transformRigthToLeftLayout()));
+            inputTensors[i] = temporaryCopies.back().get();
+        }
+    }
+
+    // do the actual inference..
+    infer_mimo_impl(inputTensors, input_names, tOut, output_names);
+
+}
+
+// inference for models with multiple inputs and outputs
+void InferenceModel::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
+                                     std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
+{
     NOTIMP;
 }
 

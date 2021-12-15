@@ -47,6 +47,9 @@ public:
     virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> tIn, std::vector<const char*> input_names,
                             std::vector<eckit::linalg::TensorFloat*> tOut, std::vector<const char*> output_names);
 
+    virtual void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
+                                 std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
+
     /// closes the engine
     virtual void close();
 

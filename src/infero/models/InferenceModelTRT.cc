@@ -149,8 +149,9 @@ void InferenceModelTRT::print(ostream &os) const
     os << "A TRT Model" << std::endl;
 }
 
-void infero::InferenceModelTRT::infer_mimo(std::vector<eckit::linalg::TensorFloat *> tIn, std::vector<const char *> input_names,
-                                           std::vector<eckit::linalg::TensorFloat *> tOut, std::vector<const char *> output_names)
+
+void infero::InferenceModelTRT::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
+                                                std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
 {
 
     Log::info() << "TRT inference " << std::endl;

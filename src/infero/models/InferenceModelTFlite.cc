@@ -134,8 +134,9 @@ void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg:
     // ====================================================================
 }
 
-void InferenceModelTFlite::infer_mimo(std::vector<TensorFloat*> tIn, std::vector<const char*> input_names,
-                                      std::vector<TensorFloat*> tOut, std::vector<const char*> output_names)
+
+void InferenceModelTFlite::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
+                                           std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
 {
 
     // Make a copy to keep input data in a consistent state
