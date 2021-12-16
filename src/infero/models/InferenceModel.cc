@@ -95,8 +95,8 @@ void InferenceModel::open()  {
 }
 
 // inference for models with multiple inputs and outputs
-void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> tIn, std::vector<const char*> input_names,
-                                std::vector<eckit::linalg::TensorFloat*> tOut, std::vector<const char*> output_names)
+void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
+                                std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
 {
     // Take copy of the input tensors
     std::vector<eckit::linalg::TensorFloat*> inputTensors(tIn.begin(), tIn.end());

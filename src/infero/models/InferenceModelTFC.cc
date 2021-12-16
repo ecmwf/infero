@@ -189,13 +189,6 @@ void InferenceModelTFC::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>
                                         std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
 {
 
-
-    // Make a copy to keep input data in a consistent state
-    std::vector<TensorFloat> itensors(tIn.size());
-    for (int i=0; i<tIn.size(); i++){
-        itensors[i] = *tIn[i];
-    }
-
     // N Input tensors
     size_t NInputs = input_names.size();
 
@@ -221,13 +214,13 @@ void InferenceModelTFC::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>
     TF_Tensor** InputValues = static_cast<TF_Tensor**>(malloc(sizeof(TF_Tensor*) * NInputs));
     for (size_t i=0; i<NInputs; i++){
 
-        if (itensors[i].isRight()) {
+        if (tIn[i]->isRight()) {
             Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
                         << "Transforming to left.." << std::endl;
-            itensors[i].toLeftLayout();
+            tIn[i]->toLeftLayout();
         }
 
-        InputValues[i] = TF_TensorFromData( itensors[i].shape(), itensors[i].data() );
+        InputValues[i] = TF_TensorFromData( tIn[i]->shape(), tIn[i]->data() );
     }
 
     // input tensors

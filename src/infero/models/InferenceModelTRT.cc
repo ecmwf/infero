@@ -160,25 +160,18 @@ void infero::InferenceModelTRT::infer_mimo_impl(std::vector<eckit::linalg::Tenso
     auto context = SampleUniquePtr<nvinfer1::IExecutionContext>(Engine_->createExecutionContext());
 
     // ====================== Input tensors ======================
-
-    // Make a copy to keep input data in a consistent state
-    std::vector<eckit::linalg::TensorFloat> itensors(tIn.size());
-    for (int i=0; i<tIn.size(); i++){
-        itensors[i] = *tIn[i];
-    }
-
     size_t NInputs = input_names.size();
     for (size_t i=0; i<NInputs; i++){
 
-        if (itensors[i].isRight()) {
+        if (tIn[i]->isRight()) {
             Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
                         << "Transforming to left.." << std::endl;
-            itensors[i].toLeftLayout();
+            tIn[i]->toLeftLayout();
         }
 
         // copy input data into buffer
         float* hostDataBuffer = static_cast<float*>(buffers.getHostBuffer(input_names[i]));
-        ::memcpy(hostDataBuffer, itensors[i].data(), sizeof(float) * itensors[i].size());
+        ::memcpy(hostDataBuffer, tIn[i]->data(), sizeof(float) * tIn[i]->size());
     }
     // ===========================================================
 

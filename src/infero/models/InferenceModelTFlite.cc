@@ -139,12 +139,6 @@ void InferenceModelTFlite::infer_mimo_impl(std::vector<eckit::linalg::TensorFloa
                                            std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
 {
 
-    // Make a copy to keep input data in a consistent state
-    std::vector<TensorFloat> itensors(tIn.size());
-    for (int i=0; i<tIn.size(); i++){
-        itensors[i] = *tIn[i];
-    }
-
     // input tensors
     size_t NInputs = input_names.size();
     for (size_t i=0; i<NInputs; i++){
@@ -152,18 +146,18 @@ void InferenceModelTFlite::infer_mimo_impl(std::vector<eckit::linalg::TensorFloa
         std::cout << "Processing input: " << input_names[i] << std::endl;
         std::cout << "--> got input with name: " << interpreter_->input_tensor(i)->name << std::endl;
 
-        if (itensors[i].isRight()) {
+        if (tIn[i]->isRight()) {
             Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
                         << "Transforming to left.." << std::endl;
-            itensors[i].toLeftLayout();
+            tIn[i]->toLeftLayout();
         }
 
         interpreter_->ResizeInputTensor(interpreter_->inputs()[i],
-                                        utils::convert_shape<size_t, int>(itensors[i].shape()));
+                                        utils::convert_shape<size_t, int>(tIn[i]->shape()));
 
         // copy tensor data
         float* input      = interpreter_->typed_input_tensor<float>(i);
-        ::memcpy(input, itensors[i].data(), sizeof(float) * itensors[i].size());
+        ::memcpy(input, tIn[i]->data(), sizeof(float) * tIn[i]->size());
 
     }
 
