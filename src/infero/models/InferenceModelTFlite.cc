@@ -146,12 +146,6 @@ void InferenceModelTFlite::infer_mimo_impl(std::vector<eckit::linalg::TensorFloa
         std::cout << "Processing input: " << input_names[i] << std::endl;
         std::cout << "--> got input with name: " << interpreter_->input_tensor(i)->name << std::endl;
 
-        if (tIn[i]->isRight()) {
-            Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
-                        << "Transforming to left.." << std::endl;
-            tIn[i]->toLeftLayout();
-        }
-
         interpreter_->ResizeInputTensor(interpreter_->inputs()[i],
                                         utils::convert_shape<size_t, int>(tIn[i]->shape()));
 

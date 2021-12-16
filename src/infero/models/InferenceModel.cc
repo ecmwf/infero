@@ -106,6 +106,10 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
 
     for (int i = 0; i < inputTensors.size(); ++i) {
         if (inputTensors[i]->isRight()) {
+
+            Log::info() << i << "-th Input Tensor has right-layout, "
+                        << "but left-layout is needed. Transforming to left.." << std::endl;
+                        
             temporaryCopies.emplace_back(new eckit::linalg::TensorFloat(inputTensors[i]->transformRigthToLeftLayout()));
             inputTensors[i] = temporaryCopies.back().get();
         }

@@ -133,12 +133,6 @@ void InferenceModelONNX::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*
     size_t NInputs = input_names.size();
     for (size_t i=0; i<NInputs; i++){
 
-        if (tIn[i]->isRight()) {
-            Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
-                        << "Transforming to left.." << std::endl;
-            tIn[i]->toLeftLayout();
-        }
-
         auto shape_64 = utils::convert_shape<size_t, int64_t>(tIn[i]->shape());
         Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info,
                                                 tIn[i]->data(),

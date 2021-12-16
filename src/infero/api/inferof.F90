@@ -201,18 +201,16 @@ interface
     integer(c_int) :: err
   end function
 
-  function infero_tensor_set_add_tensor_interf( handle_impl, rank, shape_vec, data_vec, name, right_layout ) result(err) &
+  function infero_tensor_set_add_tensor_interf( handle_impl, rank, shape_vec, data_vec, name, c_style ) result(err) &
     & bind(C,name="infero_add_tensor")
     use iso_c_binding
     
     type(c_ptr), intent(in), value :: handle_impl
-
     integer(c_int), intent(in), value :: rank
     integer(c_int), dimension(*) :: shape_vec
     real(c_float), dimension(*)  :: data_vec
-    ! character(len=*), intent(in) :: name
     character(c_char)            :: name
-    integer(c_int)               :: right_layout
+    integer(c_int), value        :: c_style
     
     integer(c_int) :: err    
   end function
@@ -578,7 +576,7 @@ function infero_tensor_set_free( handle ) result(err)
 end function
 
 
-function infero_tensor_set_push_rank2( handle, tensor, name ) result(err)
+function infero_tensor_set_push_rank2( handle, tensor, name, c_style ) result(err)
   use iso_c_binding
 
   class(infero_tensor_set), intent(inout) :: handle
@@ -588,18 +586,30 @@ function infero_tensor_set_push_rank2( handle, tensor, name ) result(err)
   real(c_float), pointer :: data_vec(:)
   integer(c_int) :: shape_vec(2)
   integer(c_int) :: rank  
-  integer(c_int) :: right_layout = 1
+  integer(c_int), optional :: c_style
+  integer(c_int) :: c_style_actual
   integer :: err
+
+  if(present(c_style)) then
+    c_style_actual = c_style
+  else 
+    c_style_actual = 0  ! default value 
+  end if
 
   data_vec => array_view1d( tensor )
   shape_vec = shape(tensor)
   rank = size(shape_vec)
 
-  err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char, right_layout )
+  err = infero_tensor_set_add_tensor_interf(handle%impl, &
+                                            rank, &
+                                            shape_vec, &
+                                            data_vec, &
+                                            name//c_null_char, &
+                                            c_style_actual )
 end function
 
 
-function infero_tensor_set_push_rank3( handle, tensor, name ) result(err)
+function infero_tensor_set_push_rank3( handle, tensor, name, c_style ) result(err)
   use iso_c_binding
 
   class(infero_tensor_set), intent(inout) :: handle
@@ -609,18 +619,30 @@ function infero_tensor_set_push_rank3( handle, tensor, name ) result(err)
   real(c_float), pointer :: data_vec(:)
   integer(c_int) :: shape_vec(3)
   integer(c_int) :: rank  
-  integer(c_int) :: right_layout = 1
+  integer(c_int), optional :: c_style
+  integer(c_int) :: c_style_actual
   integer :: err
+
+  if(present(c_style)) then
+    c_style_actual = c_style
+  else 
+    c_style_actual = 0  ! default value 
+  end if
 
   data_vec => array_view1d( tensor )
   shape_vec = shape(tensor)
   rank = size(shape_vec)
 
-  err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char, right_layout )
+  err = infero_tensor_set_add_tensor_interf(handle%impl, &
+                                            rank, &
+                                            shape_vec, &
+                                            data_vec, &
+                                            name//c_null_char, &
+                                            c_style_actual )
 end function
 
 
-function infero_tensor_set_push_rank4( handle, tensor, name ) result(err)
+function infero_tensor_set_push_rank4( handle, tensor, name, c_style) result(err)
   use iso_c_binding
 
   class(infero_tensor_set), intent(inout) :: handle
@@ -630,14 +652,26 @@ function infero_tensor_set_push_rank4( handle, tensor, name ) result(err)
   real(c_float), pointer :: data_vec(:)
   integer(c_int) :: shape_vec(4)
   integer(c_int) :: rank  
-  integer(c_int) :: right_layout = 1
+  integer(c_int), optional :: c_style
+  integer(c_int) :: c_style_actual
   integer :: err
+
+  if(present(c_style)) then
+    c_style_actual = c_style
+  else 
+    c_style_actual = 0  ! default value 
+  end if
 
   data_vec => array_view1d( tensor )
   shape_vec = shape(tensor)
   rank = size(shape_vec)
 
-  err = infero_tensor_set_add_tensor_interf( handle%impl, rank, shape_vec, data_vec, name//c_null_char, right_layout )
+  err = infero_tensor_set_add_tensor_interf(handle%impl, &
+                                            rank, &
+                                            shape_vec, &
+                                            data_vec, &
+                                            name//c_null_char, &
+                                            c_style_actual )
 end function
 
 

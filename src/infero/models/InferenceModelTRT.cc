@@ -163,12 +163,6 @@ void infero::InferenceModelTRT::infer_mimo_impl(std::vector<eckit::linalg::Tenso
     size_t NInputs = input_names.size();
     for (size_t i=0; i<NInputs; i++){
 
-        if (tIn[i]->isRight()) {
-            Log::info() << i << "-th Input Tensor has right-layout, but left-layout is needed. "
-                        << "Transforming to left.." << std::endl;
-            tIn[i]->toLeftLayout();
-        }
-
         // copy input data into buffer
         float* hostDataBuffer = static_cast<float*>(buffers.getHostBuffer(input_names[i]));
         ::memcpy(hostDataBuffer, tIn[i]->data(), sizeof(float) * tIn[i]->size());

@@ -187,7 +187,7 @@ int infero_add_tensor(infero_tensor_set_t* h,
                       int* shape,
                       float* data,                                            
                       const char* name,
-                      int right_layout
+                      int c_style
                       );
 
 int infero_delete_tensor_set(infero_tensor_set_t* h);
