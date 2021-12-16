@@ -266,6 +266,22 @@ void InferenceModelTFC::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>
     }
     // -----------------------------------------------
 
+    free(Input);
+    free(Output);
+
+    // delete input tensors
+    for (size_t i=0; i<NInputs; i++){
+        TF_DeleteTensor( InputValues[i]);
+    }
+
+    // delete output tensors
+    for (size_t i=0; i<NOutputs; i++){
+        TF_DeleteTensor( OutputValues[i]);
+    }
+
+    free(InputValues);
+    free(OutputValues);
+
 }
 
 void InferenceModelTFC::print(std::ostream &os) const
@@ -318,6 +334,8 @@ TF_Output InferenceModelTFC::getOperation(std::string name)
     }
 
     check_status(err_status, "TF_GraphGetTensorShape");
+
+    free(t0_dims);
 
     return t0;
 
