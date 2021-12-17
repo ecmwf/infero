@@ -520,7 +520,7 @@ int infero_add_tensor(infero_tensor_set_t* h,
                       int* shape,
                       float* data,
                       const char* name,
-                      int c_style
+                      bool c_style
                       ) {
     return wrapApiFunction([h, rank, shape, data, name, c_style]{
 
@@ -528,9 +528,7 @@ int infero_add_tensor(infero_tensor_set_t* h,
             throw eckit::BadValue("tensor rank <= 0!", Here());
         }
 
-        ASSERT((c_style == 0) || (c_style == 1));
-
-        h->tensors.push_back(new TensorFloat(data, std::vector<size_t>(shape, shape+rank), !bool(c_style) ));
+        h->tensors.push_back(new TensorFloat(data, std::vector<size_t>(shape, shape+rank), !c_style ));
         h->tensor_names.push_back(name);
     });
 }

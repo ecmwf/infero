@@ -210,7 +210,7 @@ interface
     integer(c_int), dimension(*) :: shape_vec
     real(c_float), dimension(*)  :: data_vec
     character(c_char)            :: name
-    integer(c_int), value        :: c_style
+    logical(c_bool), value       :: c_style    
     
     integer(c_int) :: err    
   end function
@@ -586,15 +586,13 @@ function infero_tensor_set_push_rank2( handle, tensor, name, c_style ) result(er
   real(c_float), pointer :: data_vec(:)
   integer(c_int) :: shape_vec(2)
   integer(c_int) :: rank  
-  integer(c_int), optional :: c_style
-  integer(c_int) :: c_style_actual
+  
+  logical, intent(in), optional :: c_style
+  logical(c_bool) :: c_style_actual = .false.
+
   integer :: err
 
-  if(present(c_style)) then
-    c_style_actual = c_style
-  else 
-    c_style_actual = 0  ! default value 
-  end if
+  if (present(c_style)) c_style_actual = c_style
 
   data_vec => array_view1d( tensor )
   shape_vec = shape(tensor)
@@ -619,15 +617,13 @@ function infero_tensor_set_push_rank3( handle, tensor, name, c_style ) result(er
   real(c_float), pointer :: data_vec(:)
   integer(c_int) :: shape_vec(3)
   integer(c_int) :: rank  
-  integer(c_int), optional :: c_style
-  integer(c_int) :: c_style_actual
+
+  logical, intent(in), optional :: c_style
+  logical(c_bool) :: c_style_actual = .false.
+
   integer :: err
 
-  if(present(c_style)) then
-    c_style_actual = c_style
-  else 
-    c_style_actual = 0  ! default value 
-  end if
+  if (present(c_style)) c_style_actual = c_style
 
   data_vec => array_view1d( tensor )
   shape_vec = shape(tensor)
@@ -652,15 +648,13 @@ function infero_tensor_set_push_rank4( handle, tensor, name, c_style) result(err
   real(c_float), pointer :: data_vec(:)
   integer(c_int) :: shape_vec(4)
   integer(c_int) :: rank  
-  integer(c_int), optional :: c_style
-  integer(c_int) :: c_style_actual
+
+  logical, intent(in), optional :: c_style
+  logical(c_bool) :: c_style_actual = .false.
+
   integer :: err
 
-  if(present(c_style)) then
-    c_style_actual = c_style
-  else 
-    c_style_actual = 0  ! default value 
-  end if
+  if (present(c_style)) c_style_actual = c_style
 
   data_vec => array_view1d( tensor )
   shape_vec = shape(tensor)
