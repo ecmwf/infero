@@ -89,6 +89,7 @@ do ch = 1,input_dim_3
         end do
     end do
 end do
+close(fu)
 
 ! YAML config string
 yaml_config = "---"//NEW_LINE('A') &
@@ -107,22 +108,12 @@ yaml_config = "---"//NEW_LINE('A') &
 ! finalise infero library
   call infero_check(infero_finalise())
 
-! print output tensor (Prediction of Infero model)
-output_sum = 0
-do ch = 1,output_dim_3
-    do j = 1,output_dim_2
-        do i = 1,output_dim_1
-            do ss = 1,output_dim_0
-              print*, "[",ss, ",",i, ",",j, ",",ch, "]", ot2f(ss, i, j, ch)
-              output_sum = output_sum + ot2f(ss, i, j, ch)
-            end do
-        end do
-    end do
-end do
-
 ! print out sum
 print* , "input_sum: ", input_sum
 print* , "output_sum: ", output_sum
+
+deallocate(it2f)
+deallocate(ot2f)
 
 end program
 
