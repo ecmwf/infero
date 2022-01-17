@@ -3,22 +3,13 @@ ecbuild_add_option( FEATURE WARNINGS
                     DESCRIPTION "Add warnings to compiler" )
 
 # activate warnings, ecbuild macros check the compiler recognises the options
-if(HAVE_WARNINGS) 
+if(HAVE_WARNINGS)
 
-  ecbuild_add_cxx_flags("-Wall")
-  ecbuild_add_cxx_flags("-Wextra")
+  ecbuild_add_cxx_flags("-Wall" NO_FAIL)
+  ecbuild_add_cxx_flags("-Wextra" NO_FAIL)
 
-  if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    ecbuild_add_cxx_flags("-Wno-unused-parameter")
-    ecbuild_add_cxx_flags("-Wno-unused-variable")
-    ecbuild_add_cxx_flags("-Wno-sign-compare")
-  endif()
+  ecbuild_add_cxx_flags("-Wno-unused-parameter" NO_FAIL)
+  ecbuild_add_cxx_flags("-Wno-unused-variable" NO_FAIL)
+  ecbuild_add_cxx_flags("-Wno-sign-compare" NO_FAIL)
 
-  if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    ecbuild_add_cxx_flags("-Wno-unused-parameter")
-    ecbuild_add_cxx_flags("-Wno-unused-variable")
-    ecbuild_add_cxx_flags("-Wno-sign-compare")
-  endif()
-
-  endif()
-
+endif()
