@@ -5,6 +5,9 @@ list(APPEND infero_srcs
     ${PROJECT_SOURCE_DIR}/src/infero/infero_utils.h
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.h
     ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.cpp
+
+    ModelStatistics.h
+    ModelStatistics.cc
 )
 
 ### support for ONNX

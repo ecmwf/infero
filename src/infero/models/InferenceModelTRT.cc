@@ -89,17 +89,11 @@ InferenceModelTRT::~InferenceModelTRT() {
 }
 
 
-void InferenceModelTRT::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
-                              std::string input_name, std::string output_name){
+void InferenceModelTRT::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
+                                   std::string input_name, std::string output_name){
 
 
     Log::info() << "TRT inference " << std::endl;
-
-    if (tIn.isRight()) {
-        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
-                    << "Transforming to left.." << std::endl;
-        tIn.toLeftLayout();
-    }    
 
     // =================== prediction ======================
     // Create RAII buffer manager object

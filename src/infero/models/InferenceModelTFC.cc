@@ -82,8 +82,8 @@ InferenceModelTFC::~InferenceModelTFC() {
 }
 
 
-void InferenceModelTFC::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
-                              std::string input_name, std::string output_name) {
+void InferenceModelTFC::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
+                                   std::string input_name, std::string output_name) {
 
     // Input tensor (NB: implicitely assumed that we only have one input!)
     int NInputs = 1;

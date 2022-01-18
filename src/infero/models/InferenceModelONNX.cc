@@ -71,20 +71,14 @@ InferenceModelONNX::~InferenceModelONNX() {
     }
 }
 
-void InferenceModelONNX::infer(TensorFloat& tIn, TensorFloat& tOut,
-                               std::string input_name, std::string output_name) {
+void InferenceModelONNX::infer_impl(TensorFloat& tIn, TensorFloat& tOut,
+                                    std::string input_name, std::string output_name) {
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 
     // only one input/output usable here
     ASSERT(inputNames.size() == 1);
     ASSERT(outputNames.size() == 1);
-
-    if (tIn.isRight()) {
-        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
-                    << "Transforming to left.." << std::endl;
-        tIn.toLeftLayout();
-    }
 
     auto shape_64 = utils::convert_shape<size_t, int64_t>(tIn.shape());
     Ort::Value input_tensor = Ort::Value::CreateTensor<float>(memory_info,

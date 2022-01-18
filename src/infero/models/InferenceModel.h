@@ -20,6 +20,8 @@
 #include "eckit/log/Log.h"
 #include "eckit/io/SharedBuffer.h"
 
+#include "ModelStatistics.h"
+
 using eckit::Log;
 
 namespace infero {
@@ -41,7 +43,10 @@ public:
 
     /// run the inference
     virtual void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
-                       std::string input_name = "", std::string output_name = "") = 0;
+                       std::string input_name = "", std::string output_name = "");
+
+    virtual void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
+                            std::string input_name = "", std::string output_name = "");
 
     /// run the inference (multi-input/multi-output inference)
     virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
@@ -52,6 +57,8 @@ public:
 
     /// closes the engine
     virtual void close();
+
+    ModelStatistics& statistics(){ return statistics_; }
 
 protected:
     /// print the model
@@ -67,7 +74,10 @@ protected:
     eckit::SharedBuffer modelBuffer_;
 
 private:
-    bool isOpen_;    
+
+    bool isOpen_;
+
+    ModelStatistics statistics_;
 };
 
 }  // namespace infero

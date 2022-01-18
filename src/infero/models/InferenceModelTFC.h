@@ -24,18 +24,18 @@ class InferenceModelTFC : public InferenceModel {
 public:
     InferenceModelTFC(const eckit::Configuration& conf);
 
-    virtual ~InferenceModelTFC();
+    ~InferenceModelTFC() override;
 
 protected:
-    void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
-               std::string input_name = "serving_default_input_1", std::string output_name = "StatefulPartitionedCall");
+    void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
+                    std::string input_name = "serving_default_input_1", std::string output_name = "StatefulPartitionedCall") override;
 
     void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
-                         std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
+                         std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names) override;
 
-    void print(std::ostream& os) const;
+    void print(std::ostream& os) const override;
 
-    virtual void broadcast_model(const std::string path);
+    virtual void broadcast_model(const std::string path) override;
 
 private:
 

@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
         Log::info() << "threshold: " << threshold << std::endl;
 
         return !(err < threshold);
-    }
+    }    
 
     return EXIT_SUCCESS;
 }

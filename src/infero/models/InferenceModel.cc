@@ -45,6 +45,9 @@ InferenceModel::InferenceModel(const eckit::Configuration& conf) : modelBuffer_{
 }
 
 InferenceModel::~InferenceModel() {
+
+    Log::info() << statistics() << std::endl;
+
     if(isOpen_)
         close();
 }
@@ -94,6 +97,37 @@ void InferenceModel::open()  {
     isOpen_ = true;
 }
 
+void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, string input_name, string output_name)
+{
+
+    // Input Tensor re-ordering as needed
+    eckit::Timing start_reordering(statistics_.timer_);
+    eckit::linalg::TensorFloat input_tensor;
+
+    if (tIn.isRight()) {
+        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
+                    << "Transforming to left.." << std::endl;
+        input_tensor = tIn.transformRigthToLeftLayout();
+    } else {
+
+        // TODO: this still makes a copy (for now)
+        input_tensor = tIn;
+    }
+    statistics_.iTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - start_reordering;
+
+    // do the actual inference..
+    eckit::Timing start_infer(statistics_.timer_);
+    infer_impl(input_tensor, tOut, input_name, output_name);
+    statistics_.inferenceTiming_ += eckit::Timing{statistics_.timer_} - start_infer;
+
+
+}
+
+void InferenceModel::infer_impl(linalg::TensorFloat& /*tIn*/, linalg::TensorFloat& /*tOut*/, string /*input_name*/, string /*output_name*/)
+{
+    NOTIMP;
+}
+
 // inference for models with multiple inputs and outputs
 void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
                                 std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
@@ -104,25 +138,30 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
     // For each tensor that needs re-ordering, do it into a copy
     std::vector<std::unique_ptr<eckit::linalg::TensorFloat>> temporaryCopies;
 
+    eckit::Timing start_reordering(statistics_.timer_);
     for (int i = 0; i < inputTensors.size(); ++i) {
         if (inputTensors[i]->isRight()) {
 
             Log::info() << i << "-th Input Tensor has right-layout, "
                         << "but left-layout is needed. Transforming to left.." << std::endl;
-                        
+
             temporaryCopies.emplace_back(new eckit::linalg::TensorFloat(inputTensors[i]->transformRigthToLeftLayout()));
             inputTensors[i] = temporaryCopies.back().get();
         }
     }
+    statistics_.iTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - start_reordering;
 
     // do the actual inference..
+    eckit::Timing start_infer(statistics_.timer_);
+    Log::info() << "doing inference.." << std::endl;
     infer_mimo_impl(inputTensors, input_names, tOut, output_names);
+    statistics_.inferenceTiming_ += eckit::Timing{statistics_.timer_} - start_infer;
 
 }
 
 // inference for models with multiple inputs and outputs
-void InferenceModel::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
-                                     std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
+void InferenceModel::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>& /*tIn*/, std::vector<const char*>& /*input_names*/,
+                                     std::vector<eckit::linalg::TensorFloat*>& /*tOut*/, std::vector<const char*>& /*output_names*/)
 {
     NOTIMP;
 }

@@ -65,15 +65,8 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
 InferenceModelTFlite::~InferenceModelTFlite() {}
 
 
-void InferenceModelTFlite::infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
-                                 std::string input_name, std::string output_name) {
-
-    if (tIn.isRight()) {
-        Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
-                    << "Transforming to left.." << std::endl;
-        ;
-        tIn.toLeftLayout();
-    }
+void InferenceModelTFlite::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
+                                      std::string input_name, std::string output_name) {
 
     Log::info() << "TFlite inference " << std::endl;
 

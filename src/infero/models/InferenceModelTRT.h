@@ -47,24 +47,24 @@ public:
 public:
     InferenceModelTRT(const eckit::Configuration& conf);
 
-    virtual ~InferenceModelTRT();
+    ~InferenceModelTRT() override;
 
     static std::unique_ptr<InferenceModelTRT> from_onnx(std::string onnx_path, TRTOptions& options,
                                                         std::string trt_path = "model.trt");
 
 protected:
-    void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
-               std::string input_name = "", std::string output_name = "");
+    void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
+                    std::string input_name = "", std::string output_name = "") override;
 
     void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
-                         std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
+                         std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names) override;
 
-    virtual void print(std::ostream& os) const;
+    virtual void print(std::ostream& os) const override;
 
 
 private:
     class Logger : public ILogger {
-        void log(Severity severity, const char* msg) throw() {
+        void log(Severity severity, const char* msg) noexcept {
             // show info-level messages only
             if (severity == Severity::kINFO)
                 std::cout << msg << std::endl;
