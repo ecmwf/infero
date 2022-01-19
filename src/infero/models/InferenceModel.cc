@@ -107,7 +107,7 @@ void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, 
     if (tIn.isRight()) {
         Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
                     << "Transforming to left.." << std::endl;
-        input_tensor = tIn.transformRigthToLeftLayout();
+        input_tensor = tIn.transformRightToLeftLayout();
     } else {
 
         // TODO: this still makes a copy (for now)
@@ -145,7 +145,7 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
             Log::info() << i << "-th Input Tensor has right-layout, "
                         << "but left-layout is needed. Transforming to left.." << std::endl;
 
-            temporaryCopies.emplace_back(new eckit::linalg::TensorFloat(inputTensors[i]->transformRigthToLeftLayout()));
+            temporaryCopies.emplace_back(new eckit::linalg::TensorFloat(inputTensors[i]->transformRightToLeftLayout()));
             inputTensors[i] = temporaryCopies.back().get();
         }
     }
