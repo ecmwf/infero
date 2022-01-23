@@ -13,8 +13,6 @@ public:
 
     ModelStatistics();
 
-    eckit::Timing totalTiming_;
-
     eckit::Timing inferenceTiming_;
     eckit::Timing iTensorLayoutTiming_;
     eckit::Timing oTensorLayoutTiming_;
@@ -27,6 +25,10 @@ public:
         x.report(s);
         return s;
     }
+
+private:
+
+    eckit::Timing calcTotalTime() const;
 };
 
 } // namespace infero

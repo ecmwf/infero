@@ -124,17 +124,19 @@ void InferenceModelTRT::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
     // ======================= output =======================    
     Log::info() << "Copying output...";
 
-    // copy output data
+    eckit::Timing t_start(statistics_.timer_);
     float* output = static_cast<float*>(buffers.getHostBuffer(output_tensor_name));    
     if (tOut.isRight()) {
         // TRT uses Left (C) tensor layouts, so we need to convert
         eckit::linalg::TensorFloat tLeft(output, tOut.shape(), false);  // wrap data
-        tOut = tLeft.transformLeftToRightLayout();  // creates temporary tensor with data in left layout
+        eckit::linalg::TensorFloat tRight = tLeft.transformLeftToRightLayout();
+        tOut = tRight;
     }
     else {
         // TRT uses Left (C) tensor layouts, so we can copy straight into memory of tOut
         ::memcpy(tOut.data(), output, tOut.size() * sizeof(float));
     }
+    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
     // ======================================================
 }
 
@@ -180,6 +182,7 @@ void infero::InferenceModelTRT::infer_mimo_impl(std::vector<eckit::linalg::Tenso
     // ====================== Output tensors ======================
     // N Output tensors
     size_t NOutputs = output_names.size();
+    eckit::Timing t_start(statistics_.timer_);
     for (size_t i=0; i<NOutputs; i++){
 
         // output buffer
@@ -189,9 +192,8 @@ void infero::InferenceModelTRT::infer_mimo_impl(std::vector<eckit::linalg::Tenso
 
             // TFC uses Left (C) tensor layouts, so we need to convert
             eckit::linalg::TensorFloat tLeft(output, tOut[i]->shape(), false);  // wrap data
-
-            // creates temporary tensor with data in left layout
-            *tOut[i] = tLeft.transformLeftToRightLayout();
+            eckit::linalg::TensorFloat tRight = tLeft.transformLeftToRightLayout();
+            *tOut[i] = tRight;
 
         } else {
 
@@ -200,6 +202,7 @@ void infero::InferenceModelTRT::infer_mimo_impl(std::vector<eckit::linalg::Tenso
             ::memcpy(tOut[i]->data(), output, tOut[i]->size() * sizeof(float));
         }
     }
+    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
 }
 
 

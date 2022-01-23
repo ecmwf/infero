@@ -73,11 +73,11 @@ protected:
 
     eckit::SharedBuffer modelBuffer_;
 
+    ModelStatistics statistics_;
+
 private:
 
     bool isOpen_;
-
-    ModelStatistics statistics_;
 };
 
 }  // namespace infero

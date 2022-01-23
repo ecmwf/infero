@@ -98,15 +98,14 @@ void InferenceModelONNX::infer_impl(TensorFloat& tIn, TensorFloat& tOut,
     // output tensors
     ASSERT(output_tensors.size() == 1 && output_tensors.front().IsTensor());
 
+    eckit::Timing t_start(statistics_.timer_);
     if (tOut.isRight()) {
 
          // ONNX uses Left (C) tensor layouts, so we need to convert
          auto out_shape = output_tensors.front().GetTensorTypeAndShapeInfo().GetShape();
-         TensorFloat tLeft(output_tensors.front().GetTensorData<float>(),
-                           utils::convert_shape<int64_t, size_t>(out_shape),
-                           false);  // wrap data
-
-         tOut = tLeft.transformLeftToRightLayout();
+         TensorFloat tLeft(output_tensors.front().GetTensorData<float>(), utils::convert_shape<int64_t, size_t>(out_shape), false);
+         TensorFloat tRight = tLeft.transformLeftToRightLayout();
+         tOut = tRight;
     }
 
     else {
@@ -114,6 +113,7 @@ void InferenceModelONNX::infer_impl(TensorFloat& tIn, TensorFloat& tOut,
          memcpy(tOut.data(), output_tensors.front().GetTensorData<float>(),
                 output_tensors.front().GetTensorTypeAndShapeInfo().GetElementCount() * sizeof(float));
     }
+    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
 
 }
 
@@ -149,6 +149,7 @@ void InferenceModelONNX::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*
     // output tensors
     ASSERT(output_tensors.size() == numOutputs);
 
+    eckit::Timing t_start(statistics_.timer_);
     for (size_t i=0; i<numOutputs; i++){
 
          ASSERT(output_tensors[i].IsTensor());
@@ -161,15 +162,16 @@ void InferenceModelONNX::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*
                                utils::convert_shape<int64_t, size_t>(out_shape),
                                false);  // wrap data
 
-             *tOut[i] = tLeft.transformLeftToRightLayout();
+             TensorFloat tRight = tLeft.transformLeftToRightLayout();
+             *tOut[i] = tRight;
          }
          else {
              // ONNX uses Left (C) tensor layouts, so we can copy straight into memory of tOut
              memcpy(tOut[i]->data(), output_tensors[i].GetTensorData<float>(),
                     output_tensors[i].GetTensorTypeAndShapeInfo().GetElementCount() * sizeof(float));
          }
-
     }
+    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
 
 }
 
