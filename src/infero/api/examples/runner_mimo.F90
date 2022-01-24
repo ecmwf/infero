@@ -65,7 +65,9 @@ yaml_config = "---"//NEW_LINE('A') &
 call infero_check(model%initialise_from_yaml_string(yaml_config))
 
 ! run inference
-call infero_check(model%infer(iset, oset))
+!do i = 1,20
+  call infero_check(model%infer(iset, oset))
+!end do
 
 ! explicitely request to print stats
 call infero_check(model%print_statistics())

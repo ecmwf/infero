@@ -28,8 +28,11 @@ ref_sum=$(cat $ref \
 | awk 'BEGIN{sum=0}{sum+=$1}END{print sum}')
 
 echo "reference sum: $ref_sum"
+echo "Predicted sum: $pred_sum"
 
-if (( $(echo "$pred_sum-$ref_sum<0.000001" | bc -l) )); then
+bc_err_string="sqrt(($pred_sum-$ref_sum)*($pred_sum-$ref_sum))"
+
+if (( $(echo "$bc_err_string<0.000001" | bc -l) )); then
   exit 0
 else
   exit 1

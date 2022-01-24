@@ -99,10 +99,10 @@ int main(int argc, char** argv){
     // 2) open the handle
     infero_open_handle(infero_handle);
 
-// //    // 3) run inference
-// //    infero_inference_float_ctensor( infero_handle,
-// //                                    input_tensor, 4, input_size,
-// //                                    output_tensor, 4, output_size );
+    // 3) run inference
+    infero_inference_float_ctensor( infero_handle,
+                                    4, input_tensor, input_size,
+                                    4, output_tensor, output_size );
 
     // 4) close and delete the handle
     infero_close_handle( infero_handle );
