@@ -35,6 +35,8 @@ real(c_float) :: t2(1,128) = 1
 character(len=*), parameter :: t3_name = "dense_6"
 real(c_float) :: t3(1,1) = 0
 
+integer :: i
+
 
 ! Get CL arguments
 CALL get_command_argument(1, model_path)
@@ -64,6 +66,9 @@ call infero_check(model%initialise_from_yaml_string(yaml_config))
 
 ! run inference
 call infero_check(model%infer(iset, oset))
+
+! explicitely request to print stats
+call infero_check(model%print_statistics())
 
 ! print output 
 call infero_check(oset%print())

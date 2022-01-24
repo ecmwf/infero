@@ -25,15 +25,15 @@ void ModelStatistics::report(std::ostream &out, const char *indent) const
         << "========== Infero Model Statistics ========== "
         << std::endl;
 
-    reportTime(out, "STATS: Time to copy/reorder Input ",
+    reportTime(out, "INFERO-STATS: Time to copy/reorder Input ",
                iTensorLayoutTiming_, indent);
 
-    reportTime(out, "STATS: Time to execute inference  ", inferenceTiming_, indent);
+    reportTime(out, "INFERO-STATS: Time to execute inference  ", inferenceTiming_, indent);
 
-    reportTime(out, "STATS: Time to copy/reorder Output",
+    reportTime(out, "INFERO-STATS: Time to copy/reorder Output",
                oTensorLayoutTiming_, indent);
 
-    reportTime(out, "STATS: Total Time", calcTotalTime(), indent);
+    reportTime(out, "INFERO-STATS: Total Time", calcTotalTime(), indent);
 
 }
 

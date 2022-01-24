@@ -173,6 +173,8 @@ int infero_inference_float_tensor_set(infero_handle_t* h,
                                       infero_tensor_set_t* iset,
                                       infero_tensor_set_t* oset);
 
+int infero_print_statistics(infero_handle_t* h);
+
 /**
  * finalise the handle
  */

@@ -56,11 +56,14 @@ public:
                                  std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
 
     /// closes the engine
-    virtual void close();
+    virtual void close();    
+
+    void print_statistics();
 
     ModelStatistics& statistics(){ return statistics_; }
 
 protected:
+
     /// print the model
     virtual void print(std::ostream& os) const = 0;
 
@@ -69,7 +72,7 @@ protected:
         return os;
     }
 
-    virtual void broadcast_model(const std::string path);
+    virtual void broadcast_model(const std::string path);        
 
     eckit::SharedBuffer modelBuffer_;
 

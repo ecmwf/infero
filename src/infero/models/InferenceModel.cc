@@ -46,7 +46,7 @@ InferenceModel::InferenceModel(const eckit::Configuration& conf) : modelBuffer_{
 
 InferenceModel::~InferenceModel() {
 
-    Log::info() << statistics() << std::endl;
+    print_statistics();
 
     if(isOpen_)
         close();
@@ -175,6 +175,11 @@ void InferenceModel::broadcast_model(const std::string path) {
 #ifdef HAVE_MPI
     modelBuffer_ = eckit::mpi::comm().broadcastFile(path, 0);
 #endif
+}
+
+void InferenceModel::print_statistics()
+{
+    Log::info() << statistics() << std::endl;
 }
 
 }  // namespace infero
