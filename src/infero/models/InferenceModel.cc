@@ -97,7 +97,7 @@ void InferenceModel::open()  {
     isOpen_ = true;
 }
 
-void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, string input_name, string output_name)
+void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, std::string input_name, std::string output_name)
 {
 
     // Input Tensor re-ordering as needed
@@ -123,7 +123,7 @@ void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, 
 
 }
 
-void InferenceModel::infer_impl(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, string input_name, string output_name)
+void InferenceModel::infer_impl(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, std::string input_name, std::string output_name)
 {
     NOTIMP;
 }
