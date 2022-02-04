@@ -123,7 +123,7 @@ void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, 
 
 }
 
-void InferenceModel::infer_impl(linalg::TensorFloat& /*tIn*/, linalg::TensorFloat& /*tOut*/, string /*input_name*/, string /*output_name*/)
+void InferenceModel::infer_impl(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, string input_name, string output_name)
 {
     NOTIMP;
 }
@@ -160,8 +160,8 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
 }
 
 // inference for models with multiple inputs and outputs
-void InferenceModel::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>& /*tIn*/, std::vector<const char*>& /*input_names*/,
-                                     std::vector<eckit::linalg::TensorFloat*>& /*tOut*/, std::vector<const char*>& /*output_names*/)
+void InferenceModel::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>& tIn, std::vector<const char*>& input_names,
+                                     std::vector<eckit::linalg::TensorFloat*>& tOut, std::vector<const char*>& output_names)
 {
     NOTIMP;
 }
