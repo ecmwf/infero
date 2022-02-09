@@ -241,7 +241,7 @@ int infero_inference_float(infero_handle_t* h,
 
         std::vector<size_t> shape1_vec(shape1,shape1+rank1);
         std::vector<size_t> shape2_vec(shape2,shape2+rank2); 
-        TensorFloat* tIn(new TensorFloat(data1, shape1_vec, true));
+        TensorFloat* tIn(new TensorFloat(const_cast<float*>(data1), shape1_vec, true));
         TensorFloat* tOut(new TensorFloat(data2, shape2_vec, true));
 
         h->impl_->infer(*tIn, *tOut);
@@ -269,7 +269,7 @@ int infero_inference_float_ctensor(infero_handle_t* h,
 
         std::vector<size_t> shape1_vec(shape1,shape1+rank1);
         std::vector<size_t> shape2_vec(shape2,shape2+rank2);
-        TensorFloat* tIn(new TensorFloat(data1, shape1_vec, false));
+        TensorFloat* tIn(new TensorFloat(const_cast<float*>(data1), shape1_vec, false));
         TensorFloat* tOut(new TensorFloat(data2, shape2_vec, false));
 
         h->impl_->infer(*tIn, *tOut);
@@ -328,7 +328,7 @@ int infero_inference_float_mimo(infero_handle_t* h,
 
             // name and data
             inputNames[i] = *(iNames+i);
-            inputData[i] = new TensorFloat(*(iData+i), shape_, true);
+            inputData[i] = new TensorFloat(const_cast<float*>(*(iData+i)), shape_, true);
         }
 
         // loop over OUTPUT tensors
@@ -416,7 +416,7 @@ int infero_inference_float_mimo_ctensor(infero_handle_t* h,
 
             // name and data
             inputNames[i] = *(iNames+i);
-            inputData[i] = new TensorFloat(*(iData+i), shape_, false);
+            inputData[i] = new TensorFloat(const_cast<float*>(*(iData+i)), shape_, false);
         }
 
         // loop over OUTPUT tensors
