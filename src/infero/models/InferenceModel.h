@@ -16,15 +16,19 @@
 #include <fstream>
 
 #include "eckit/config/Configuration.h"
+#include "eckit/config/LocalConfiguration.h"
 #include "eckit/linalg/Tensor.h"
 #include "eckit/log/Log.h"
 #include "eckit/io/SharedBuffer.h"
 
 #include "ModelStatistics.h"
 
+
 using eckit::Log;
 
 namespace infero {
+
+using VecPairStr = std::vector<std::pair<std::string,std::string>>;
 
 /// Minimal interface for a inference model
 class InferenceModel {
@@ -72,15 +76,25 @@ protected:
         return os;
     }
 
-    virtual void broadcast_model(const std::string path);        
+    virtual void broadcast_model(const std::string path);
+
+    /// Env variables needed by the model
+    virtual VecPairStr RequiredEnvVariables_();
+
+    /// Read env variables
+    void readEnvConfig_();
 
     eckit::SharedBuffer modelBuffer_;
 
     ModelStatistics statistics_;
 
-private:
+    /// Configuration from env variables
+    std::unique_ptr<eckit::LocalConfiguration> envConfig_;
+
+private:            
 
     bool isOpen_;
+
 };
 
 }  // namespace infero

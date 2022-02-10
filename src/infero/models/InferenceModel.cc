@@ -40,8 +40,8 @@ using namespace eckit;
 
 namespace infero {
 
-InferenceModel::InferenceModel(const eckit::Configuration& conf) : modelBuffer_{size_t(0)}{
-
+InferenceModel::InferenceModel(const eckit::Configuration& conf) :
+    modelBuffer_{size_t(0)} {
 }
 
 InferenceModel::~InferenceModel() {
@@ -176,6 +176,32 @@ void InferenceModel::broadcast_model(const std::string path) {
     modelBuffer_ = eckit::mpi::comm().broadcastFile(path, 0);
 #endif
 }
+
+VecPairStr InferenceModel::RequiredEnvVariables_()
+{
+    // by default, no env variables required
+    return VecPairStr();
+}
+
+void InferenceModel::readEnvConfig_()
+{
+    envConfig_.reset(new eckit::LocalConfiguration);
+
+    // read environment variables
+    for (auto& var: RequiredEnvVariables_()){
+
+        const char* value_ = getenv(var.first.c_str());
+        if (value_){
+            Log::info() << var << ": " << value_ << std::endl;
+            envConfig_->set(var.first, value_);
+        } else {
+            Log::info() << var << " not found, using default: "
+                        << var.second << std::endl;
+            envConfig_->set(var.first, var.second);
+        }
+    }
+}
+
 
 void InferenceModel::print_statistics()
 {

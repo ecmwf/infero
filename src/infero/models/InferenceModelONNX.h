@@ -36,6 +36,8 @@ protected:
 
     void print(std::ostream& os) const override;
 
+    virtual VecPairStr RequiredEnvVariables_() override;
+
 private:
 
     // ORT session
@@ -64,6 +66,7 @@ private:
 
     void setupOutputLayers();
     void print_shape(const Ort::Value& t);
+
 };
 
 }  // namespace infero

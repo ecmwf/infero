@@ -27,6 +27,14 @@ using namespace eckit;
 namespace infero {
 
 
+VecPairStr InferenceModelTFlite::RequiredEnvVariables_(){
+    VecPairStr vars;
+
+    // ** no environment variables required **
+    return vars;
+}
+
+
 InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
     InferenceModel(conf) {
 
@@ -50,6 +58,7 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
     INFERO_CHECK(model_ != nullptr);
 
     // Build the interpreter with the InterpreterBuilder.
+    readEnvConfig_();
     tflite::ops::builtin::BuiltinOpResolver resolver;
     tflite::InterpreterBuilder builder(*model_, resolver);
     interpreter_ = std::unique_ptr<tflite::Interpreter>(new tflite::Interpreter);

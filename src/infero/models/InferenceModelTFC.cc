@@ -29,6 +29,14 @@ void NoOpDeallocator(void* data, size_t a, void* b) {
 }
 
 
+VecPairStr InferenceModelTFC::RequiredEnvVariables_(){
+    VecPairStr vars;
+
+    // ** no environment variables required **
+    return vars;
+}
+
+
 InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
     InferenceModel(conf) {
 
@@ -39,6 +47,9 @@ InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
 
     network_graph = TF_NewGraph();
     err_status = TF_NewStatus();
+
+    // options
+    readEnvConfig_();
     session_options = TF_NewSessionOptions();
     run_options = nullptr;
 

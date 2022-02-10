@@ -23,6 +23,13 @@ using namespace eckit;
 namespace infero {
 
 
+VecPairStr InferenceModelTRT::RequiredEnvVariables_(){
+    VecPairStr vars;
+
+    // ** no environment variables required **
+    return vars;
+}
+
 InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
     InferenceModel(conf), Engine_(nullptr), Network_(nullptr) {
 
@@ -32,6 +39,7 @@ InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
     broadcast_model(ModelPath);
 
     // Runtime creation
+    readEnvConfig_();
     InferRuntime_ = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
 
     // if not null, use the model buffer

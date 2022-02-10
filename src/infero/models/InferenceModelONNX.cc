@@ -26,6 +26,14 @@ using namespace eckit;
 namespace infero {
 
 
+VecPairStr InferenceModelONNX::RequiredEnvVariables_(){
+    VecPairStr vars;
+    vars.push_back(std::make_pair("INFERO_NUM_INTEROP_THREADS", "1"));
+    vars.push_back(std::make_pair("INFERO_NUM_INTRAOP_THREADS", "1"));
+    return vars;
+}
+
+
 InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
     InferenceModel(conf){
 
@@ -34,12 +42,13 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
     // read/bcast model by mpi (when possible)
     broadcast_model(ModelPath);
 
-    // environment
     env = std::unique_ptr<Ort::Env>(new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "onnx_model"));
 
     // Session options
+    readEnvConfig_();
     session_options = std::unique_ptr<Ort::SessionOptions>(new Ort::SessionOptions);
-    session_options->SetIntraOpNumThreads(1);
+    session_options->SetIntraOpNumThreads(envConfig_->getInt("INFERO_NUM_INTRAOP_THREADS"));
+    session_options->SetInterOpNumThreads(envConfig_->getInt("INFERO_NUM_INTEROP_THREADS"));
     session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     // if not null, use the model buffer
