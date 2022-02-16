@@ -48,8 +48,9 @@ InferenceModel::~InferenceModel() {
 
     print_statistics();
 
-    if(isOpen_)
+    if(isOpen_){
         close();
+    }
 }
 
 InferenceModel* InferenceModel::create(const std::string& type,
@@ -94,7 +95,13 @@ InferenceModel* InferenceModel::create(const std::string& type,
 }
 
 void InferenceModel::open()  {
-    isOpen_ = true;
+
+    // soft check: multiple open() allowed
+    if (isOpen_){
+        Log::info() << "INFO: Inference model already open.. " << std::endl;
+    } else {
+        isOpen_ = true;
+    }
 }
 
 void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, std::string input_name, std::string output_name)
@@ -167,7 +174,13 @@ void InferenceModel::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>& t
 }
 
 void InferenceModel::close() {
-    isOpen_ = false;
+
+    // soft check: multiple close() allowed
+    if (!isOpen_){
+        Log::info() << "INFO: Inference model already closed.. " << std::endl;
+    } else {
+        isOpen_ = false;
+    }
 }
 
 void InferenceModel::broadcast_model(const std::string path) {

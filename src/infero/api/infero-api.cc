@@ -188,8 +188,11 @@ int infero_close_handle(infero_handle_t* h) {
 
 
 int infero_delete_handle(infero_handle_t* h) {
-    return wrapApiFunction([h]{
-        delete h;
+    return wrapApiFunction([&h]{
+        if (h){
+            delete h;
+            h = nullptr;
+        }
     });
 }
 
@@ -514,11 +517,12 @@ int infero_create_tensor_set(infero_tensor_set_t** h) {
 }
 
 int infero_delete_tensor_set(infero_tensor_set_t* h) {
-    return wrapApiFunction([h]{
+    return wrapApiFunction([&h]{
         for (auto v: h->tensors){
             delete v;
         }
         delete h;
+        h = nullptr;
     });
 }
 

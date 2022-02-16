@@ -16,7 +16,6 @@ implicit none
 
 
 ! Error values
-
 integer, public, parameter :: INFERO_SUCCESS = 0
 integer, public, parameter :: INFERO_ERROR_GENERAL_EXCEPTION = 1
 integer, public, parameter :: INFERO_ERROR_UNKNOWN_EXCEPTION = 2
@@ -24,10 +23,10 @@ integer, public, parameter :: INFERO_ERROR_UNKNOWN_EXCEPTION = 2
 
 private
 
-
-! infero handle wrapper
+! --------- Infero model (Infero "C"-handle wrapper)
 type infero_model
   type(c_ptr) :: impl = c_null_ptr
+  logical :: is_finalised = .false.
 contains
   procedure :: initialise_from_yaml_string => infero_create_handle_from_yaml_string
   procedure :: initialise_from_yaml_file => infero_create_handle_from_yaml_file
@@ -51,11 +50,18 @@ contains
 
   procedure :: print_statistics => infero_print_statistics
   procedure :: free => infero_free_handle
+
+#ifdef HAVE_FINAL
+  final :: infero_free_handle_sub
+#endif
+
 end type
 
-! tensor set wrapper
+
+! ---------  Tensor set (Tensor set "C"-handle wrapper)
 type infero_tensor_set
-  type(c_ptr) :: impl = c_null_ptr  
+  type(c_ptr) :: impl = c_null_ptr
+  logical :: is_finalised = .false.
 contains
   procedure :: initialise => infero_tensor_set_initialise
   procedure :: push_tensor_rank2 => infero_tensor_set_push_rank2
@@ -64,9 +70,15 @@ contains
   generic   :: push_tensor => push_tensor_rank2, push_tensor_rank3, push_tensor_rank4
   procedure :: print => infero_print_tensor_set
   procedure :: free => infero_tensor_set_free
+
+#ifdef HAVE_FINAL
+  final :: infero_tensor_set_free_sub
+#endif
+
 end type
 
 
+! ---------  public interface
 public :: infero_initialise
 public :: infero_finalise
 
@@ -187,7 +199,7 @@ interface
   end function
 
 
-  ! tensor set
+  ! --------- tensor set
   function infero_tensors_initialise_interf( handle_impl ) result(err) &
     & bind(C,name="infero_create_tensor_set")
     use iso_c_binding, only: c_int, c_ptr
@@ -242,7 +254,7 @@ interface
 
 end interface
 
-! Inference API
+! ---------  Inference API
 interface infero_inference ! function overloading
   module procedure infero_inference_real32_rank2_rank2
   module procedure infero_inference_real64_rank2_rank2  
@@ -262,7 +274,7 @@ interface infero_finalise
   module procedure infero_finalise_func
 end interface
 
-! Array views API
+! ---------  Array views API
 interface array_view1d ! function overloading
   module procedure array_view1d_real32_r2  
   module procedure array_view1d_real64_r2
@@ -279,7 +291,7 @@ interface tensor_set_push
 end interface
 
 
-! For utility
+! ---------  For utility
 interface
   pure function strlen(str) result(len) bind(c)
       use, intrinsic :: iso_c_binding
@@ -289,7 +301,7 @@ interface
   end function
 end interface
 
-! error handling
+! ---------  error handling
 interface
   function infero_error_string_interf(err) result(error_string) bind(c, name='infero_error_string')
     use, intrinsic :: iso_c_binding
@@ -306,8 +318,8 @@ contains
 !===========================================================================================
 !===========================================================================================
 
-! error handling
 
+! ---------  error handling
 subroutine infero_check(err)
   integer, intent(in) :: err
 
@@ -325,6 +337,7 @@ end function
 
 !---------------------------------------------------------------------------------
 
+! --------- Infero Model
 function infero_initialise_func( ) result(err)
   use iso_c_binding, only: c_int, c_ptr
   integer(c_int) :: argc
@@ -361,8 +374,14 @@ function infero_free_handle( handle ) result(err)
   use iso_c_binding, only: c_ptr
   class(infero_model), intent(inout) :: handle
   integer :: err
-  err = infero_close_handle_interf( handle%impl )
-  err = infero_delete_handle_interf( handle%impl )
+
+  if (handle%is_finalised .eqv. .false.) then
+    write(*,'(a)'),"INFO: Finalising Infero model.."
+    err = infero_close_handle_interf( handle%impl )
+    err = infero_delete_handle_interf( handle%impl )
+    handle%is_finalised = .true.
+  end if
+
 end function
 
 function infero_print_statistics( handle ) result(err)
@@ -372,7 +391,19 @@ function infero_print_statistics( handle ) result(err)
   err = infero_print_statistics_interf( handle%impl )
 end function
 
-!!! Inference
+#ifdef HAVE_FINAL
+subroutine infero_free_handle_sub( handle )
+  use iso_c_binding, only: c_ptr
+  type(infero_model), intent(inout) :: handle
+  integer :: err
+  if (handle%is_finalised .eqv. .false.) then
+    write(*,'(a)'),"INFO: Finalising Infero model.."
+    err = infero_close_handle_interf( handle%impl )
+    err = infero_delete_handle_interf( handle%impl )
+    handle%is_finalised = .true.
+  end if
+end subroutine
+#endif
 
 function infero_inference_real32_rank2_rank2(handle, array1, array2 ) result(err)
   use, intrinsic :: iso_c_binding
@@ -575,7 +606,7 @@ end function
 
 !---------------------------------------------------------------------------------
 
-!!! tensor set
+! ---------  tensor set
 
 function infero_tensor_set_initialise( handle ) result(err)
   class(infero_tensor_set), intent(inout) :: handle
@@ -583,13 +614,27 @@ function infero_tensor_set_initialise( handle ) result(err)
   err = infero_tensors_initialise_interf(handle%impl)
 end function
 
-
 function infero_tensor_set_free( handle ) result(err)
   class(infero_tensor_set), intent(inout) :: handle
   integer :: err
-  err = infero_tensors_free_interf(handle%impl)
+  if (handle%is_finalised .eqv. .false.) then
+    write(*,'(a)'),"INFO: Finalising Tensor Set.."
+    err = infero_tensors_free_interf(handle%impl)
+    handle%is_finalised = .true.
+  end if
 end function
 
+#ifdef HAVE_FINAL
+subroutine infero_tensor_set_free_sub( handle )
+  type(infero_tensor_set), intent(inout) :: handle
+  integer :: err
+  if (handle%is_finalised .eqv. .false.) then
+    write(*,'(a)'),"INFO: Finalising Tensor Set.."
+    err = infero_tensors_free_interf(handle%impl)
+    handle%is_finalised = .true.
+  end if
+end subroutine
+#endif
 
 function infero_tensor_set_push_rank2( handle, tensor, name, c_style ) result(err)
   use iso_c_binding
@@ -702,8 +747,8 @@ end function
 
 !---------------------------------------------------------------------------------
 
-!!! utility tools
 
+! ---------  utility tools
 subroutine get_c_commandline_arguments(argc,argv)
   use, intrinsic :: iso_c_binding
   integer(c_int), intent(out) :: argc

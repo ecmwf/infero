@@ -1,3 +1,7 @@
+if(HAVE_FINAL)
+    add_definitions(-DHAVE_FINAL)
+endif()
+
 ecbuild_add_library( TARGET inferoapi
     INSTALL_HEADERS LISTED
     HEADER_DESTINATION
