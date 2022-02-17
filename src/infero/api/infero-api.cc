@@ -151,7 +151,6 @@ int infero_create_handle_from_yaml_str(const char str[], infero_handle_t** h) {
         ASSERT(*h);
         ASSERT((*h)->impl_);        
 
-        (*h)->impl_->open();
     });
 }
 
@@ -169,7 +168,6 @@ int infero_create_handle_from_yaml_file(const char path[], infero_handle_t** h) 
         ASSERT(*h);
         ASSERT((*h)->impl_);
 
-        (*h)->impl_->open();
     });
 }
 
