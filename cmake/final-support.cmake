@@ -38,7 +38,8 @@ macro( check_final_support )
         execute_process( COMMAND ${CMAKE_CURRENT_BINARY_DIR}/tests/${case}.bin
                          WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/tests
                          RESULT_VARIABLE _run_res
-                         OUTPUT_VARIABLE INFERO_${case} ERROR_VARIABLE _run_err )
+                         OUTPUT_VARIABLE INFERO_${case}
+                         ERROR_VARIABLE _run_err )
     
     
         string( STRIP ${INFERO_${case}} INFERO_${case} )
