@@ -27,6 +27,8 @@ public:
 
     ~InferenceModelONNX() override;
 
+    constexpr static const char* type() { return "onnx"; }
+
 protected:
     void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
                     std::string input_name = "", std::string output_name = "") override;

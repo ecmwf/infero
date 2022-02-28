@@ -29,6 +29,8 @@ public:
 
     ~InferenceModelTFlite() override;
 
+    constexpr static const char* type() { return "tflite"; }
+
 protected:
     void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
                     std::string input_name = "", std::string output_name = "") override;

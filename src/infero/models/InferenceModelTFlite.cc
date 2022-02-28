@@ -26,6 +26,8 @@ using namespace eckit;
 
 namespace infero {
 
+static InferenceModelBuilder<InferenceModelTFlite> tfliteBuilder;
+
 
 VecPairStr InferenceModelTFlite::RequiredEnvVariables_(){
     VecPairStr vars;

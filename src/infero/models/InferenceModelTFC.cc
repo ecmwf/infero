@@ -24,6 +24,9 @@ using namespace eckit;
 
 namespace infero {
 
+static InferenceModelBuilder<InferenceModelTFC> tfcBuilder;
+
+
 void NoOpDeallocator(void* data, size_t a, void* b) {
     // no input/output tensor deallocation here..
 }

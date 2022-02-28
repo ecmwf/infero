@@ -14,6 +14,7 @@
 #include <ostream>
 #include <string>
 #include <fstream>
+#include <mutex>
 
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
@@ -35,8 +36,7 @@ class InferenceModel {
 
 
 public:
-    static InferenceModel* create(const std::string& type,
-                                  const eckit::Configuration& conf);
+//    static InferenceModel* create(const std::string& type, const eckit::Configuration& conf);
 
     InferenceModel(const eckit::Configuration& conf);
 
@@ -96,5 +96,76 @@ private:
     bool isOpen_;
 
 };
+
+
+//-------------------------------------------------------------------------------------------------
+
+// fwd declaration
+class InferenceModelBuilderBase;
+
+
+// factory (registers/deregisters builders and calls "build")
+class InferenceModelFactory {
+
+public: // methods
+
+    static InferenceModelFactory& instance();
+
+    void enregister(const std::string& name, const InferenceModelBuilderBase& builder);
+    void deregister(const std::string& name);
+
+    InferenceModel* build(const std::string& name, const eckit::Configuration& config) const;
+
+private: // methods
+
+    // Only one instance can be built, inside instance()
+    InferenceModelFactory();
+    ~InferenceModelFactory();
+
+private: // members
+
+    mutable std::mutex mutex_;
+
+    std::map<std::string, std::reference_wrapper<const InferenceModelBuilderBase>> builders_;
+};
+
+
+// base builder
+class InferenceModelBuilderBase {
+public: // methods
+
+    // Only instantiate from subclasses
+    InferenceModelBuilderBase(const std::string& name);
+    virtual ~InferenceModelBuilderBase();
+
+    virtual InferenceModel* make(const eckit::Configuration& config) const = 0;
+
+public: // members
+    std::string name_;
+};
+
+
+// a concrete builder for a specific InferenceModel type
+template <typename T>
+class InferenceModelBuilder : public InferenceModelBuilderBase {
+public: // methods
+    InferenceModelBuilder() : InferenceModelBuilderBase(T::type()) {}
+
+    InferenceModel* make(const eckit::Configuration& config) const {
+        return new T(config);
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
 
 }  // namespace infero

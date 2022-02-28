@@ -90,7 +90,7 @@ int main(int argc, char** argv) {
     TensorFloat predT(out_shape_vec, false);
 
     // Inference model
-    std::unique_ptr<InferenceModel> engine(InferenceModel::create(engine_type, local));
+    std::unique_ptr<InferenceModel> engine(InferenceModelFactory::instance().build(engine_type, local));
     std::cout << *engine << std::endl;
 
     // Input data

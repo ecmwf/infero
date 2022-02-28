@@ -25,6 +25,8 @@ using namespace eckit;
 
 namespace infero {
 
+static InferenceModelBuilder<InferenceModelONNX> onnxBuilder;
+
 
 VecPairStr InferenceModelONNX::RequiredEnvVariables_(){
     VecPairStr vars;

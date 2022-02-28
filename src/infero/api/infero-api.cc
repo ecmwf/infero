@@ -146,7 +146,7 @@ int infero_create_handle_from_yaml_str(const char str[], infero_handle_t** h) {
     return wrapApiFunction([str, h]{
         std::string str_(str);
         eckit::YAMLConfiguration cfg(str_);
-        *h = new infero_handle_t(InferenceModel::create(cfg.getString("type"), cfg));
+        *h = new infero_handle_t(InferenceModelFactory::instance().build(cfg.getString("type"), cfg));
 
         ASSERT(*h);
         ASSERT((*h)->impl_);        
@@ -163,7 +163,7 @@ int infero_create_handle_from_yaml_file(const char path[], infero_handle_t** h) 
         eckit::YAMLConfiguration cfg(path);
 #endif    
 
-        *h = new infero_handle_t(InferenceModel::create(cfg.getString("type"), cfg));
+        *h = new infero_handle_t(InferenceModelFactory::instance().build(cfg.getString("type"), cfg));
 
         ASSERT(*h);
         ASSERT((*h)->impl_);

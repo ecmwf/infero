@@ -22,6 +22,8 @@ using namespace eckit;
 
 namespace infero {
 
+static InferenceModelBuilder<InferenceModelTRT> TRTBuilder;
+
 
 VecPairStr InferenceModelTRT::RequiredEnvVariables_(){
     VecPairStr vars;

@@ -35,7 +35,7 @@ CASE("ML Engine instantiation") {
     }
     const Configuration& conf = local;
 
-    EXPECT_THROWS( InferenceModel::create(choice, conf) );
+    EXPECT_THROWS( InferenceModelFactory::instance().build(choice, conf) );
 }
 
 

@@ -53,47 +53,6 @@ InferenceModel::~InferenceModel() {
     }
 }
 
-InferenceModel* InferenceModel::create(const std::string& type,
-                                       const eckit::Configuration& conf)
-{
-    std::string model_path(conf.getString("path"));
-    Log::info() << "Loading model " << model_path << std::endl;
-
-#ifdef HAVE_ONNX
-    if (type == "onnx") {
-        Log::info() << "creating RTEngineONNX.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelONNX(conf);
-        return ptr;
-    }
-#endif
-
-#ifdef HAVE_TF_C
-    if (type == "tf_c") {
-        Log::info() << "creating RTEngineTFC.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelTFC(conf);
-        return ptr;
-    }
-#endif
-
-#ifdef HAVE_TFLITE
-    if (type == "tflite") {
-        Log::info() << "creating RTEngineTFlite.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelTFlite(conf);
-        return ptr;
-    }
-#endif
-
-#ifdef HAVE_TENSORRT
-    if (type == "tensorrt") {
-        Log::info() << "creating MLEngineTRT.. " << std::endl;
-        InferenceModel* ptr = new InferenceModelTRT(conf);
-        return ptr;
-    }
-#endif
-
-    throw BadValue("Engine type " + type + " not supported!", Here());
-}
-
 void InferenceModel::open()  {
 
     // soft check: multiple open() allowed
@@ -220,5 +179,60 @@ void InferenceModel::print_statistics()
 {
     Log::info() << statistics() << std::endl;
 }
+
+
+//-------------------------------------------------------------------------------------------------
+
+
+InferenceModelFactory::InferenceModelFactory() {}
+
+InferenceModelFactory::~InferenceModelFactory() {}
+
+InferenceModelFactory& InferenceModelFactory::instance() {
+    static InferenceModelFactory theinstance;
+    return theinstance;
+}
+
+void InferenceModelFactory::enregister(const std::string& name,
+                                       const InferenceModelBuilderBase& builder) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    ASSERT(builders_.find(name) == builders_.end());
+    builders_.emplace(std::make_pair(name, std::ref(builder)));
+}
+
+void InferenceModelFactory::deregister(const std::string& name) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    auto it = builders_.find(name);
+    ASSERT(it != builders_.end());
+    builders_.erase(it);
+}
+
+InferenceModel* InferenceModelFactory::build(const std::string& name,
+                                             const eckit::Configuration& config) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    auto it = builders_.find(name);
+    if (it == builders_.end()) {
+        std::ostringstream ss;
+        ss << "Builder not found for backend " << name;
+        throw SeriousBug(ss.str(), Here());
+    }
+
+    return it->second.get().make(config);
+}
+
+InferenceModelBuilderBase::InferenceModelBuilderBase(const std::string& name) :
+    name_(name) {
+    InferenceModelFactory::instance().enregister(name, *this);
+}
+
+InferenceModelBuilderBase::~InferenceModelBuilderBase() {
+    InferenceModelFactory::instance().deregister(name_);
+}
+
+
+
+
+
 
 }  // namespace infero

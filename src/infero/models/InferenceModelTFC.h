@@ -26,6 +26,8 @@ public:
 
     ~InferenceModelTFC() override;
 
+    constexpr static const char* type() { return "tf_c"; }
+
 protected:
     void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
                     std::string input_name = "serving_default_input_1", std::string output_name = "StatefulPartitionedCall") override;
