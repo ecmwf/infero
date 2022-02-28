@@ -376,7 +376,7 @@ function infero_free_handle( handle ) result(err)
   integer :: err
 
   if (handle%is_finalised .eqv. .false.) then
-    write(*,'(a)'),"INFO: Finalising Infero model.."
+    write(*,'(a)') "INFO: Finalising Infero model.."
     err = infero_close_handle_interf( handle%impl )
     err = infero_delete_handle_interf( handle%impl )
     handle%is_finalised = .true.
@@ -397,7 +397,7 @@ subroutine infero_free_handle_sub( handle )
   type(infero_model), intent(inout) :: handle
   integer :: err
   if (handle%is_finalised .eqv. .false.) then
-    write(*,'(a)'),"INFO: Finalising Infero model.."
+    write(*,'(a)') "INFO: Finalising Infero model.."
     err = infero_close_handle_interf( handle%impl )
     err = infero_delete_handle_interf( handle%impl )
     handle%is_finalised = .true.
@@ -618,7 +618,7 @@ function infero_tensor_set_free( handle ) result(err)
   class(infero_tensor_set), intent(inout) :: handle
   integer :: err
   if (handle%is_finalised .eqv. .false.) then
-    write(*,'(a)'),"INFO: Finalising Tensor Set.."
+    write(*,'(a)') "INFO: Finalising Tensor Set.."
     err = infero_tensors_free_interf(handle%impl)
     handle%is_finalised = .true.
   end if
@@ -629,7 +629,7 @@ subroutine infero_tensor_set_free_sub( handle )
   type(infero_tensor_set), intent(inout) :: handle
   integer :: err
   if (handle%is_finalised .eqv. .false.) then
-    write(*,'(a)'),"INFO: Finalising Tensor Set.."
+    write(*,'(a)') "INFO: Finalising Tensor Set.."
     err = infero_tensors_free_interf(handle%impl)
     handle%is_finalised = .true.
   end if
