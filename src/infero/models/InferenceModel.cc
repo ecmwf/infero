@@ -20,22 +20,6 @@
 
 #include "infero/models/InferenceModel.h"
 
-#ifdef HAVE_ONNX
-#include "infero/models/InferenceModelONNX.h"
-#endif
-
-#ifdef HAVE_TF_C
-#include "infero/models/InferenceModelTFC.h"
-#endif
-
-#ifdef HAVE_TFLITE
-#include "infero/models/InferenceModelTFlite.h"
-#endif
-
-#ifdef HAVE_TENSORRT
-#include "infero/models/InferenceModelTRT.h"
-#endif
-
 using namespace eckit;
 
 namespace infero {
