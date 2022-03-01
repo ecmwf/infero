@@ -77,18 +77,23 @@ protected:
 
     virtual void broadcast_model(const std::string path);
 
-    /// Env variables needed by the model
-    virtual VecPairStr RequiredEnvVariables_();
+    /// default model Configuration
+    virtual VecPairStr defaultParams_();
 
-    /// Read env variables
-    void readEnvConfig_();
+    /// implementation-specific default configuration
+    virtual VecPairStr implDefaultParams_();
 
+    /// Assemble the Configuration (defaults + user + env)
+    void readConfig_(const eckit::Configuration& conf);
+
+    /// env-variables configuration
+    std::unique_ptr<eckit::LocalConfiguration> ModelConfig_;
+
+    /// Inference model buffer
     eckit::SharedBuffer modelBuffer_;
 
+    /// Stats
     ModelStatistics statistics_;
-
-    /// Configuration from env variables
-    std::unique_ptr<eckit::LocalConfiguration> envConfig_;
 
 private:            
 

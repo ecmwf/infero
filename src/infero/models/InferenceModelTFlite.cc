@@ -29,18 +29,13 @@ namespace infero {
 static InferenceModelBuilder<InferenceModelTFlite> tfliteBuilder;
 
 
-VecPairStr InferenceModelTFlite::RequiredEnvVariables_(){
-    VecPairStr vars;
-
-    // ** no environment variables required **
-    return vars;
-}
-
-
 InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
     InferenceModel(conf) {
 
-    std::string ModelPath(conf.getString("path"));
+    // Model configuration
+    readConfig_(conf);
+
+    std::string ModelPath(ModelConfig_->getString("path"));
 
     // read/bcast model by mpi (when possible)
     broadcast_model(ModelPath);
@@ -60,7 +55,6 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
     INFERO_CHECK(model_ != nullptr);
 
     // Build the interpreter with the InterpreterBuilder.
-    readEnvConfig_();
     tflite::ops::builtin::BuiltinOpResolver resolver;
     tflite::InterpreterBuilder builder(*model_, resolver);
     interpreter_ = std::unique_ptr<tflite::Interpreter>(new tflite::Interpreter);

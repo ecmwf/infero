@@ -38,7 +38,7 @@ protected:
 
     void print(std::ostream& os) const override;
 
-    virtual VecPairStr RequiredEnvVariables_() override;
+    virtual VecPairStr implDefaultParams_() override;
 
 private:
 

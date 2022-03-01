@@ -32,18 +32,13 @@ void NoOpDeallocator(void* data, size_t a, void* b) {
 }
 
 
-VecPairStr InferenceModelTFC::RequiredEnvVariables_(){
-    VecPairStr vars;
-
-    // ** no environment variables required **
-    return vars;
-}
-
-
 InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
     InferenceModel(conf) {
 
-    std::string ModelPath(conf.getString("path"));
+    // Model configuration
+    readConfig_(conf);
+
+    std::string ModelPath(ModelConfig_->getString("path"));
 
     // read/bcast model by mpi (when possible)
     broadcast_model(ModelPath);
@@ -51,8 +46,7 @@ InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
     network_graph = TF_NewGraph();
     err_status = TF_NewStatus();
 
-    // options
-    readEnvConfig_();
+    // options    
     session_options = TF_NewSessionOptions();
     run_options = nullptr;
 

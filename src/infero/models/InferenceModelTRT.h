@@ -63,9 +63,6 @@ protected:
 
     virtual void print(std::ostream& os) const override;
 
-    virtual VecPairStr RequiredEnvVariables_() override;
-
-
 private:
     class Logger : public ILogger {
         void log(Severity severity, const char* msg) noexcept {

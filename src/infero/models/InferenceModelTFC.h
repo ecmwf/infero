@@ -39,8 +39,6 @@ protected:
 
     virtual void broadcast_model(const std::string path) override;
 
-    virtual VecPairStr RequiredEnvVariables_() override;
-
 private:
 
     void check_status(const TF_Status* s, std::string name);

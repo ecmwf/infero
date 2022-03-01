@@ -13,12 +13,14 @@
 
 #include "eckit/exception/Exceptions.h"
 #include "eckit/config/LocalConfiguration.h"
+#include "eckit/filesystem/LocalPathName.h"
 
 #ifdef HAVE_MPI
 #include "eckit/mpi/Comm.h"
 #endif
 
 #include "infero/models/InferenceModel.h"
+
 
 using namespace eckit;
 
@@ -133,29 +135,50 @@ void InferenceModel::broadcast_model(const std::string path) {
 #endif
 }
 
-VecPairStr InferenceModel::RequiredEnvVariables_()
+
+VecPairStr InferenceModel::defaultParams_(){
+    VecPairStr vars;
+
+    // by default, model path is assumed cwd()
+    vars.push_back(std::make_pair("path", eckit::LocalPathName::cwd() ));
+    return vars;
+}
+
+VecPairStr InferenceModel::implDefaultParams_()
 {
-    // by default, no env variables required
+    // by default, no implementation-specific
+    // parameters are required
     return VecPairStr();
 }
 
-void InferenceModel::readEnvConfig_()
-{
-    envConfig_.reset(new eckit::LocalConfiguration);
+void InferenceModel::readConfig_(const eckit::Configuration& conf)
+{    
 
-    // read environment variables
-    for (auto& var: RequiredEnvVariables_()){
+    ModelConfig_.reset(new eckit::LocalConfiguration());
 
-        const char* value_ = getenv(var.first.c_str());
+    // 1) Add Default params into Configuration (base + model-specific)
+    VecPairStr Params = defaultParams_();
+    VecPairStr implParams = implDefaultParams_();
+    Params.insert(Params.end(), implParams.begin(), implParams.end());
+    for (const auto& p: Params){
+        ModelConfig_->set(p.first, p.second);
+    }
+
+    // 2) Set User specific Params
+    for (const auto& k: conf.keys()){
+        ModelConfig_->set(k, conf.getString(k));
+    }
+
+    // 3) if ENV variable INFERO_<param> is defined, it overrides the corresponding param
+    for (auto& var: Params){
+        const char* value_ = getenv(std::string("INFERO_"+var.first).c_str());
         if (value_){
-            Log::info() << var << ": " << value_ << std::endl;
-            envConfig_->set(var.first, value_);
-        } else {
-            Log::info() << var << " not found, using default: "
-                        << var.second << std::endl;
-            envConfig_->set(var.first, var.second);
+            ModelConfig_->set(var.first, value_);
         }
     }
+
+    Log::info() << "** Infero Model Configuration **" << std::endl;
+    Log::info() << *ModelConfig_ << std::endl;
 }
 
 

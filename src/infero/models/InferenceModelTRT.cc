@@ -25,23 +25,17 @@ namespace infero {
 static InferenceModelBuilder<InferenceModelTRT> TRTBuilder;
 
 
-VecPairStr InferenceModelTRT::RequiredEnvVariables_(){
-    VecPairStr vars;
-
-    // ** no environment variables required **
-    return vars;
-}
-
 InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
     InferenceModel(conf), Engine_(nullptr), Network_(nullptr) {
 
-    std::string ModelPath(conf.getString("path"));
+    // Model configuration
+    readConfig_(conf);
+
+    std::string ModelPath(ModelConfig_->getString("path"));
 
     // read/bcast model by mpi (when possible)
     broadcast_model(ModelPath);
 
-    // Runtime creation
-    readEnvConfig_();
     InferRuntime_ = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
 
     // if not null, use the model buffer
@@ -59,7 +53,6 @@ InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
     } else {  // otherwise construct from model path
 
         // Resurrect the TRF model..
-        std::string ModelPath(conf.getString("path"));
         std::stringstream gieModelStream;
         ifstream en(ModelPath.c_str());
         gieModelStream << en.rdbuf();
