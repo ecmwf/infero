@@ -31,12 +31,11 @@ namespace infero {
 
 using VecPairStr = std::vector<std::pair<std::string,std::string>>;
 
-/// Minimal interface for a inference model
+/// Interface for an inference model
 class InferenceModel {
 
 
 public:
-//    static InferenceModel* create(const std::string& type, const eckit::Configuration& conf);
 
     InferenceModel(const eckit::Configuration& conf);
 
