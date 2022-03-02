@@ -62,20 +62,17 @@ fi
 # ====== Clone and build ONNXRT ======
 if [ ! -d ${ONNXRT_SOURCE_DIR} ] && [ ${WITH_ONNX_RUNTIME} == ON ]; then
 
-  # clone ONNXRT
+  ONNX_URL=https://github.com/microsoft/onnxruntime/releases/download
+  ONNX_VERSION=1.10.0
+  ONNX_TARFILE=onnxruntime-linux-x64-${ONNX_VERSION}.tgz
+
   echo "Creating dir ${ONNXRT_SOURCE_DIR}.."
   mkdir -p ${ONNXRT_SOURCE_DIR}
 
-  echo "cloning ONNXRT in ${ONNXRT_SOURCE_DIR}.."
-  git clone --recursive https://github.com/Microsoft/onnxruntime ${ONNXRT_SOURCE_DIR}
-
-  # build ONNXRT
-  echo "cd in ${ONNXRT_SOURCE_DIR}.."
+  echo "Downloading ONNXRT in ${ONNXRT_SOURCE_DIR}.."
+  wget ${ONNX_URL}/v${ONNX_VERSION}/${ONNX_TARFILE} -P ${ONNXRT_SOURCE_DIR}
   cd ${ONNXRT_SOURCE_DIR}
-
-  echo "Building ONNX.."
-  ./build.sh --config Release --build_shared_lib --parallel ${BUILD_NPROCS}
-
+  tar xzvf ${ONNX_TARFILE} --strip-components=1
 else
     echo "Skipping ${ONNXRT_SOURCE_DIR}.."
 fi
@@ -85,23 +82,21 @@ fi
 # =============== TF C-API ====================
 if [ ! -d ${TF_C_SOURCE_DIR} ] && [ ${WITH_TF_C_RUNTIME} == ON ]; then
 
+  TFC_URL=https://storage.googleapis.com/tensorflow/libtensorflow
+  TFC_VERSION=2.6.0
+  TFC_TARFILE=libtensorflow-cpu-linux-x86_64-${TFC_VERSION}.tar.gz
+
   # clone ONNXRT
   echo "Creating dir ${TF_C_SOURCE_DIR}.."
   mkdir -p ${TF_C_SOURCE_DIR}
 
   echo "Downloading TF C-API in ${TF_C_SOURCE_DIR}.."
-  wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-2.6.0.tar.gz -P ${TF_C_SOURCE_DIR}
+  wget ${TFC_URL}/${TFC_TARFILE} -P ${TF_C_SOURCE_DIR}
   cd ${TF_C_SOURCE_DIR}
-  tar xzvf libtensorflow-cpu-linux-x86_64-2.6.0.tar.gz
+  tar xzvf ${TFC_TARFILE}
 
 else
     echo "Skipping ${TF_C_SOURCE_DIR}.."
-fi
-
-if [ ! -d ${TFLITE_BUILD_DIR} ] && [ ${WITH_TFLITE_RUNTIME} == ON ]; then
-  echo "TF C-API in ${TFLITE_BUILD_DIR} already built. Nothing to do."
-else
-    echo "Skipping ${TFLITE_BUILD_DIR}.."
 fi
 # =============================================
 
