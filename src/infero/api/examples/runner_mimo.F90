@@ -69,8 +69,9 @@ call infero_check(model%initialise_from_yaml_string(yaml_config))
   call infero_check(model%infer(iset, oset))
 !end do
 
-! explicitely request to print stats
+! explicitely request to print stats and config
 call infero_check(model%print_statistics())
+call infero_check(model%print_config())
 
 ! print output 
 call infero_check(oset%print())

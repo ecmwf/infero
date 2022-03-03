@@ -487,9 +487,17 @@ int infero_inference_float_tensor_set(infero_handle_t* h,
         });
 }
 
+
 int infero_print_statistics(infero_handle_t* h){
     return wrapApiFunction([h]{
         h->impl_->print_statistics();
+    });
+}
+
+
+int infero_print_config(infero_handle_t* h){
+    return wrapApiFunction([h]{
+        h->impl_->print_config();
     });
 }
 

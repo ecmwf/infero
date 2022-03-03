@@ -63,6 +63,8 @@ public:
 
     void print_statistics();
 
+    void print_config();
+
     ModelStatistics& statistics(){ return statistics_; }
 
 protected:

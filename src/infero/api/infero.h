@@ -172,8 +172,19 @@ int infero_inference_float_mimo_ctensor(infero_handle_t* h,
 int infero_inference_float_tensor_set(infero_handle_t* h,
                                       infero_tensor_set_t* iset,
                                       infero_tensor_set_t* oset);
-
+/**
+ * @brief infero_print_statistics
+ * @param h: handle
+ * @return
+ */
 int infero_print_statistics(infero_handle_t* h);
+
+/**
+ * @brief infero_print_config
+ * @param h: handle
+ * @return
+ */
+int infero_print_config(infero_handle_t* h);
 
 /**
  * finalise the handle

@@ -49,6 +49,7 @@ contains
                         infero_inference_r4_r4_d
 
   procedure :: print_statistics => infero_print_statistics
+  procedure :: print_config => infero_print_config
   procedure :: free => infero_free_handle
 
 #ifdef HAVE_FINAL
@@ -252,6 +253,13 @@ interface
     integer(c_int) :: err
   end function
 
+function infero_print_config_interf( handle_impl ) result(err) &
+  & bind(C,name="infero_print_config")
+  use iso_c_binding
+  type(c_ptr), intent(in), value :: handle_impl
+  integer(c_int) :: err
+end function
+
 end interface
 
 ! ---------  Inference API
@@ -389,6 +397,13 @@ function infero_print_statistics( handle ) result(err)
   class(infero_model), intent(inout) :: handle
   integer :: err
   err = infero_print_statistics_interf( handle%impl )
+end function
+
+function infero_print_config( handle ) result(err)
+  use iso_c_binding, only: c_ptr
+  class(infero_model), intent(inout) :: handle
+  integer :: err
+  err = infero_print_config_interf( handle%impl )
 end function
 
 #ifdef HAVE_FINAL

@@ -169,22 +169,25 @@ void InferenceModel::readConfig_(const eckit::Configuration& conf)
         ModelConfig_->set(k, conf.getString(k));
     }
 
-    // 3) if ENV variable INFERO_<param> is defined, it overrides the corresponding param
-    for (auto& var: Params){
-        const char* value_ = getenv(std::string("INFERO_"+var.first).c_str());
-        if (value_){
-            ModelConfig_->set(var.first, value_);
-        }
-    }
-
-    Log::info() << "** Infero Model Configuration **" << std::endl;
-    Log::info() << *ModelConfig_ << std::endl;
+    print_config();
 }
 
 
 void InferenceModel::print_statistics()
 {
     Log::info() << statistics() << std::endl;
+}
+
+
+void InferenceModel::print_config()
+{
+    Log::info() << std::endl;
+    Log::info() << "**** Infero Model Configuration ****" << std::endl;
+    for (const auto& k: ModelConfig_->keys()){
+        Log::info() << k << ": " << ModelConfig_->getString(k) << std::endl;
+    }
+    Log::info() << "************************************" << std::endl;
+    Log::info() << std::endl;
 }
 
 
