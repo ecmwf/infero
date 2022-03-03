@@ -112,7 +112,7 @@ class Infero:
     Minimal class that wraps the infero C API
     """
 
-    def __init__(self, model_path, model_type):
+    def __init__(self, model_path, model_type, **kwargs):
 
         # path to infero model
         self.model_path = model_path
@@ -121,7 +121,10 @@ class Infero:
         self.model_type = model_type
 
         # inference configuration string
-        self.config_str = f"path: {self.model_path}\ntype: {self.model_type}"
+        config = {"path": self.model_path, "type": self.model_type}
+        config.update(kwargs)
+
+        self.config_str = "\n".join([str(f"{k}: {v}") for k,v in config.items()])
 
         # C API handle
         self.infero_hdl = None  
@@ -268,6 +271,9 @@ class Infero:
 
             # delete the handle
             lib.infero_delete_handle(self.infero_hdl[0])
+
+    def print_config(self):
+        lib.infero_print_config(self.infero_hdl[0])
 
     def __del__(self):
         self.finalise()

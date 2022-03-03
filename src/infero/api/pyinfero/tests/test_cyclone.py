@@ -18,21 +18,32 @@ def test_cyclone():
     this_dir = os.path.abspath(os.path.dirname(__file__))
     data_dir = os.path.join(this_dir, "../../../../../tests/data/cyclone")
     input_path = os.path.join(data_dir, "cyclone_input_200x200.npy")
-    model_path = os.path.join(data_dir, "cyclone_model_200x200.tflite") 
-    model_type = "tflite" 
+    model_path = os.path.join(data_dir, "cyclone_model_200x200.onnx")
+    model_type = "onnx"
     model_output_shape = (1,200,200,1) 
 
     # load input
     input_tensor = np.load(input_path)
 
     # inference
-    infero = pyinfero.Infero(model_path, model_type)
+    infero = pyinfero.Infero(model_path,
+                             model_type,
+                             NUM_INTEROP_THREADS=1,
+                             NUM_INTRAOP_THREADS=1)
+
     output_tensor = infero.infer(input_tensor, model_output_shape)
 
     # save output
-    # np.save("output_cyclone.npy", output_tensor)
+    #np.save("output_cyclone.npy", output_tensor)
     assert output_tensor.shape == model_output_shape
 
     assert np.abs(np.max(output_tensor) - 0.967444) < 1e-5
     assert np.abs(np.min(output_tensor) - 0.000507) < 1e-5
     assert np.abs(np.mean(output_tensor) - 0.0180078) < 1e-5
+
+    infero.print_config()
+
+
+if __name__ == "__main__":
+
+    test_cyclone()

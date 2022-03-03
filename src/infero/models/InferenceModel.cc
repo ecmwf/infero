@@ -168,8 +168,6 @@ void InferenceModel::readConfig_(const eckit::Configuration& conf)
     for (const auto& k: conf.keys()){
         ModelConfig_->set(k, conf.getString(k));
     }
-
-    print_config();
 }
 
 
