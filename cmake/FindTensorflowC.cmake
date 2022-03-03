@@ -6,7 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation nor
 # does it submit to any jurisdiction.
 
-# - Try to find TensorFlowLite
+# - Try to find TensorflowC
 # Once done this will define
 #
 #  TENSORFLOWC_FOUND         - found TensorflowC
