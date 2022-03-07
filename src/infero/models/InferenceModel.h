@@ -30,6 +30,8 @@ using eckit::Log;
 namespace infero {
 
 using VecPairStr = std::vector<std::pair<std::string,std::string>>;
+// TODO use a map rather than a vector of pairs
+
 
 /// Interface for an inference model
 class InferenceModel {
@@ -156,8 +158,10 @@ template <typename T>
 class InferenceModelBuilder : public InferenceModelBuilderBase {
 public: // methods
     InferenceModelBuilder() : InferenceModelBuilderBase(T::type()) {}
+    
+    ~InferenceModelBuilder() override {}
 
-    InferenceModel* make(const eckit::Configuration& config) const {
+    InferenceModel* make(const eckit::Configuration& config) const override {
         return new T(config);
     }
 };

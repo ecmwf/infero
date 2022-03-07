@@ -14,12 +14,20 @@ ROOT_DIR=${INFERO_HOME:-$HOME}
 
 ROOT_SRC_DIR=${ROOT_DIR}/local
 ROOT_BUILD_DIR=${ROOT_DIR}/builds
+ROOT_INSTALL_DIR=${ROOT_DIR}/installs
 
+# MPI support
 WITH_MPI=OFF
+
+# Fortran API support
+WITH_FCKIT=ON
+
+# ML backends
 WITH_ONNX_RUNTIME=ON
 WITH_TF_C_RUNTIME=ON
 WITH_TFLITE_RUNTIME=ON
-WITH_TRT=ON
+WITH_TRT=OFF
+
 
 BUILD_NPROCS=8
 # ===============================
@@ -38,7 +46,13 @@ ECKIT_BRANCH=develop
 ECKIT_SRC_DIR=${ROOT_SRC_DIR}/eckit
 ECKIT_BUILD_DIR=${ROOT_BUILD_DIR}/eckit
 
+# FCKIT
+FCKIT_BRANCH=develop
+FCKIT_SRC_DIR=${ROOT_SRC_DIR}/fckit
+FCKIT_BUILD_DIR=${ROOT_BUILD_DIR}/fckit
+
 # ONNX runtime
+ONNX_VERSION=1.10.0
 ONNXRT_SOURCE_DIR=${ROOT_SRC_DIR}/onnxruntime
 ONNXRT_BUILD_DIR=${ROOT_SRC_DIR}/onnxruntime
 
@@ -51,7 +65,7 @@ TF_C_SOURCE_DIR=${ROOT_SRC_DIR}/tensorflow_c
 TF_C_BUILD_DIR=${ROOT_SRC_DIR}/tensorflow_c
 
 # TENSORRT
-# (NB TensorRT must to be downloaded separately)
+# NB TensorRT must be downloaded separately..
 TRT_SOURCE_DIR=${ROOT_SRC_DIR}/TensorRT-8.0.0.3
 TRT_BUILD_DIR=${ROOT_SRC_DIR}/TensorRT-8.0.0.3
 

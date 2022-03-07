@@ -10,12 +10,14 @@ if (HAVE_ONNX)
         COMMAND  tcyclone_onnx.sh )
 
     # F90 runner
-    ecbuild_configure_file(f90_tcyclone_onnx.sh.in
-        f90_tcyclone_onnx.sh @ONLY )
+    if(HAVE_FCKIT)
+        ecbuild_configure_file(f90_tcyclone_onnx.sh.in
+            f90_tcyclone_onnx.sh @ONLY )
 
-    ecbuild_add_test(
-        TYPE     SCRIPT
-        COMMAND  f90_tcyclone_onnx.sh )
+        ecbuild_add_test(
+            TYPE     SCRIPT
+            COMMAND  f90_tcyclone_onnx.sh )
+    endif()
 
 endif()
 

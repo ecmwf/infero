@@ -51,28 +51,65 @@ if [ ! -d ${ECKIT_BUILD_DIR} ]; then
 
   cd ${ECKIT_BUILD_DIR}
   export PATH=${ECBUILD_SRC_DIR}/bin:$PATH
-  cmake ${ECKIT_SRC_DIR}
-  make -j${BUILD_NPROCS}
+  cmake -DCMAKE_INSTALL_PREFIX=${ROOT_INSTALL_DIR} ${ECKIT_SRC_DIR} && \
+  make -j${BUILD_NPROCS} && \
+  make install
 
 else
   echo "Directory ${ECKIT_BUILD_DIR} already exist!"
 fi
 # ====================================
 
-# ====== Clone and build ONNXRT ======
+
+# ============= FCKIT =============
+if [ ! -d ${FCKIT_SRC_DIR} ]; then
+
+  # clone FCKIT
+  echo "Creating dir ${FCKIT_SRC_DIR}.."
+  mkdir -p ${FCKIT_SRC_DIR}
+
+  echo "Cloning ecbuild into ${FCKIT_SRC_DIR}.."
+  git clone https://github.com/ecmwf/fckit.git ${FCKIT_SRC_DIR}
+  cd ${FCKIT_SRC_DIR}
+  git checkout ${FCKIT_BRANCH}
+else
+    echo "Directory ${FCKIT_SRC_DIR} already exist!"
+fi
+
+if [ ! -d ${FCKIT_BUILD_DIR} ]; then
+
+  echo "Building FCKIT in ${FCKIT_BUILD_DIR}.."
+  if [ ! -e ${FCKIT_BUILD_DIR} ]; then
+    echo "Creating dir ${FCKIT_BUILD_DIR}.."
+    mkdir -p ${FCKIT_BUILD_DIR}
+  fi
+
+  cd ${FCKIT_BUILD_DIR}
+  export PATH=${ECBUILD_SRC_DIR}/bin:$PATH
+  
+  cmake -DCMAKE_INSTALL_PREFIX=${ROOT_INSTALL_DIR} ${FCKIT_SRC_DIR}  && \
+  make -j${BUILD_NPROCS}  && \
+  make install
+
+else
+  echo "Directory ${FCKIT_BUILD_DIR} already exist!"
+fi
+# ====================================
+
+
+# ====== Get the pre-built ONNXRT ======
 if [ ! -d ${ONNXRT_SOURCE_DIR} ] && [ ${WITH_ONNX_RUNTIME} == ON ]; then
 
   ONNX_URL=https://github.com/microsoft/onnxruntime/releases/download
-  ONNX_VERSION=1.10.0
   ONNX_TARFILE=onnxruntime-linux-x64-${ONNX_VERSION}.tgz
 
   echo "Creating dir ${ONNXRT_SOURCE_DIR}.."
   mkdir -p ${ONNXRT_SOURCE_DIR}
 
-  echo "Downloading ONNXRT in ${ONNXRT_SOURCE_DIR}.."
+  echo "Downloading ONNXRT in ${ONNXRT_SOURCE_DIR}"
   wget ${ONNX_URL}/v${ONNX_VERSION}/${ONNX_TARFILE} -P ${ONNXRT_SOURCE_DIR}
-  cd ${ONNXRT_SOURCE_DIR}
-  tar xzvf ${ONNX_TARFILE} --strip-components=1
+  #cd ${ROOT_INSTALL_DIR}
+  tar xzvf ${ONNXRT_SOURCE_DIR}/${ONNX_TARFILE} --strip-components=1 -C ${ROOT_INSTALL_DIR}
 else
     echo "Skipping ${ONNXRT_SOURCE_DIR}.."
 fi
@@ -90,10 +127,10 @@ if [ ! -d ${TF_C_SOURCE_DIR} ] && [ ${WITH_TF_C_RUNTIME} == ON ]; then
   echo "Creating dir ${TF_C_SOURCE_DIR}.."
   mkdir -p ${TF_C_SOURCE_DIR}
 
-  echo "Downloading TF C-API in ${TF_C_SOURCE_DIR}.."
+  echo "Downloading TF C-API in ${TF_C_SOURCE_DIR}"
   wget ${TFC_URL}/${TFC_TARFILE} -P ${TF_C_SOURCE_DIR}
-  cd ${TF_C_SOURCE_DIR}
-  tar xzvf ${TFC_TARFILE}
+  #cd ${ROOT_INSTALL_DIR}
+  tar xzvf ${TF_C_SOURCE_DIR}/${TFC_TARFILE} -C ${ROOT_INSTALL_DIR}
 
 else
     echo "Skipping ${TF_C_SOURCE_DIR}.."
@@ -127,7 +164,8 @@ if [ ! -d ${TFLITE_BUILD_DIR} ] && [ ${WITH_TFLITE_RUNTIME} == ON ]; then
   fi
 
   cd ${TFLITE_BUILD_DIR}
-  cmake -DBUILD_SHARED_LIBS=ON ${TFLITE_SOURCE_DIR}/tensorflow/lite
+  cmake -DCMAKE_INSTALL_PREFIX=${ROOT_INSTALL_DIR} \
+        -DBUILD_SHARED_LIBS=ON ${TFLITE_SOURCE_DIR}/tensorflow/lite && \
   make -j${BUILD_NPROCS}
 
 else

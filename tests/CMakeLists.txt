@@ -30,4 +30,6 @@ add_subdirectory(c_api)
 
 
 # f-api
-add_subdirectory(f_api)
+if(HAVE_FCKIT)
+    add_subdirectory(f_api)
+endif()

@@ -2,6 +2,7 @@ if(HAVE_FINAL)
     add_definitions(-DHAVE_FINAL)
 endif()
 
+# Infero C-API
 ecbuild_add_library( TARGET inferoapi
     INSTALL_HEADERS LISTED
     HEADER_DESTINATION
@@ -19,6 +20,8 @@ ecbuild_add_library( TARGET inferoapi
         infero
 )
 
+# Infero Fortran-API
+if(HAVE_FCKIT)
 ecbuild_add_library( TARGET inferof
    INSTALL_HEADERS LISTED
    HEADER_DESTINATION
@@ -34,5 +37,6 @@ ecbuild_add_library( TARGET inferof
        inferoapi
        eckit
 )
+endif()
 
 add_subdirectory(examples)

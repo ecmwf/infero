@@ -30,8 +30,14 @@ static InferenceModelBuilder<InferenceModelONNX> onnxBuilder;
 
 VecPairStr InferenceModelONNX::implDefaultParams_(){
     VecPairStr vars;
+    
+    // TODO camel case name of params and avoid abbreviations!
+    // e.g. interopThreads - use a *consistent naming scheme*
+    
     vars.push_back(std::make_pair("NUM_INTEROP_THREADS", "1"));
     vars.push_back(std::make_pair("NUM_INTRAOP_THREADS", "1"));
+    
+    // TODO think about a way of specifying a name only once
     return vars;
 }
 

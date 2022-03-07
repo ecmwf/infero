@@ -34,6 +34,11 @@ if(HAVE_FORTRAN)
     ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
 endif()
 
+############## FCKIT
+ecbuild_add_option( FEATURE FCKIT
+                    DEFAULT ON
+                    DESCRIPTION "Support for fckit"
+                    REQUIRED_PACKAGES FCKIT )
 
 ############## MPI
 ecbuild_add_option(DEFAULT OFF
@@ -136,6 +141,10 @@ ecbuild_info("ONNX_INCLUDE_DIRS ${ONNX_INCLUDE_DIRS}")
 ecbuild_info("TENSORRT_FOUND ${TENSORRT_FOUND}")
 ecbuild_info("TENSORRT_LIBRARIES ${TENSORRT_LIBRARIES}")
 ecbuild_info("TENSORRT_INCLUDE_DIRS ${TENSORRT_INCLUDE_DIRS}")
+
+ecbuild_info("FCKIT_FOUND ${FCKIT_FOUND}")
+ecbuild_info("FCKIT_LIBRARIES ${FCKIT_LIBRARIES}")
+ecbuild_info("FCKIT_INCLUDE_DIRS ${FCKIT_INCLUDE_DIRS}")
 
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 

@@ -9,12 +9,14 @@ if (HAVE_ONNX)
         COMMAND  orographic_drag_onnx.sh )
 
     # F90 runner
-    ecbuild_configure_file(f90_oro_drag_onnx.sh.in
-        f90_oro_drag_onnx.sh @ONLY )
+    if(HAVE_FCKIT)
+        ecbuild_configure_file(f90_oro_drag_onnx.sh.in
+            f90_oro_drag_onnx.sh @ONLY )
 
-    ecbuild_add_test(
-        TYPE     SCRIPT
-        COMMAND  f90_oro_drag_onnx.sh )
+        ecbuild_add_test(
+            TYPE     SCRIPT
+            COMMAND  f90_oro_drag_onnx.sh )
+    endif()
 
 endif()
 
