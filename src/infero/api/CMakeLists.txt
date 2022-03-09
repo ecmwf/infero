@@ -33,10 +33,18 @@ ecbuild_add_library( TARGET inferof
       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
    PRIVATE_INCLUDES
        "${eckit_INCLUDE_DIRS}"
+       "${fckit_INCLUDE_DIRS}"
    PRIVATE_LIBS
        inferoapi
        eckit
+       fckit
 )
+
+message("fckit_INCLUDE_DIRS ${fckit_INCLUDE_DIRS}")
+
+install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}
+         DESTINATION module/infero
+         COMPONENT modules )
 endif()
 
 add_subdirectory(examples)

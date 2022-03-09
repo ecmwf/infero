@@ -12,6 +12,9 @@ module inferof
 
   use, intrinsic :: iso_c_binding
 
+  use fckit_array_module
+  use fckit_c_interop_module
+
 implicit none
 
 
@@ -282,16 +285,6 @@ interface infero_finalise
   module procedure infero_finalise_func
 end interface
 
-! ---------  Array views API
-interface array_view1d ! function overloading
-  module procedure array_view1d_real32_r2  
-  module procedure array_view1d_real64_r2
-  module procedure array_view1d_real32_r3
-  module procedure array_view1d_real64_r3
-  module procedure array_view1d_real32_r4
-  module procedure array_view1d_real64_r4
-end interface
-
 interface tensor_set_push
   module procedure infero_tensor_set_push_rank2
   module procedure infero_tensor_set_push_rank3
@@ -534,91 +527,6 @@ function infero_inference_real64_rank4_rank4(handle, array1, array2 ) result(err
   err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
 end function
 
-
-!---------------------------------------------------------------------------------
-
-!!! Fortran to C addresses
-
-function c_loc_real32(x)
-  use, intrinsic :: iso_c_binding
-  real(c_float), target :: x
-  type(c_ptr) :: c_loc_real32
-  c_loc_real32 = c_loc(x)
-end function
-
-function c_loc_real64(x)
-  use, intrinsic :: iso_c_binding
-  real(c_double), target :: x
-  type(c_ptr) :: c_loc_real64
-  c_loc_real64 = c_loc(x)
-end function
-
-
-!---------------------------------------------------------------------------------
-
-!!! Fortran Arrays into C pointers
-
-function array_view1d_real32_r2(array) result( view )
-  use, intrinsic :: iso_c_binding
-  real(c_float), intent(in), target :: array(:,:)
-  type(c_ptr) :: array_c_ptr
-  real(c_float), pointer :: view(:)  
-  nullify(view)
-  array_c_ptr = c_loc_real32(array(1,1))
-  call c_f_pointer ( array_c_ptr , view , (/size(array)/) )
-end function
-
-function array_view1d_real64_r2(array) result( view )
-  use, intrinsic :: iso_c_binding
-  real(c_double), intent(in), target :: array(:,:)
-  type(c_ptr) :: array_c_ptr
-  real(c_double), pointer :: view(:)  
-  nullify(view)
-  array_c_ptr = c_loc_real64(array(1,1))
-  call c_f_pointer ( array_c_ptr , view , (/size(array)/) )
-end function
-
-function array_view1d_real32_r3(array) result( view )
-  use, intrinsic :: iso_c_binding
-  real(c_float), intent(in), target :: array(:,:,:)
-  type(c_ptr) :: array_c_ptr
-  real(c_float), pointer :: view(:)
-  nullify(view)
-  array_c_ptr = c_loc_real32(array(1,1,1))
-  call c_f_pointer ( array_c_ptr , view , (/size(array)/) )
-end function
-
-function array_view1d_real64_r3(array) result( view )
-  use, intrinsic :: iso_c_binding
-  real(c_double), intent(in), target :: array(:,:,:)
-  type(c_ptr) :: array_c_ptr
-  real(c_double), pointer :: view(:)
-  nullify(view)
-  array_c_ptr = c_loc_real64(array(1,1,1))
-  call c_f_pointer ( array_c_ptr , view , (/size(array)/) )
-end function
-
-function array_view1d_real32_r4(array) result( view )
-  use, intrinsic :: iso_c_binding
-  real(c_float), intent(in), target :: array(:,:,:,:)
-  type(c_ptr) :: array_c_ptr
-  real(c_float), pointer :: view(:)
-  nullify(view)
-  array_c_ptr = c_loc_real32(array(1,1,1,1))
-  call c_f_pointer ( array_c_ptr , view , (/size(array)/) )
-end function
-
-function array_view1d_real64_r4(array) result( view )
-  use, intrinsic :: iso_c_binding
-  real(c_double), intent(in), target :: array(:,:,:,:)
-  type(c_ptr) :: array_c_ptr
-  real(c_double), pointer :: view(:)
-  nullify(view)
-  array_c_ptr = c_loc_real64(array(1,1,1,1))
-  call c_f_pointer ( array_c_ptr , view , (/size(array)/) )
-end function
-
-
 !---------------------------------------------------------------------------------
 
 ! ---------  tensor set
@@ -761,40 +669,6 @@ end function
 
 
 !---------------------------------------------------------------------------------
-
-
-! ---------  utility tools
-subroutine get_c_commandline_arguments(argc,argv)
-  use, intrinsic :: iso_c_binding
-  integer(c_int), intent(out) :: argc
-  type(c_ptr), intent(inout) :: argv(:)
-  character(kind=c_char,len=1), save, target :: args(255)
-  character(kind=c_char,len=255), save, target :: cmd
-  character(kind=c_char,len=255) :: arg
-  integer(c_int) :: iarg, arglen, pos, ich, argpos
-  call get_command(cmd)
-  do ich=1,len(cmd)
-    if (cmd(ich:ich) == " ") then
-      cmd(ich:ich) = c_null_char
-      exit
-    endif
-  enddo
-  argv(1) = c_loc(cmd(1:1))
-  argc = command_argument_count()+1
-  pos = 1
-  do iarg=1,argc
-    argpos = pos
-    call get_command_argument(iarg, arg )
-    arglen = len_trim(arg)
-    do ich=1,arglen
-      args(pos) = arg(ich:ich)
-      pos = pos+1
-    end do
-    args(pos) = c_null_char;  pos = pos+1
-    args(pos) = " ";          pos = pos+1
-    argv(iarg+1) = c_loc(args(argpos))
-  enddo
-end subroutine
 
 function fortranise_cstr(cstr) result(fstr)
   type(c_ptr), intent(in) :: cstr

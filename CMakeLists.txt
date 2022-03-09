@@ -38,7 +38,7 @@ endif()
 ecbuild_add_option( FEATURE FCKIT
                     DEFAULT ON
                     DESCRIPTION "Support for fckit"
-                    REQUIRED_PACKAGES FCKIT )
+                    REQUIRED_PACKAGES fckit)
 
 ############## MPI
 ecbuild_add_option(DEFAULT OFF
@@ -72,54 +72,10 @@ ecbuild_add_option( FEATURE TENSORRT
 
 find_package(ZLIB REQUIRED) # for cnpy
 
-
-## Fortran FINAL keyword
-ecbuild_check_fortran( FEATURES finalization )
-
-set( FEATURE_FINAL_DEFAULT ON )
-set( PGIBUG_ATLAS_197 0 )
-if( CMAKE_Fortran_COMPILER_ID MATCHES "PGI|NVHPC" )
-  if( ${CMAKE_Fortran_COMPILER_VERSION} VERSION_LESS 19.4 )
-      set( PGIBUG_ATLAS_197 1 )
-  endif()
-  if( ${CMAKE_Fortran_COMPILER_VERSION} VERSION_LESS 19.10 )
-    # Compilation works, but runtime segmentation faults occur (tested with pgi/17.7)
-    set( FEATURE_FINAL_DEFAULT OFF )
-  else()
-    list( APPEND INFERO_QUARANTAINED_TESTS infero_test_shared_ptr )
-    # deallocation of list of shared_ptr only seems to deallocate first entry
-  endif()
-endif()
-
-
-ecbuild_add_option( FEATURE FINAL
-                    DESCRIPTION "Enable automatic finalisation for derived types (destructors)"
-                    DEFAULT ${FEATURE_FINAL_DEFAULT}
-                    CONDITION EC_HAVE_Fortran_FINALIZATION )
-
-if( infero_HAVE_FINAL )
-    include( final-support )
-    check_final_support()
-    ecbuild_info( "INFERO_HAVE_FINAL [1]")
-    ecbuild_info( "  INFERO_FINAL_FUNCTION_RESULT              = ${INFERO_FINAL_FUNCTION_RESULT}")
-    ecbuild_info( "  INFERO_FINAL_UNINITIALIZED_LOCAL          = ${INFERO_FINAL_UNINITIALIZED_LOCAL}")
-    ecbuild_info( "  INFERO_FINAL_UNINITIALIZED_INTENT_OUT     = ${INFERO_FINAL_UNINITIALIZED_INTENT_OUT}")
-    ecbuild_info( "  INFERO_FINAL_UNINITIALIZED_INTENT_INOUT   = ${INFERO_FINAL_UNINITIALIZED_INTENT_INOUT}")
-    ecbuild_info( "  INFERO_FINAL_NOT_PROPAGATING              = ${INFERO_FINAL_NOT_PROPAGATING}")
-    ecbuild_info( "  INFERO_FINAL_NOT_INHERITING               = ${INFERO_FINAL_NOT_INHERITING}")
-    ecbuild_info( "  INFERO_FINAL_BROKEN_FOR_ALLOCATABLE_ARRAY = ${INFERO_FINAL_BROKEN_FOR_ALLOCATABLE_ARRAY}")
-    ecbuild_info( "  INFERO_FINAL_BROKEN_FOR_AUTOMATIC_ARRAY   = ${INFERO_FINAL_BROKEN_FOR_AUTOMATIC_ARRAY}")
-endif()
-if( NOT infero_HAVE_FINAL )
-    ecbuild_info( "INFERO_HAVE_FINAL [0]")
-    set( INFERO_FINAL_FUNCTION_RESULT              0 )
-    set( INFERO_FINAL_UNINITIALIZED_LOCAL          0 )
-    set( INFERO_FINAL_UNINITIALIZED_INTENT_OUT     0 )
-    set( INFERO_FINAL_UNINITIALIZED_INTENT_INOUT   0 )
-    set( INFERO_FINAL_NOT_PROPAGATING              0 )
-    set( INFERO_FINAL_NOT_INHERITING               0 )
-    set( INFERO_FINAL_BROKEN_FOR_ALLOCATABLE_ARRAY 0 )
-    set( INFERO_FINAL_BROKEN_FOR_AUTOMATIC_ARRAY   0 )
+if (HAVE_FCKIT)
+    set(infero_HAVE_FINAL ${fckit_HAVE_FINAL})
+else()
+    set(infero_HAVE_FINAL 0)
 endif()
 
 ecbuild_info("MPI_FOUND ${MPI_FOUND}")
@@ -142,9 +98,10 @@ ecbuild_info("TENSORRT_FOUND ${TENSORRT_FOUND}")
 ecbuild_info("TENSORRT_LIBRARIES ${TENSORRT_LIBRARIES}")
 ecbuild_info("TENSORRT_INCLUDE_DIRS ${TENSORRT_INCLUDE_DIRS}")
 
-ecbuild_info("FCKIT_FOUND ${FCKIT_FOUND}")
-ecbuild_info("FCKIT_LIBRARIES ${FCKIT_LIBRARIES}")
-ecbuild_info("FCKIT_INCLUDE_DIRS ${FCKIT_INCLUDE_DIRS}")
+ecbuild_info("FCKIT_FOUND ${fckit_FOUND}")
+ecbuild_info("FCKIT_LIBRARIES ${fckit_LIBRARIES}")
+ecbuild_info("FCKIT_INCLUDE_DIRS ${fckit_INCLUDE_DIRS}")
+ecbuild_info("---> fckit_HAVE_FINAL ${fckit_HAVE_FINAL}")
 
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
