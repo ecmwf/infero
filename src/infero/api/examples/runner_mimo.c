@@ -189,7 +189,6 @@ int main(int argc, char** argv){
     free(oranks);
     // --------------------------------
 
-
     printf("all done. Res: %f\n", res);
 
     // check against expected value 5112.6704

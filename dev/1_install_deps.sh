@@ -25,6 +25,9 @@ else
   echo "Directory ${ECBUILD_SRC_DIR} already exist!"
 fi
 
+if [ ! -d ${ROOT_INSTALL_DIR} ]; then
+   mkdir -p ${ROOT_INSTALL_DIR} 
+fi
 
 # ============= ECKIT =============
 if [ ! -d ${ECKIT_SRC_DIR} ]; then

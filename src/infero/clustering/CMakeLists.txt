@@ -1,13 +1,9 @@
 
 list(APPEND clustering_srcs
-
     Clustering.h
     Clustering.cc
     ClusteringDBscan.h
     ClusteringDBscan.cc
-
-    ${PROJECT_SOURCE_DIR}/contrib/DBSCAN/dbscan.h
-    ${PROJECT_SOURCE_DIR}/contrib/DBSCAN/dbscan.cpp
 )
 
 
@@ -40,10 +36,26 @@ ecbuild_add_library(
         eckit
         eckit_option
         ${ZLIB_LIBRARIES}
+        cnpy
+        dbscan
 )
 
-ecbuild_add_executable( TARGET cluster.x
+ecbuild_add_executable(
+
+    TARGET cluster.x
+
     SOURCES   cluster.cc
+
     CONDITION HAVE_BUILD_TOOLS
+
     INCLUDES  ${eckit_INCLUDE_DIRS}
-    LIBS      MLclustering infero eckit eckit_option )
+
+    LIBS
+        MLclustering
+        infero
+        eckit
+        eckit_option
+        cnpy
+)
+
+

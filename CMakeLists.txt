@@ -74,8 +74,10 @@ find_package(ZLIB REQUIRED) # for cnpy
 
 if (HAVE_FCKIT)
     set(infero_HAVE_FINAL ${fckit_HAVE_FINAL})
+    set(infero_LIBRARIES "MLclustering inferoapi inferof")
 else()
     set(infero_HAVE_FINAL 0)
+    set(infero_LIBRARIES "MLclustering inferoapi")
 endif()
 
 ecbuild_info("MPI_FOUND ${MPI_FOUND}")
@@ -99,9 +101,9 @@ ecbuild_info("TENSORRT_LIBRARIES ${TENSORRT_LIBRARIES}")
 ecbuild_info("TENSORRT_INCLUDE_DIRS ${TENSORRT_INCLUDE_DIRS}")
 
 ecbuild_info("FCKIT_FOUND ${fckit_FOUND}")
-ecbuild_info("FCKIT_LIBRARIES ${fckit_LIBRARIES}")
-ecbuild_info("FCKIT_INCLUDE_DIRS ${fckit_INCLUDE_DIRS}")
-ecbuild_info("---> fckit_HAVE_FINAL ${fckit_HAVE_FINAL}")
+ecbuild_info("FCKIT_LIBRARIES ${FCKIT_LIBRARIES}")
+ecbuild_info("FCKIT_INCLUDE_DIRS ${FCKIT_INCLUDE_DIRS}")
+ecbuild_info("---> fckit_HAVE_FINAL ${HAVE_FINAL}")
 
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
@@ -111,10 +113,6 @@ add_subdirectory( tests )
 
 ############################################################################################
 # finalize
-
-ecbuild_pkgconfig( NAME infero
-                   DESCRIPTION "A lower level API for ML Inference in Operations"
-                   LIBRARIES infero )
 
 ecbuild_install_project( NAME ${PROJECT_NAME} )
 

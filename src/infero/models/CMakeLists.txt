@@ -2,10 +2,6 @@
 list(APPEND infero_srcs    
     InferenceModel.h
     InferenceModel.cc
-    ${PROJECT_SOURCE_DIR}/src/infero/infero_utils.h
-    ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.h
-    ${PROJECT_SOURCE_DIR}/contrib/cnpy/cnpy.cpp
-
     ModelStatistics.h
     ModelStatistics.cc
 )
@@ -91,7 +87,7 @@ ecbuild_add_library(
         "${TENSORFLOWC_INCLUDE_DIRS}"
         "${TENSORFLOWLITE_INCLUDE_DIRS}"
         "${ONNX_INCLUDE_DIRS}"
-        "${TENSORRT_INCLUDE_DIRS}"        
+        "${TENSORRT_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
         ${ZLIB_LIBRARIES}        
@@ -102,5 +98,5 @@ ecbuild_add_library(
         "${tensorflow_lite_libs}"
         "${onnx_libs}"
         "${tensor_rt_libs}"
-
+        cnpy
 )
