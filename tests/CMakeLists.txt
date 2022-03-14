@@ -22,9 +22,10 @@ add_subdirectory(regressions)
 # copy test data to build directory
 add_custom_command(TARGET test_inference_model POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${CMAKE_SOURCE_DIR}/tests/data
+                   ${CMAKE_CURRENT_SOURCE_DIR}/data
                    ${CMAKE_BINARY_DIR}/tests/data
                    )
+
 # c-api
 add_subdirectory(c_api)
 

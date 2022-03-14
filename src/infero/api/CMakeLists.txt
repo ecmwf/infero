@@ -33,6 +33,7 @@ ecbuild_add_library(
     PUBLIC_LIBS
         infero
 )
+install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/infero.h DESTINATION include/infero/api )
 
 
 # Infero Fortran-API
