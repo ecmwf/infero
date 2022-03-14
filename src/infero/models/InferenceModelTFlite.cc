@@ -118,7 +118,7 @@ void InferenceModelTFlite::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::li
 
     // copy output data
     Log::info() << "Copying output..." << std::endl;
-    eckit::Timing t_start(statistics_.timer_);
+    eckit::Timing t_start(statistics_.timer());
     ASSERT(tOut.shape() == out_shape);
     if (tOut.isRight()) {
         // TFlite uses Left (C) tensor layouts, so we need to convert
@@ -130,7 +130,7 @@ void InferenceModelTFlite::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::li
         // TFlite uses Left (C) tensor layouts, so we can copy straight into memory of tOut
         memcpy(tOut.data(), output, out_size * sizeof(float));
     }
-    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
+    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer()} - t_start;
     // ====================================================================
 }
 
@@ -161,7 +161,7 @@ void InferenceModelTFlite::infer_mimo_impl(std::vector<eckit::linalg::TensorFloa
 
 
     size_t NOutputs = output_names.size();
-    eckit::Timing t_start(statistics_.timer_);
+    eckit::Timing t_start(statistics_.timer());
     for (size_t i=0; i<NOutputs; i++){
 
         std::cout << "Processing output: " << output_names[i] << std::endl;
@@ -183,7 +183,7 @@ void InferenceModelTFlite::infer_mimo_impl(std::vector<eckit::linalg::TensorFloa
             memcpy(tOut[i]->data(), output, tOut[i]->size() * sizeof(float));
         }
     }
-    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
+    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer()} - t_start;
 }
 
 void InferenceModelTFlite::print(std::ostream &os) const
