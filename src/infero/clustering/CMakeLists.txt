@@ -10,7 +10,7 @@ list(APPEND clustering_srcs
 # Clustering library
 ecbuild_add_library(
 
-    TARGET MLclustering
+    TARGET cluster
 
     INSTALL_HEADERS LISTED
 
@@ -51,7 +51,7 @@ ecbuild_add_executable(
     INCLUDES  ${eckit_INCLUDE_DIRS}
 
     LIBS
-        MLclustering
+        cluster
         infero
         eckit
         eckit_option

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 
 # load the environment
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -32,8 +34,8 @@ if [ ${WITH_TFLITE_RUNTIME} == ON ]; then
 fi
 
 # TF_C
-INFERO_CMAKE_CMD="${INFERO_CMAKE_CMD} -DENABLE_TF_C=${WITH_TF_C_RUNTIME}"
-if [ ${WITH_TF_C_RUNTIME} == ON ]; then
+INFERO_CMAKE_CMD="${INFERO_CMAKE_CMD} -DENABLE_TF_C=${WITH_TFC_RUNTIME}"
+if [ ${WITH_TFC_RUNTIME} == ON ]; then
   INFERO_CMAKE_CMD="${INFERO_CMAKE_CMD} -DTENSORFLOWC_ROOT=${ROOT_INSTALL_DIR}"
 fi
 

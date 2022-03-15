@@ -24,7 +24,7 @@ WITH_FCKIT=ON
 
 # ML backends
 WITH_ONNX_RUNTIME=ON
-WITH_TF_C_RUNTIME=ON
+WITH_TFC_RUNTIME=ON
 WITH_TFLITE_RUNTIME=OFF
 WITH_TRT=OFF
 
@@ -53,16 +53,21 @@ FCKIT_BUILD_DIR=${ROOT_BUILD_DIR}/fckit
 
 # ONNX runtime
 ONNX_VERSION=1.10.0
-ONNXRT_SOURCE_DIR=${ROOT_SRC_DIR}/onnxruntime
-ONNXRT_BUILD_DIR=${ROOT_SRC_DIR}/onnxruntime
+ONNX_SOURCE_DIR=${ROOT_SRC_DIR}/onnxruntime
+ONNX_BUILD_DIR=${ROOT_SRC_DIR}/onnxruntime
+ONNX_URL=https://github.com/microsoft/onnxruntime/releases/download
+ONNX_TARFILE=onnxruntime-linux-x64-${ONNX_VERSION}.tgz
+    
+# TF_C
+TFC_VERSION=2.6.0
+TFC_SOURCE_DIR=${ROOT_SRC_DIR}/tensorflow_c
+TFC_BUILD_DIR=${ROOT_SRC_DIR}/tensorflow_c
+TFC_URL=https://storage.googleapis.com/tensorflow/libtensorflow
+TFC_TARFILE=libtensorflow-cpu-linux-x86_64-${TFC_VERSION}.tar.gz
 
 # TFLITE
 TFLITE_SOURCE_DIR=${ROOT_SRC_DIR}/tensorflow
 TFLITE_BUILD_DIR=${ROOT_BUILD_DIR}/tflite
-
-# TF_C
-TF_C_SOURCE_DIR=${ROOT_SRC_DIR}/tensorflow_c
-TF_C_BUILD_DIR=${ROOT_SRC_DIR}/tensorflow_c
 
 # TENSORRT
 # NB TensorRT must be downloaded separately..

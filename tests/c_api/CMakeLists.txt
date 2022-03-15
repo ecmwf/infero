@@ -7,14 +7,14 @@
 # nor does it submit to any jurisdiction.
 
 
-ecbuild_add_test(TARGET        test_infero_init_c
+ecbuild_add_test(TARGET        infero_test_infero_init_c
                  INCLUDES      ${eckit_INCLUDE_DIRS}
                  SOURCES       test_infero_init.cc
                  LIBS          inferoapi eckit
 )
 
 # test tensor set
-ecbuild_add_test(TARGET        test_tensor_set
+ecbuild_add_test(TARGET        infero_test_tensor_set
                  INCLUDES      ${eckit_INCLUDE_DIRS}
                  SOURCES       test_tensor_set.cc
                  LIBS          inferoapi eckit
@@ -27,7 +27,7 @@ if (HAVE_TF_C)
     ecbuild_configure_file(test_model_tfc_c_api.cc.in
                            test_model_tfc_c_api.cc @ONLY )
 
-    ecbuild_add_test(TARGET       test_model_tfc_c_api
+    ecbuild_add_test(TARGET       infero_test_model_tfc_c_api
                     INCLUDES      ${eckit_INCLUDE_DIRS}
                     SOURCES       test_model_tfc_c_api.cc
                     LIBS          inferoapi eckit

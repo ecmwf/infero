@@ -10,7 +10,7 @@
 
 
 # ml engine
-ecbuild_add_test(TARGET        test_inference_model
+ecbuild_add_test(TARGET        infero_test_inference_model
                  INCLUDES      ${eckit_INCLUDE_DIRS}
                  SOURCES       test_inference_model.cc
                  LIBS          infero eckit
@@ -20,7 +20,7 @@ ecbuild_add_test(TARGET        test_inference_model
 add_subdirectory(regressions)
 
 # copy test data to build directory
-add_custom_command(TARGET test_inference_model POST_BUILD
+add_custom_command(TARGET infero_test_inference_model POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_CURRENT_SOURCE_DIR}/data
                    ${CMAKE_BINARY_DIR}/tests/data

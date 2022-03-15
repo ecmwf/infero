@@ -15,7 +15,7 @@ input_path=$datadir/cyclone_input_200x200.csv
 
 # run inference and check prediction sum
 # just a sanity check (independent of tensor layout)
-$exedir/runner_tcyclone \
+$exedir/infero_runner_tcyclone \
 $model_path \
 $eng_type \
 $input_path \

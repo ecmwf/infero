@@ -14,7 +14,7 @@ ref=$datadir/m36966_prediction.csv
 
 # run inference and check prediction sum
 # just a sanity check (independent of tensor layout)
-pred_sum=$($exedir/runner_oro_drag \
+pred_sum=$($exedir/infero_runner_oro_drag \
 $model_path \
 $eng_type \
 $input_path \

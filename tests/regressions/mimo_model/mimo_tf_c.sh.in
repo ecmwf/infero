@@ -11,7 +11,7 @@ eng_type=tf_c
 model_path=$datadir/mimo_model_tf
 
 # run inference
-$exedir/runner_mimo \
+$exedir/infero_runner_mimo \
   $model_path \
   $eng_type \
   "serving_default_input_1" \

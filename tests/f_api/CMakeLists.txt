@@ -10,7 +10,7 @@ foreach( _test ${_fapi_tests} )
                          test_fapi_${_test}.F90 @ONLY )
 
   ecbuild_add_test(
-      TARGET       test_fapi_${_test}
+      TARGET       infero_test_fapi_${_test}
       SOURCES      test_fapi_${_test}.F90
       ENVIRONMENT  ${test_environment}
       CONDITION    HAVE_FORTRAN
