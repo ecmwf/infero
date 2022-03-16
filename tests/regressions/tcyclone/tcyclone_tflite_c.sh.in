@@ -14,7 +14,7 @@ ref=$datadir/cyclone_output_200x200.csv
 
 
 # run inference
-pred_sum=$($exedir/runner_tcyclone_ctensor \
+pred_sum=$($exedir/infero_runner_tcyclone_ctensor \
 $model_path \
 $eng_type \
 $input_path \
