@@ -136,19 +136,19 @@ void InferenceModel::broadcast_model(const std::string path) {
 }
 
 
-VecPairStr InferenceModel::defaultParams_(){
-    VecPairStr vars;
+ModelParams_t InferenceModel::defaultParams_(){
+    ModelParams_t params_;
 
     // by default, model path is assumed cwd()
-    vars.push_back(std::make_pair("path", eckit::LocalPathName::cwd() ));
-    return vars;
+    params_["path"] = eckit::LocalPathName::cwd();
+    return params_;
 }
 
-VecPairStr InferenceModel::implDefaultParams_()
+ModelParams_t InferenceModel::implDefaultParams_()
 {
     // by default, no implementation-specific
     // parameters are required
-    return VecPairStr();
+    return ModelParams_t();
 }
 
 void InferenceModel::readConfig_(const eckit::Configuration& conf)
@@ -157,9 +157,13 @@ void InferenceModel::readConfig_(const eckit::Configuration& conf)
     ModelConfig_.reset(new eckit::LocalConfiguration());
 
     // 1) Add Default params into Configuration (base + model-specific)
-    VecPairStr Params = defaultParams_();
-    VecPairStr implParams = implDefaultParams_();
-    Params.insert(Params.end(), implParams.begin(), implParams.end());
+    ModelParams_t Params = defaultParams_();
+    ModelParams_t implParams = implDefaultParams_();
+
+    for (const auto& p: implParams){
+        Params[p.first] = p.second;
+    }
+
     for (const auto& p: Params){
         ModelConfig_->set(p.first, p.second);
     }

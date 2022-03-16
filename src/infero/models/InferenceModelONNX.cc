@@ -28,17 +28,13 @@ namespace infero {
 static InferenceModelBuilder<InferenceModelONNX> onnxBuilder;
 
 
-VecPairStr InferenceModelONNX::implDefaultParams_(){
-    VecPairStr vars;
-    
-    // TODO camel case name of params and avoid abbreviations!
-    // e.g. interopThreads - use a *consistent naming scheme*
-    
-    vars.push_back(std::make_pair("NUM_INTEROP_THREADS", "1"));
-    vars.push_back(std::make_pair("NUM_INTRAOP_THREADS", "1"));
-    
-    // TODO think about a way of specifying a name only once
-    return vars;
+ModelParams_t InferenceModelONNX::implDefaultParams_(){
+    ModelParams_t params_;
+       
+    params_["numInteropThreads"] = "1";
+    params_["numIntraopThreads"] = "1";
+
+    return params_;
 }
 
 
@@ -57,8 +53,8 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
 
     // Session options
     session_options = std::unique_ptr<Ort::SessionOptions>(new Ort::SessionOptions);
-    session_options->SetIntraOpNumThreads(ModelConfig_->getInt("NUM_INTRAOP_THREADS", 1));
-    session_options->SetInterOpNumThreads(ModelConfig_->getInt("NUM_INTEROP_THREADS", 1));
+    session_options->SetInterOpNumThreads(ModelConfig_->getInt("numInteropThreads", 1));
+    session_options->SetIntraOpNumThreads(ModelConfig_->getInt("numIntraopThreads", 1));
     session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     // if not null, use the model buffer

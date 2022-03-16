@@ -38,7 +38,7 @@ protected:
 
     void print(std::ostream& os) const override;
 
-    virtual VecPairStr implDefaultParams_() override;
+    virtual ModelParams_t implDefaultParams_() override;
 
 private:
 

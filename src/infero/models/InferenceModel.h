@@ -15,6 +15,7 @@
 #include <string>
 #include <fstream>
 #include <mutex>
+#include <map>
 
 #include "eckit/config/Configuration.h"
 #include "eckit/config/LocalConfiguration.h"
@@ -29,8 +30,7 @@ using eckit::Log;
 
 namespace infero {
 
-using VecPairStr = std::vector<std::pair<std::string,std::string>>;
-// TODO use a map rather than a vector of pairs
+using ModelParams_t = std::map<std::string,std::string>;
 
 
 /// Interface for an inference model
@@ -82,10 +82,10 @@ protected:
     virtual void broadcast_model(const std::string path);
 
     /// default model Configuration
-    virtual VecPairStr defaultParams_();
+    virtual ModelParams_t defaultParams_();
 
     /// implementation-specific default configuration
-    virtual VecPairStr implDefaultParams_();
+    virtual ModelParams_t implDefaultParams_();
 
     /// Assemble the Configuration (defaults + user + env)
     void readConfig_(const eckit::Configuration& conf);
