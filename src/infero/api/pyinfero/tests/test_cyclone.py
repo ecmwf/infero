@@ -28,11 +28,8 @@ def test_cyclone():
     # inference
     infero = pyinfero.Infero(model_path,
                              model_type,
-                             NUM_INTEROP_THREADS=4,
-                             NUM_INTRAOP_THREADS=2)
-    
-    #TODO think about passing a dict if we use nested config..
-    #TODO test with non default values.. and check..
+                             num_interop_threads=4,
+                             num_intraop_threads=2)
 
     output_tensor = infero.infer(input_tensor, model_output_shape)
 

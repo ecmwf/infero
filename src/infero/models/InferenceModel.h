@@ -43,6 +43,8 @@ public:
 
     virtual ~InferenceModel();
 
+    virtual std::string name() const;
+
     /// opens the engine
     virtual void open();
 

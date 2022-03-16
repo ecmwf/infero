@@ -69,6 +69,11 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
 
 InferenceModelTFlite::~InferenceModelTFlite() {}
 
+std::string InferenceModelTFlite::name() const
+{
+    return std::string(this->type());
+}
+
 
 void InferenceModelTFlite::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
                                       std::string input_name, std::string output_name) {

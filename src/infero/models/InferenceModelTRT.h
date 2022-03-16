@@ -49,6 +49,8 @@ public:
 
     ~InferenceModelTRT() override;
 
+    virtual std::string name() const override;
+
     constexpr static const char* type() { return "tensorrt"; }
 
     static std::unique_ptr<InferenceModelTRT> from_onnx(std::string onnx_path, TRTOptions& options,

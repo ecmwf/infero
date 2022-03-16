@@ -89,6 +89,11 @@ InferenceModelTFC::~InferenceModelTFC() {
     TF_DeleteStatus(err_status);
 }
 
+std::string InferenceModelTFC::name() const
+{
+    return std::string(this->type());
+}
+
 
 void InferenceModelTFC::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
                                    std::string input_name, std::string output_name) {

@@ -29,6 +29,8 @@ public:
 
     ~InferenceModelTFlite() override;
 
+    virtual std::string name() const override;
+
     constexpr static const char* type() { return "tflite"; }
 
 protected:

@@ -39,6 +39,11 @@ InferenceModel::~InferenceModel() {
     }
 }
 
+std::string InferenceModel::name() const
+{
+    return std::string();
+}
+
 void InferenceModel::open()  {
 
     // soft check: multiple open() allowed
@@ -141,6 +146,8 @@ ModelParams_t InferenceModel::defaultParams_(){
 
     // by default, model path is assumed cwd()
     params_["path"] = eckit::LocalPathName::cwd();
+    params_["type"] = this->name();
+
     return params_;
 }
 
@@ -156,20 +163,33 @@ void InferenceModel::readConfig_(const eckit::Configuration& conf)
 
     ModelConfig_.reset(new eckit::LocalConfiguration());
 
-    // 1) Add Default params into Configuration (base + model-specific)
     ModelParams_t Params = defaultParams_();
     ModelParams_t implParams = implDefaultParams_();
 
+    // merge default and model-specific params
     for (const auto& p: implParams){
         Params[p.first] = p.second;
     }
 
+    // Set params into config
     for (const auto& p: Params){
         ModelConfig_->set(p.first, p.second);
     }
 
-    // 2) Set User specific Params
+    // Assert and set user-provided Params
     for (const auto& k: conf.keys()){
+        std::cout << "Checking key " << k << std::endl;
+
+        try {
+            ASSERT(Params.find(k) != Params.end());
+        } catch (eckit::Exception e) {
+            Log::error() << "[ERROR]: Parameter: " << k
+                         << " NOT recognised by model: " << this->name()
+                         << " !"
+                         << std::endl;
+            throw eckit::BadParameter(e.what(), Here());
+        }
+
         ModelConfig_->set(k, conf.getString(k));
     }
 }

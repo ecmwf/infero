@@ -86,6 +86,11 @@ InferenceModelONNX::~InferenceModelONNX() {
     }
 }
 
+std::string InferenceModelONNX::name() const
+{
+    return std::string(this->type());
+}
+
 void InferenceModelONNX::infer_impl(TensorFloat& tIn, TensorFloat& tOut,
                                     std::string input_name, std::string output_name) {
 

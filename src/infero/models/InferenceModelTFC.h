@@ -26,6 +26,8 @@ public:
 
     ~InferenceModelTFC() override;
 
+    virtual std::string name() const override;
+
     constexpr static const char* type() { return "tf_c"; }
 
 protected:

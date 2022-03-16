@@ -120,11 +120,11 @@ class Infero:
         # model type (see available infero backends)
         self.model_type = model_type
 
-        # inference configuration string
+        # Model configuration
         config = {"path": self.model_path, "type": self.model_type}
-        config.update(kwargs)
+        config.update({self.__clike_param_name(k): v for k, v in kwargs.items()})
 
-        self.config_str = "\n".join([str(f"{k}: {v}") for k,v in config.items()])
+        self.config_str = "\n".join([str(f"{k}: {v}") for k, v in config.items()])
 
         # C API handle
         self.infero_hdl = None  
@@ -155,7 +155,6 @@ class Infero:
             lib.infero_open_handle(self.infero_hdl[0])
 
             self._initialised = True
-
 
     def infer(self, input_data, output_shape):
         """
@@ -257,7 +256,6 @@ class Infero:
 
         return output_tensors
 
-
     def finalise(self):
         """
         Finalise the Infero API
@@ -275,5 +273,21 @@ class Infero:
     def print_config(self):
         lib.infero_print_config(self.infero_hdl[0])
 
+    @staticmethod
+    def __pythonise_param_name(ss):
+        return "".join(["_" + ss[cc].lower() if (ss[cc].isupper() and cc) else ss[cc] 
+                        for cc in range(len(ss))]).lower()
+
+    @staticmethod
+    def __clike_param_name(ss):
+        return "".join([ss[cc] if (ss[cc-1] != "_") else ss[cc].upper()
+                        for cc in range(len(ss))] ).replace("_", "")
+    
     def __del__(self):
         self.finalise()
+
+
+
+
+
+
