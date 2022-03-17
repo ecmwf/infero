@@ -19,13 +19,13 @@ $model_path \
 $eng_type \
 $input_path \
 | tail -n 1 \
-| awk 'BEGIN{sum=0}{sum+=$2}END{print sum}')
+| LC_NUMERIC="C" awk 'BEGIN{sum=0}{sum+=$2}END{print sum}')
 
 echo "prediction sum: $pred_sum"
 
 ref_sum=$(cat $ref \
 | sed 's/ /\n/g' \
-| awk 'BEGIN{sum=0}{sum+=$1}END{print sum}')
+| LC_NUMERIC="C" awk 'BEGIN{sum=0}{sum+=$1}END{print sum}')
 
 echo "reference sum: $ref_sum"
 echo "Predicted sum: $pred_sum"
