@@ -53,8 +53,8 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
 
     // Session options
     session_options = std::unique_ptr<Ort::SessionOptions>(new Ort::SessionOptions);
-    session_options->SetInterOpNumThreads(ModelConfig_->getInt("numInteropThreads", 1));
-    session_options->SetIntraOpNumThreads(ModelConfig_->getInt("numIntraopThreads", 1));
+    session_options->SetInterOpNumThreads(ModelConfig_->getInt("numInteropThreads"));
+    session_options->SetIntraOpNumThreads(ModelConfig_->getInt("numIntraopThreads"));
     session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     // if not null, use the model buffer

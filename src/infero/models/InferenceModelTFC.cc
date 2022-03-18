@@ -31,6 +31,15 @@ void NoOpDeallocator(void* data, size_t a, void* b) {
     // no input/output tensor deallocation here..
 }
 
+ModelParams_t InferenceModelTFC::implDefaultParams_(){
+    ModelParams_t params_;
+       
+    params_["numInteropThreads"] = "1";
+    params_["numIntraopThreads"] = "1";
+
+    return params_;
+}
+
 
 InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
     InferenceModel(conf) {
@@ -46,8 +55,14 @@ InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
     network_graph = TF_NewGraph();
     err_status = TF_NewStatus();
 
-    // options    
+    // options
     session_options = TF_NewSessionOptions();
+
+    uint8_t numInteropThreads_ = ModelConfig_->getInt("numInteropThreads");
+    uint8_t numIntraopThreads_ = ModelConfig_->getInt("numIntraopThreads");
+    uint8_t buf[]={0x10,numInteropThreads_,0x28,numIntraopThreads_};
+    TF_SetConfig(session_options, buf,sizeof(buf), err_status);    
+
     run_options = nullptr;
 
     // if not null, use the model buffer
