@@ -11,6 +11,7 @@ setup(
     license='Apache 2.0',
     description="ECMWF infero interface",
     packages=find_packages(exclude=["test_*", "*.tests", "*.tests.*", "tests.*", "tests"]),
+    package_data={"": ["*.h"]},
     install_requires=[
     ],
     tests_require=[
