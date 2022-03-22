@@ -8,12 +8,12 @@ datadir=@CMAKE_BINARY_DIR@/tests/data/cyclone
 exedir=@CMAKE_BINARY_DIR@/bin
 
 
-eng_type=onnx
+eng_type=@type_@
 
-model_path=$datadir/cyclone_model_200x200.onnx
+model_path=$datadir/@model_@
 input_path=$datadir/cyclone_input_200x200.npy
 ref_pred=$datadir/cyclone_output_200x200.npy
-output_path=$bindir/cyclone_output_200x200_onnx.npy
+output_path=$bindir/cyclone_output_200x200_@type_@.npy
 out_shape="1,200,200,1"
 
 
@@ -24,6 +24,7 @@ $exedir/infero.x \
 --engine=$eng_type \
 --output=$output_path \
 --out_shape=$out_shape \
---ref_path=$ref_pred
+--ref_path=$ref_pred \
+@tensor_names_@
 
 

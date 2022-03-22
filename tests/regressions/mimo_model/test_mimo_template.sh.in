@@ -7,15 +7,14 @@ bindir=@CMAKE_CURRENT_BINARY_DIR@
 datadir=@CMAKE_BINARY_DIR@/tests/data/mimo_model
 exedir=@CMAKE_BINARY_DIR@/bin
 
-eng_type=onnx
-model_path=$datadir/mimo_model.onnx
+eng_type=@type_@
+model_path=$datadir/@model_@
 
 # run inference
 $exedir/infero_runner_mimo \
   $model_path \
   $eng_type \
-  "input_1" \
-  "input_2" \
-  "dense_6" \
-
+  @input_name_1@ \
+  @input_name_2@ \
+  @output_name_1@
 

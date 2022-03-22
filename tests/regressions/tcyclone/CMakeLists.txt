@@ -1,65 +1,55 @@
+list(APPEND tests_types_ "")
+list(APPEND tests_models_ "")
 
 if (HAVE_ONNX)
-
-    # C++ runner
-    ecbuild_configure_file(tcyclone_onnx.sh.in
-        tcyclone_onnx.sh @ONLY )
-
-    ecbuild_add_test(
-        TYPE     SCRIPT
-        COMMAND  tcyclone_onnx.sh )
-
-    # F90 runner
-    if(HAVE_FCKIT)
-        ecbuild_configure_file(f90_tcyclone_onnx.sh.in
-            f90_tcyclone_onnx.sh @ONLY )
-
-        ecbuild_add_test(
-            TYPE     SCRIPT
-            COMMAND  f90_tcyclone_onnx.sh )
-    endif()
-
+    list(APPEND tests_types_ onnx)
+    list(APPEND tests_models_ cyclone_model_200x200.onnx)
 endif()
 
 if (HAVE_TF_C)
-
-    ecbuild_configure_file(tcyclone_tf_c.sh.in
-        tcyclone_tf_c.sh @ONLY )
-
-    ecbuild_add_test(
-        TYPE     SCRIPT
-        COMMAND  tcyclone_tf_c.sh )
-
+    list(APPEND tests_types_ tf_c)
+    list(APPEND tests_models_ cyclone_model_200x200_tf)
 endif()
-
 
 if (HAVE_TF_LITE)
-
-    # C++ runner
-    ecbuild_configure_file(tcyclone_tflite.sh.in
-        tcyclone_tflite.sh @ONLY )
-
-    ecbuild_add_test(
-        TYPE     SCRIPT
-        COMMAND  tcyclone_tflite.sh )
-
-    # C-runner
-    ecbuild_configure_file(tcyclone_tflite_c.sh.in
-        tcyclone_tflite_c.sh @ONLY )
-
-    ecbuild_add_test(
-        TYPE     SCRIPT
-        COMMAND  tcyclone_tflite_c.sh )
+    list(APPEND tests_types_ tflite)
+    list(APPEND tests_models_ cyclone_model_200x200.tflite)
 endif()
-
 
 if (HAVE_TENSORRT)
+    list(APPEND tests_types_ tensorrt)
+    list(APPEND tests_models_ cyclone_model_200x200.trt)
+endif()
 
-    # C++ runner
-    ecbuild_configure_file(tcyclone_trt.sh.in
-        tcyclone_trt.sh @ONLY )
+message("MIMO test models: ${tests_models_}")
+
+list( LENGTH tests_types_ _count )
+math( EXPR _count "${_count}-1" )
+
+foreach( _i RANGE ${_count} )
+
+    list( GET tests_types_ ${_i} type_ )
+    list( GET tests_models_ ${_i} model_ )
+
+    # Different models use different tensor names
+    if (${type_} MATCHES "tf_c")
+        set(tensor_names_ "--input_layer=serving_default_input_1 --output_layer=StatefulPartitionedCall")
+    else()
+        set(tensor_names_ "")
+    endif()
+
+    ecbuild_configure_file(
+        test_tcyclone_template.sh.in
+        test_tcyclone_${type_}.sh @ONLY
+    )
 
     ecbuild_add_test(
         TYPE     SCRIPT
-        COMMAND  tcyclone_trt.sh )
-endif()
+        COMMAND  test_tcyclone_${type_}.sh
+    )
+
+endforeach()
+
+
+
+

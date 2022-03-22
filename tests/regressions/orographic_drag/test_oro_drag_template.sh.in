@@ -8,12 +8,12 @@ datadir=@CMAKE_BINARY_DIR@/tests/data/orographic_drag
 exedir=@CMAKE_BINARY_DIR@/bin
 
 
-eng_type=tensorrt
+eng_type=@type_@
 
-model_path=$datadir/model.trt
+model_path=$datadir/@model_@
 input_path=$datadir/m36966_input.npy
 ref_pred=$datadir/ref_pred.csv
-output_path=$bindir/prediction_trt.csv
+output_path=$bindir/prediction_@type_@.csv
 out_shape="8,126"
 
 
@@ -24,6 +24,8 @@ $exedir/infero.x \
 --engine=$eng_type \
 --output=$output_path \
 --out_shape=$out_shape \
---ref_path=$ref_pred
+--ref_path=$ref_pred \
+@tensor_names_@
+
 
 
