@@ -64,7 +64,7 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
 
     // Allocate tensor buffers.
     INFERO_CHECK(interpreter_->AllocateTensors() == kTfLiteOk);
-//    tflite::PrintInterpreterState(interpreter_.get());
+    tflite::PrintInterpreterState(interpreter_.get());
 }
 
 InferenceModelTFlite::~InferenceModelTFlite() {}
@@ -144,27 +144,37 @@ void InferenceModelTFlite::infer_mimo_impl(std::vector<eckit::linalg::TensorFloa
                                            std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
 {
 
+    TfLiteStatus status_;
+
     // input tensors
     size_t NInputs = input_names.size();
+    std::cout << "NInputs: " << NInputs << std::endl;
     for (size_t i=0; i<NInputs; i++){
 
-        std::cout << "Processing input: " << input_names[i] << std::endl;
-        std::cout << "--> got input with name: " << interpreter_->input_tensor(i)->name << std::endl;
+        ASSERT(input_names[i] == std::string(interpreter_->input_tensor(i)->name));
+        status_ = interpreter_->ResizeInputTensor(interpreter_->inputs()[i],
+                                                  utils::convert_shape<size_t, int>(tIn[i]->shape()) );
 
-        interpreter_->ResizeInputTensor(interpreter_->inputs()[i],
-                                        utils::convert_shape<size_t, int>(tIn[i]->shape()));
+        if(status_ != kTfLiteOk){
+            throw Exception("Input Tensor " + std::string(interpreter_->input_tensor(i)->name)
+                            + " failed to resize!");
+        }
+    }
 
-        // copy tensor data
-        float* input      = interpreter_->typed_input_tensor<float>(i);
+    // Do the actual Input tensor allocation
+    interpreter_->AllocateTensors();
+
+    // Copy input data in the model buffer
+    for (size_t i=0; i<NInputs; i++){
+        float* input = interpreter_->typed_tensor<float>(i);
+        ASSERT(input);
         ::memcpy(input, tIn[i]->data(), sizeof(float) * tIn[i]->size());
-
     }
 
     // Run inference
     INFERO_CHECK(interpreter_->Invoke() == kTfLiteOk);
-    interpreter_->AllocateTensors();
 
-
+    // copy output
     size_t NOutputs = output_names.size();
     eckit::Timing t_start(statistics_.timer());
     for (size_t i=0; i<NOutputs; i++){
@@ -188,6 +198,7 @@ void InferenceModelTFlite::infer_mimo_impl(std::vector<eckit::linalg::TensorFloa
             memcpy(tOut[i]->data(), output, tOut[i]->size() * sizeof(float));
         }
     }
+
     statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer()} - t_start;
 }
 
