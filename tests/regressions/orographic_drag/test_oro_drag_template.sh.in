@@ -25,7 +25,7 @@ $exedir/infero.x \
 --output=$output_path \
 --out_shape=$out_shape \
 --ref_path=$ref_pred \
-@tensor_names_@
+@layers_@
 
 
 
