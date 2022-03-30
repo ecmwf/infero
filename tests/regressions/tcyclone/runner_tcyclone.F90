@@ -13,10 +13,13 @@ use inferof
 use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 implicit none
 
+real(c_float), parameter :: tol = 1e-4;
+
 ! Command line arguments
 character(1024) :: model_path
 character(1024) :: model_type
 character(1024) :: input_path
+character(1024) :: ref_output_path
 character(1024) :: yaml_config
 
 ! model of infero model
@@ -48,6 +51,7 @@ integer, parameter :: read_unit = 99
 ! input and output tensors
 real(c_float), allocatable :: it2f(:,:,:,:)
 real(c_float), allocatable :: ot2f(:,:,:,:)
+real(c_float), allocatable :: ot2f_ref(:,:,:,:)
 
 ! tcyclone model input size [ 1, 200, 200, 17 ]
 input_dim_0 = 1
@@ -65,6 +69,7 @@ output_dim_3 = 1
 CALL get_command_argument(1, model_path)
 CALL get_command_argument(2, model_type)
 CALL get_command_argument(3, input_path)
+CALL get_command_argument(4, ref_output_path)
 
 ! 0) init infero
 call infero_check(infero_initialise())
@@ -73,6 +78,7 @@ call infero_check(infero_initialise())
 ! Allocate tensors
 allocate( it2f(input_dim_0,input_dim_1,input_dim_2,input_dim_3) )
 allocate( ot2f(output_dim_0,output_dim_1,output_dim_2,output_dim_3) )
+allocate( ot2f_ref(output_dim_0,output_dim_1,output_dim_2,output_dim_3) )
 
 ! Read 4D data from sequential CSV (CSV values are in Fortran order)
 input_sum = 0

@@ -11,20 +11,15 @@ exedir=@CMAKE_BINARY_DIR@/bin
 eng_type=@type_@
 
 model_path=$datadir/@model_@
-input_path=$datadir/cyclone_input_200x200.npy
-ref_pred=$datadir/cyclone_output_200x200.npy
-output_path=$bindir/cyclone_output_200x200_@type_@.npy
-out_shape="1,200,200,1"
-
+input_path=$datadir/cyclone_input_200x200.csv
+ref_pred=$datadir/cyclone_output_200x200.csv
+ref_output_path=$datadir/cyclone_output_200x200.csv
 
 # run inference
-$exedir/infero.x \
---model=$model_path \
---input=$input_path \
---engine=$eng_type \
---output=$output_path \
---out_shape=$out_shape \
---ref_path=$ref_pred \
-@tensor_names_@
+$exedir/@runner_exe@ \
+  $model_path \
+  $eng_type \
+  $input_path \
+  $ref_output_path
 
 

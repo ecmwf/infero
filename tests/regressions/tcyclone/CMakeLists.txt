@@ -1,3 +1,29 @@
+# ----------------- Runners ----------------
+ecbuild_add_executable( TARGET runner_tcyclone
+   SOURCES   runner_tcyclone.c
+   CONDITION HAVE_BUILD_TOOLS
+   INCLUDES  ${eckit_INCLUDE_DIRS}
+   LIBS      inferoapi
+   NOINSTALL
+)
+
+set_target_properties( runner_tcyclone
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+ecbuild_add_executable( TARGET runner_tcyclone_f90
+   SOURCES   runner_tcyclone.F90
+   CONDITION HAVE_BUILD_TOOLS
+   INCLUDES  ${eckit_INCLUDE_DIRS}
+   LIBS      inferof
+   NOINSTALL
+)
+
+set_target_properties( runner_tcyclone_f90
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+# ----------------- tests ------------------
 list(APPEND tests_types_ "")
 list(APPEND tests_models_ "")
 
@@ -38,14 +64,28 @@ foreach( _i RANGE ${_count} )
         set(tensor_names_ "")
     endif()
 
+    # C-runner
+    SET(runner_exe "runner_tcyclone")
     ecbuild_configure_file(
         test_tcyclone_template.sh.in
-        test_tcyclone_${type_}.sh @ONLY
+        test_tcyclone_${type_}_c.sh @ONLY
     )
 
     ecbuild_add_test(
         TYPE     SCRIPT
-        COMMAND  test_tcyclone_${type_}.sh
+        COMMAND  test_tcyclone_${type_}_c.sh
+    )
+
+    # F90-runner
+    SET(runner_exe "runner_tcyclone_f90")
+    ecbuild_configure_file(
+        test_tcyclone_template.sh.in
+        test_tcyclone_${type_}_f90.sh @ONLY
+    )
+
+    ecbuild_add_test(
+        TYPE     SCRIPT
+        COMMAND  test_tcyclone_${type_}_f90.sh
     )
 
 endforeach()

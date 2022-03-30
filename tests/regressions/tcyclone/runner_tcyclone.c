@@ -13,25 +13,45 @@
 #include <assert.h>
 #include "infero/api/infero.h"
 
+void read_csv(const char* file_path, float* values){
+    FILE *file = fopen(file_path, "r");
+    double tmpval;
+    int i;
+    if ( file )
+    {
+       i=0;
+       while ( fscanf(file, "%lf", &tmpval) == 1 )
+       {
+        *(values+i) = (float)tmpval;
+        i++;
+       }
+       fclose(file);
+    }
+    else
+    {
+       perror(file_path);
+    }
+}
+
 int main(int argc, char** argv){
+
+    const float tol = 1e-5;
 
     char* model_path = argv[1];
     char* model_type = argv[2];
     char* input_path = argv[3];
+    char* ref_output_path = argv[4];
     char yaml_str[1024];
 
     int input_size[4];
     size_t input_size_flatten;
-    double input_sum;
 
     int output_size[4];
     size_t output_size_flatten;
-    float output_sum;
 
     float* input_tensor;
     float* output_tensor;
-    double tmpval;
-    int i;
+    float* output_tensor_ref;
 
     infero_handle_t* infero_handle;
 
@@ -40,6 +60,7 @@ int main(int argc, char** argv){
     printf("model_path %s \n", model_path);
     printf("model_type %s \n", model_type);
     printf("input_path %s \n", input_path);
+    printf("ref_output_path %s \n", ref_output_path);
 
     sprintf(yaml_str, " path: %s\n type: %s", model_path, model_type);
     printf("yaml_str:\n%s\n", yaml_str);
@@ -59,23 +80,7 @@ int main(int argc, char** argv){
     input_tensor = (float*)malloc( sizeof (float) * input_size_flatten);
 
     // read input tensor..
-    FILE *file = fopen(input_path, "r");
-    input_sum = 0;
-    if ( file )
-    {
-       i=0;       
-       while ( fscanf(file, "%lf", &tmpval) == 1 )
-       {
-        input_tensor[i] = (float)tmpval;
-        input_sum += tmpval;
-        i++;
-       }
-       fclose(file);
-    }
-    else
-    {
-       perror(input_path);
-    }
+    read_csv(input_path, input_tensor);
 
     // tcyclone model output size [ 1, 200, 200, 1 ]
     output_size[0] = 1;
@@ -111,15 +116,21 @@ int main(int argc, char** argv){
     // 5) finalise
     infero_finalise(); 
 
+    // check output
+    output_tensor_ref = (float*)malloc( sizeof (float) * output_size_flatten);
+    read_csv(ref_output_path, output_tensor_ref);
 
-    // print sum of tensor output
-    output_sum = 0;
-    for (size_t i=0; i<output_size_flatten; i++){
-        output_sum += output_tensor[i];
+    for(int i=0; i<output_size_flatten; i++){
+        if ( *(output_tensor+i) - *(output_tensor_ref+i) > tol){
+            printf("ERROR: output element %d (%f) is "
+                   "different from expected value %f\n", i, *(output_tensor+i), *(output_tensor_ref+i) );
+            exit(1);
+        }
     }
 
-    printf("input_sum %lf\n", input_sum);
-    printf("output_sum %.8f\n", (double)output_sum);
+    free(input_tensor);
+    free(output_tensor);
+    free(output_tensor_ref);
 
     return 0;
 }
