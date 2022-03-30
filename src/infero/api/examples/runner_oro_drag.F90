@@ -64,7 +64,9 @@ end do
 ! YAML config string
 yaml_config = "---"//NEW_LINE('A') &
   //"  path: "//TRIM(model_path)//NEW_LINE('A') &
-  //"  type: "//TRIM(model_type)//c_null_char
+  //"  type: "//TRIM(model_type)//NEW_LINE('A') &
+  //"  numInteropThreads: 1"//NEW_LINE('A') &
+  //"  numIntraopThreads: 2"//c_null_char
 
 ! get a infero model
 call infero_check(model%initialise_from_yaml_string(yaml_config))
