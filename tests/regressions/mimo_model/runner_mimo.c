@@ -60,12 +60,26 @@ void delete_data(size_t n_tensors,
 
 int main(int argc, char** argv){
 
+    const float tol = 1e-6;
+
     char* model_path = argv[1];
     char* model_type = argv[2];
     char* name_input1 = argv[3];
     char* name_input2 = argv[4];
     char* name_output = argv[5];
+
     char yaml_str[1024];
+
+    float expectedOutput[10] = {253.61697,
+                                764.88446,
+                                1276.1512,
+                                1787.4171,
+                                2298.686,
+                                2809.9534,
+                                3321.216,
+                                3832.4849,
+                                4343.7505,
+                                4855.0225};
 
     printf("model_path %s \n", model_path);
     printf("model_type %s \n", model_type);
@@ -78,6 +92,8 @@ int main(int argc, char** argv){
 
     // ------------ inputs --------------
     size_t n_inputs = 2;
+    size_t batchSize = 10;
+
     float** inputs = malloc(sizeof(float*) * n_inputs);
     char** input_names = malloc(sizeof(const char*) * n_inputs);
     int** input_shapes = malloc(sizeof(int*) * n_inputs);
@@ -85,24 +101,24 @@ int main(int argc, char** argv){
 
     // input 0
     *(input_names) = name_input1;
-    *(inputs) = (float*)malloc( sizeof (float) * 32);
-    for (size_t i=0; i<32; i++){
-        *(*(inputs)+i) = 1.;
+    *(inputs) = (float*)malloc( sizeof (float) * batchSize * 32);
+    for (size_t i=0; i<batchSize*32; i++){
+        *(*(inputs)+i) = ((float)i)/(batchSize*32);
     }
     *iranks = 2;
     *(input_shapes) = (int*)malloc( sizeof (int) * 2);
-    *(*(input_shapes)) = 1;
+    *(*(input_shapes)) = batchSize;
     *(*(input_shapes)+1) = 32;
 
     // input 1
     *(input_names+1) = name_input2;
-    *(inputs+1) = (float*)malloc( sizeof (float) * 128);
-    for (size_t i=0; i<128; i++){
-        *(*(inputs+1)+i) = 1.;
+    *(inputs+1) = (float*)malloc( sizeof (float) * batchSize * 128);
+    for (size_t i=0; i<batchSize * 128; i++){
+        *(*(inputs+1)+i) = ((float)i)/(batchSize * 128);
     }
     *(iranks+1) = 2;
     *(input_shapes+1) = (int*)malloc( sizeof (int) * 2);
-    *(*(input_shapes+1)) = 1;
+    *(*(input_shapes+1)) = batchSize;
     *(*(input_shapes+1)+1) = 128;
 
     print_data(n_inputs,
@@ -120,11 +136,11 @@ int main(int argc, char** argv){
     int* oranks = malloc(sizeof(int) * n_outputs);
 
     *(output_names) = name_output;
-    *(outputs) = (float*)malloc( sizeof (float) * 1);
-    *(*(outputs)) = 1;
+    *(outputs) = (float*)malloc( sizeof (float) * batchSize * 1);
+
     *oranks = 2;
     *(output_shapes) = (int*)malloc( sizeof (int) * 2);
-    *(*(output_shapes)) = 1;
+    *(*(output_shapes)) = batchSize;
     *(*(output_shapes)+1) = 1;
 
     print_data(n_outputs,
@@ -146,17 +162,20 @@ int main(int argc, char** argv){
     infero_open_handle(infero_handle);
 
     // 3) run inference
-    infero_inference_float_mimo_ctensor(infero_handle,
-                                        (int)n_inputs,
-                                        (const char**)input_names,
-                                        (const int*)iranks,
-                                        (const int**)input_shapes,
-                                        (const float**)inputs,
-                                        (int)n_outputs,
-                                        (const char**)output_names,
-                                        (const int*)oranks,
-                                        (const int**)output_shapes,
-                                        outputs);
+    for(int i=0; i<20; i++){
+
+        infero_inference_float_mimo_ctensor(infero_handle,
+                                            (int)n_inputs,
+                                            (const char**)input_names,
+                                            (const int*)iranks,
+                                            (const int**)input_shapes,
+                                            (const float**)inputs,
+                                            (int)n_outputs,
+                                            (const char**)output_names,
+                                            (const int*)oranks,
+                                            (const int**)output_shapes,
+                                            outputs);
+    }
 
     // print output
     print_data(n_outputs,
@@ -167,6 +186,14 @@ int main(int argc, char** argv){
 
     // take the output value
     float res = *(*outputs);
+
+    for(int i=0; i<batchSize; i++){
+        if (*(*(outputs)+i)-(*(expectedOutput+i)) > tol){
+            printf("ERROR: output element %d (%f) is "
+                   "different from expected value %f\n", i, *(*(outputs)+i), (*(expectedOutput+i)) );
+            exit(1);
+        }
+    }
 
     // 4) close and delete the handle
     infero_close_handle( infero_handle );
@@ -191,11 +218,5 @@ int main(int argc, char** argv){
 
     printf("all done. Res: %f\n", res);
 
-    // check against expected value 5112.6704
-    if (fabs((double)res-5112.6704) < 0.1){
-        return 0;
-    } else {
-        return 1;
-    };
 }
 

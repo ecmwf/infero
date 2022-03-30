@@ -74,4 +74,4 @@ install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}
 endif()
 
 
-add_subdirectory(examples)
+#add_subdirectory(examples)

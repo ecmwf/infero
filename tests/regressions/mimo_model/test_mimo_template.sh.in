@@ -11,7 +11,7 @@ eng_type=@type_@
 model_path=$datadir/@model_@
 
 # run inference
-$exedir/infero_runner_mimo \
+$exedir/@runner_exe@ \
   $model_path \
   $eng_type \
   @layers_@

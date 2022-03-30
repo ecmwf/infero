@@ -13,10 +13,13 @@ use inferof
 use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 implicit none
 
+real(c_float), parameter :: tol = 1e-4;
+
 ! Command line arguments
 character(1024) :: model_path
 character(1024) :: model_type
 character(1024) :: input_path
+character(1024) :: ref_output_path
 character(1024) :: yaml_config
 
 ! handle of infero model
@@ -34,6 +37,7 @@ integer, parameter :: read_unit = 99
 ! input and output tensors
 real(c_float), allocatable :: it2f(:,:)
 real(c_float), allocatable :: ot2f(:,:)
+real(c_float), allocatable :: ot2f_ref(:,:)
 
 ! orographic drag model input size [ 8 , 191 ]
 input_imax = 8
@@ -47,14 +51,16 @@ output_jmax = 126
 CALL get_command_argument(1, model_path)
 CALL get_command_argument(2, model_type)
 CALL get_command_argument(3, input_path)
+CALL get_command_argument(4, ref_output_path)
 
 call infero_check(infero_initialise())
 
 ! Allocate tensors
 allocate( it2f(input_imax,input_jmax) )
 allocate( ot2f(output_imax,output_jmax) )
+allocate( ot2f_ref(output_imax,output_jmax) )
 
-! Read data from CSV
+! Read input data from CSV
 open (action='read', file=TRIM(input_path), iostat=ios, newunit=fu)
 if (ios /= 0) stop
 do i = 1,input_imax
@@ -64,9 +70,7 @@ end do
 ! YAML config string
 yaml_config = "---"//NEW_LINE('A') &
   //"  path: "//TRIM(model_path)//NEW_LINE('A') &
-  //"  type: "//TRIM(model_type)//NEW_LINE('A') &
-  //"  numInteropThreads: 1"//NEW_LINE('A') &
-  //"  numIntraopThreads: 2"//c_null_char
+  //"  type: "//TRIM(model_type)//c_null_char
 
 ! get a infero model
 call infero_check(model%initialise_from_yaml_string(yaml_config))
@@ -80,12 +84,24 @@ call infero_check(model%free())
 ! finalise infero library
 call infero_check(infero_finalise())
 
-! print output
-do j = 1, output_jmax
- do i = 1, output_imax
-   print*, "[",i,",",j,"]", ot2f(i, j)
- end do
+! Read output reference data from CSV
+open (action='read', file=TRIM(ref_output_path), iostat=ios, newunit=fu)
+if (ios /= 0) stop
+do i = 1,output_imax
+  read(fu, *) (ot2f_ref(i, j), j = 1, output_jmax)
 end do
+
+! check all elements of the output
+do j = 1,output_jmax
+    do i = 1,output_imax
+      if (abs(ot2f(i,j) - ot2f_ref(i,j)) .gt. tol) then
+        write(*,*) "ERROR: output element ",i,j, " (", ot2f(i,j) ,") ", &
+        "is different from expected value ", ot2f_ref(i,j)
+        stop 1
+      end if
+    end do
+end do
+
 
 end program
 

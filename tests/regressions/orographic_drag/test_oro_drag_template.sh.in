@@ -7,25 +7,16 @@ bindir=@CMAKE_CURRENT_BINARY_DIR@
 datadir=@CMAKE_BINARY_DIR@/tests/data/orographic_drag
 exedir=@CMAKE_BINARY_DIR@/bin
 
-
 eng_type=@type_@
-
 model_path=$datadir/@model_@
-input_path=$datadir/m36966_input.npy
-ref_pred=$datadir/ref_pred.csv
-output_path=$bindir/prediction_@type_@.csv
-out_shape="8,126"
-
+input_path=$datadir/m36966_input.csv
+ref_output_path=$datadir/m36966_prediction.csv
 
 # run inference
-$exedir/infero.x \
---model=$model_path \
---input=$input_path \
---engine=$eng_type \
---output=$output_path \
---out_shape=$out_shape \
---ref_path=$ref_pred \
-@layers_@
-
+$exedir/@runner_exe@ \
+  $model_path \
+  $eng_type \
+  $input_path \
+  $ref_output_path
 
 
