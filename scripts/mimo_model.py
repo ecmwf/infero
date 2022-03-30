@@ -16,7 +16,7 @@ from keras.layers import concatenate
 import keras.initializers
 import tensorflow as tf
 
-import keras2onnx
+# import keras2onnx
 
 
 if __name__ == "__main__":
@@ -29,13 +29,13 @@ if __name__ == "__main__":
     }
 
     # input branch A
-    inputA = Input(shape=(32,))
+    inputA = Input(shape=(32,), dtype=tf.float32)
     x = Dense(8, activation="relu", **init_dict)(inputA)
     x = Dense(4, activation="relu", **init_dict)(x)
     x = Model(inputs=inputA, outputs=x)
 
     # input branch B
-    inputB = Input(shape=(128,))
+    inputB = Input(shape=(128,), dtype=tf.float32)
     y = Dense(64, activation="relu", **init_dict)(inputB)
     y = Dense(32, activation="relu", **init_dict)(y)
     y = Dense(4, activation="relu", **init_dict)(y)
@@ -51,16 +51,20 @@ if __name__ == "__main__":
     model.summary()
     
     # prediction on np.ones inputs
-    result = model.predict([np.ones((1, 32), dtype=float), np.ones((1, 128), dtype=float)])
+    n_batch = 10
+    result = model.predict([
+        np.arange(n_batch * 32, dtype=float).reshape(n_batch, 32)/(n_batch * 32),
+        np.arange(n_batch * 128, dtype=float).reshape(n_batch, 128)/(n_batch * 128)
+    ])
     
     # expected 5112.6704.
     print(result)
 
     # Write in onnx format
-    onnx_model = keras2onnx.convert_keras(model, "test_onnx")
-    file = open("mimo_model.onnx", "wb")
-    file.write(onnx_model.SerializeToString())
-    file.close()
+    # onnx_model = keras2onnx.convert_keras(model, "test_onnx")
+    # file = open("mimo_model.onnx", "wb")
+    # file.write(onnx_model.SerializeToString())
+    # file.close()
     
     # write in tf format
     tf.keras.models.save_model(model, "mimo_model_tf", save_format="tf")
