@@ -32,7 +32,7 @@ public:
 
 protected:
     void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
-                    std::string input_name = "serving_default_input_1", std::string output_name = "StatefulPartitionedCall") override;
+                    std::string input_name = "", std::string output_name = "") override;
 
     void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
                          std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names) override;

@@ -15,7 +15,7 @@ use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 
 implicit none
 
-real(c_float), parameter :: tol = 1e-6;
+real(c_float), parameter :: tol = 1e-3;
 
 ! Command line arguments
 character(1024) :: model_path

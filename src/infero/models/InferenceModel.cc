@@ -74,7 +74,18 @@ void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, 
 
     // do the actual inference..
     eckit::Timing start_infer(statistics_.timer());
-    infer_impl(input_tensor, tOut, input_name, output_name);
+
+    if ( !input_name.empty() || !output_name.empty()){
+
+        // input/output names provided
+        infer_impl(input_tensor, tOut, input_name, output_name);
+
+    } else {
+
+        // use defaults
+        infer_impl(input_tensor, tOut);
+    }
+
     statistics_.inferenceTiming_ += eckit::Timing{statistics_.timer()} - start_infer;
 
 

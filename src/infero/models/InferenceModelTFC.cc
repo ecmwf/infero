@@ -113,18 +113,29 @@ std::string InferenceModelTFC::name() const
 void InferenceModelTFC::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
                                    std::string input_name, std::string output_name) {
 
-    // Input tensor (NB: implicitely assumed that we only have one input!)
+    // Input tensor
     int NInputs = 1;
 
     // array of outputs of input-operations
     TF_Output* Input = static_cast<TF_Output*>(malloc(sizeof(TF_Output) * NInputs));
 
-    // allocate and output of input-operation
-    TF_Output t0 = {TF_GraphOperationByName(network_graph, input_name.c_str()), 0};
-    INFERO_CHECK(t0.oper)
+    // Try to figure out input layer
+    std::string inputLayerName;
+    if (input_name.empty()){
+        size_t pos = 0;
+        TF_Operation* input_oper;
+        input_oper = TF_GraphNextOperation(network_graph, &pos);
+        std::vector<std::string> inputLayVecStr = eckit::StringTools::split("/", TF_OperationName(input_oper));
+        inputLayerName = "serving_default_"+inputLayVecStr[0]+"_input";
+    } else {
+        inputLayerName = input_name;
+    }
+    Log::info() << "Input layer: " << inputLayerName << std::endl;
 
-    Input[0] = t0;
-
+    // input tensor buffer
+    TF_Output t1 = {TF_GraphOperationByName(network_graph, inputLayerName.c_str()), 0};
+    INFERO_CHECK(t1.oper)
+    Input[0] = t1;
 
     // Output tensor (NB: implicitely assumed that we only have one output!)
     int NOutputs = 1;
@@ -132,8 +143,17 @@ void InferenceModelTFC::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
     // array of outputs of output-operations
     TF_Output* Output = static_cast<TF_Output*>(malloc(sizeof(TF_Output) * NOutputs));
 
+    // Try to figure out output layer
+    std::string outputLayerName;
+    if (output_name.empty()){
+        outputLayerName = "StatefulPartitionedCall";
+    } else {
+        outputLayerName = outputLayerName;
+    }
+
     // allocate and output of output-operation
-    TF_Output t2 = {TF_GraphOperationByName(network_graph, output_name.c_str()), 0};
+    Log::info() << "Output layer: " << outputLayerName << std::endl;
+    TF_Output t2 = {TF_GraphOperationByName(network_graph, outputLayerName.c_str()), 0};
     INFERO_CHECK(t2.oper)
 
     Output[0] = t2;

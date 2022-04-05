@@ -36,7 +36,7 @@ void read_csv(const char* file_path, float* values){
 
 int main(int argc, char** argv){
 
-    const float tol = 1e-4;
+    const float tol = 1e-3;
 
     char* model_path = argv[1];
     char* model_type = argv[2];
