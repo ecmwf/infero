@@ -105,6 +105,31 @@ ecbuild_info("FCKIT_LIBRARIES ${FCKIT_LIBRARIES}")
 ecbuild_info("FCKIT_INCLUDE_DIRS ${FCKIT_INCLUDE_DIRS}")
 ecbuild_info("---> fckit_HAVE_FINAL ${HAVE_FINAL}")
 
+
+### infero version header
+if (EXISTS "${CMAKE_SOURCE_DIR}/VERSION")
+    file(READ "${CMAKE_SOURCE_DIR}/VERSION" INFERO_VERSION_STR)
+    string(STRIP "${INFERO_VERSION_STR}" INFERO_VERSION_STR)
+    string(REPLACE "." ";" INFERO_VERSION_FULL "${INFERO_VERSION_STR}")
+
+    list( GET INFERO_VERSION_FULL 0 INFERO_VERSION_MAJOR )
+    list( GET INFERO_VERSION_FULL 1 INFERO_VERSION_MINOR )
+    list( GET INFERO_VERSION_FULL 2 INFERO_VERSION_PATCH )
+
+    ecbuild_configure_file(
+        "${CMAKE_SOURCE_DIR}/src/infero_version.h.in"
+        "${CMAKE_SOURCE_DIR}/src/infero_version.h" @ONLY
+    )
+
+    install(FILES "${CMAKE_SOURCE_DIR}/src/infero_version.h"
+        TYPE INCLUDE
+    )
+
+else()
+    message(FATAL_ERROR "Version file ${CMAKE_SOURCE_DIR}/VERSION NOT FOUND!")
+endif()
+
+
 include(cmake/compiler_warnings.cmake) # optionally handle compiler specific warnings
 
 add_subdirectory( contrib )

@@ -1,0 +1,9 @@
+#ifndef infero_version_h
+#define infero_version_h
+
+#define infero_VERSION_MAJOR  @infero_VERSION_MAJOR@
+#define infero_VERSION_MINOR  @infero_VERSION_MINOR@
+#define infero_VERSION_PATCH  @infero_VERSION_PATCH@
+
+#endif // infero_version_h
+
