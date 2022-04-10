@@ -58,7 +58,7 @@ void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, 
 {
 
     // Input Tensor re-ordering as needed
-    eckit::Timing t_start(statistics_.timer());
+    eckit::Timing t_start(statistics_.timer_);
     eckit::linalg::TensorFloat input_tensor;
 
     if (tIn.isRight()) {
@@ -70,10 +70,10 @@ void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, 
         // TODO: this still makes a copy (for now)
         input_tensor = tIn;
     }
-    statistics_.iTensorLayoutTiming_ += eckit::Timing{statistics_.timer()} - t_start;
+    statistics_.iTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
 
     // do the actual inference..
-    eckit::Timing start_infer(statistics_.timer());
+    eckit::Timing start_infer(statistics_.timer_);
 
     if ( !input_name.empty() || !output_name.empty()){
 
@@ -86,7 +86,7 @@ void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, 
         infer_impl(input_tensor, tOut);
     }
 
-    statistics_.inferenceTiming_ += eckit::Timing{statistics_.timer()} - start_infer;
+    statistics_.inferenceTiming_ += eckit::Timing{statistics_.timer_} - start_infer;
 
 
 }
@@ -106,7 +106,7 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
     // For each tensor that needs re-ordering, do it into a copy
     std::vector<std::unique_ptr<eckit::linalg::TensorFloat>> temporaryCopies;
 
-    eckit::Timing t_start(statistics_.timer());
+    eckit::Timing t_start(statistics_.timer_);
     for (int i = 0; i < inputTensors.size(); ++i) {
         if (inputTensors[i]->isRight()) {
 
@@ -117,13 +117,13 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
             inputTensors[i] = temporaryCopies.back().get();
         }
     }
-    statistics_.iTensorLayoutTiming_ += eckit::Timing{statistics_.timer()} - t_start;
+    statistics_.iTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
 
     // do the actual inference..
-    eckit::Timing start_infer(statistics_.timer());
+    eckit::Timing start_infer(statistics_.timer_);
     Log::info() << "doing inference.." << std::endl;
     infer_mimo_impl(inputTensors, input_names, tOut, output_names);
-    statistics_.inferenceTiming_ += eckit::Timing{statistics_.timer()} - start_infer;
+    statistics_.inferenceTiming_ += eckit::Timing{statistics_.timer_} - start_infer;
 
 }
 
