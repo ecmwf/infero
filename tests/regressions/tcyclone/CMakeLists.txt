@@ -66,6 +66,8 @@ foreach( _i RANGE ${_count} )
 
     # C-runner
     SET(runner_exe "runner_tcyclone")
+    SET(input_data_filename "cyclone_input_200x200_ctensor.csv")
+    SET(ref_data_filename "cyclone_output_200x200_ctensor.csv")
     ecbuild_configure_file(
         test_tcyclone_template.sh.in
         test_tcyclone_${type_}_c.sh @ONLY
@@ -78,6 +80,8 @@ foreach( _i RANGE ${_count} )
 
     # F90-runner
     SET(runner_exe "runner_tcyclone_f90")
+    SET(input_data_filename "cyclone_input_200x200_ftensor.csv")
+    SET(ref_data_filename "cyclone_output_200x200_ftensor.csv")
     ecbuild_configure_file(
         test_tcyclone_template.sh.in
         test_tcyclone_${type_}_f90.sh @ONLY

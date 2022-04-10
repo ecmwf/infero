@@ -61,6 +61,7 @@ void delete_data(size_t n_tensors,
 int main(int argc, char** argv){
 
     const float tol = 1e-3;
+    const int nInferenceReps = 10;
 
     char* model_path = argv[1];
     char* model_type = argv[2];
@@ -162,7 +163,7 @@ int main(int argc, char** argv){
     infero_open_handle(infero_handle);
 
     // 3) run inference
-    for(int i=0; i<20; i++){
+    for(int i=0; i<nInferenceReps; i++){
 
         infero_inference_float_mimo_ctensor(infero_handle,
                                             (int)n_inputs,

@@ -45,9 +45,19 @@ protected:
 
 private:
 
-    void check_status(const TF_Status* s, std::string name);
-    TF_Output getOperation(std::string name);
+    void check_status(const TF_Status* s, std::string name);    
     TF_Tensor *TF_TensorFromData(const std::vector<size_t> &dims, float *data);
+
+    /// Get an oeration tensor buffer from layer name
+    TF_Output GetOperationBuffer_(std::string name, int op_id = 0);
+
+    /// Get an oeration tensor buffer from layer name
+    /// + contains specialised logic for input layer
+    TF_Output GetInputOperationBuffer_(std::string name);
+
+    /// Get an oeration tensor buffer from layer name
+    /// + contains specialised logic for output layer
+    TF_Output GetOutputOperationBuffer_(std::string name);
 
 private:
 
@@ -56,7 +66,6 @@ private:
     TF_Status* err_status;
     TF_SessionOptions* session_options;
     TF_Buffer* run_options;
-
 };
 
 }  // namespace infero

@@ -13,7 +13,8 @@ use inferof
 use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 implicit none
 
-real(c_float), parameter :: tol = 1e-4;
+real(c_float), parameter :: tol = 1e-3;
+integer, parameter :: n_inference_reps = 10
 
 ! Command line arguments
 character(1024) :: model_path
@@ -105,8 +106,10 @@ yaml_config = "---"//NEW_LINE('A') &
 ! get a infero model
   call infero_check(model%initialise_from_yaml_string(yaml_config))
 
-! un inference
+! run inference
+do i=1,n_inference_reps
   call infero_check(model%infer(it2f, ot2f ))
+end do
 
 ! free the model
   call infero_check(model%free())
@@ -114,9 +117,34 @@ yaml_config = "---"//NEW_LINE('A') &
 ! finalise infero library
   call infero_check(infero_finalise())
 
-! print out sum
-print* , "input_sum: ", input_sum
-print* , "output_sum: ", output_sum
+! check element by element
+open (action='read', file=TRIM(ref_output_path), iostat=ios, newunit=fu)
+if (ios /= 0) stop
+do ch = 1,output_dim_3
+    do j = 1,output_dim_2
+        do i = 1,output_dim_1
+            do ss = 1,output_dim_0
+              read(fu, *) tmp_input
+              ot2f_ref(ss, i, j, ch) = tmp_input
+            end do
+        end do
+    end do
+end do
+close(fu)
+
+do ch = 1,output_dim_3
+    do j = 1,output_dim_2
+        do i = 1,output_dim_1
+            do ss = 1,output_dim_0
+                if (abs(ot2f(ss, i, j, ch) - ot2f_ref(ss, i, j, ch)) .gt. tol) then
+                    write(*,*) "ERROR: output element ", ss, i, j, ch, " (", ot2f(ss, i, j, ch) ,") ", &
+                    "is different from expected value ", ot2f_ref(ss, i, j, ch)
+                    stop 1
+                end if
+            end do
+        end do
+    end do
+end do
 
 deallocate(it2f)
 deallocate(ot2f)

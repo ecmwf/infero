@@ -120,21 +120,7 @@ void InferenceModelTFC::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
     TF_Output* Input = static_cast<TF_Output*>(malloc(sizeof(TF_Output) * NInputs));
 
     // Try to figure out input layer
-    std::string inputLayerName;
-    if (input_name.empty()){
-        size_t pos = 0;
-        TF_Operation* input_oper;
-        input_oper = TF_GraphNextOperation(network_graph, &pos);
-        std::vector<std::string> inputLayVecStr = eckit::StringTools::split("/", TF_OperationName(input_oper));
-        inputLayerName = "serving_default_"+inputLayVecStr[0]+"_input";
-    } else {
-        inputLayerName = input_name;
-    }
-    Log::info() << "Input layer: " << inputLayerName << std::endl;
-
-    // input tensor buffer
-    TF_Output t1 = {TF_GraphOperationByName(network_graph, inputLayerName.c_str()), 0};
-    INFERO_CHECK(t1.oper)
+    TF_Output t1 = GetInputOperationBuffer_(input_name);
     Input[0] = t1;
 
     // Output tensor (NB: implicitely assumed that we only have one output!)
@@ -144,18 +130,7 @@ void InferenceModelTFC::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
     TF_Output* Output = static_cast<TF_Output*>(malloc(sizeof(TF_Output) * NOutputs));
 
     // Try to figure out output layer
-    std::string outputLayerName;
-    if (output_name.empty()){
-        outputLayerName = "StatefulPartitionedCall";
-    } else {
-        outputLayerName = outputLayerName;
-    }
-
-    // allocate and output of output-operation
-    Log::info() << "Output layer: " << outputLayerName << std::endl;
-    TF_Output t2 = {TF_GraphOperationByName(network_graph, outputLayerName.c_str()), 0};
-    INFERO_CHECK(t2.oper)
-
+    TF_Output t2 = GetOutputOperationBuffer_(output_name);
     Output[0] = t2;
 
     // Allocate array of ptrs for input & output tensors
@@ -243,7 +218,7 @@ void InferenceModelTFC::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>
     // array of outputs for input-operations
     TF_Output* Input = static_cast<TF_Output*>(malloc(sizeof(TF_Output) * NInputs));
     for (size_t i=0; i<NInputs; i++){
-        Input[i] = getOperation(input_names[i]);
+        Input[i] = GetInputOperationBuffer_(input_names[i]);
     }
 
     // N Output tensors
@@ -254,7 +229,7 @@ void InferenceModelTFC::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>
 
     std::cout << "NOutputs: " << NOutputs << std::endl;
     for (size_t i=0; i<NOutputs; i++){
-        Output[i] = getOperation(output_names[i]);
+        Output[i] = GetOutputOperationBuffer_(output_names[i]);
     }
 
     // -----------------------------------------------
@@ -349,24 +324,15 @@ void InferenceModelTFC::check_status(const TF_Status* s, std::string name){
     }
 }
 
-TF_Output InferenceModelTFC::getOperation(std::string name)
+TF_Output InferenceModelTFC::GetOperationBuffer_(std::string name, int op_id)
 {
 
-    std::vector<std::string> name_split = StringTools::split(":", name);
-    std::string name_text = name_split[0];
-
-    // by default op id = 0, otherwise try "<name>:id"
-    int op_id = 0;
-    if(name_split.size() > 1){
-        op_id = std::stoi(name_split[1]);
-    }
-
     // op output
-    TF_Output t0{TF_GraphOperationByName(network_graph, name_text.c_str()), op_id};
+    TF_Output t0{TF_GraphOperationByName(network_graph, name.c_str()), op_id};
 
     int t0_ndims = TF_GraphGetTensorNumDims(network_graph, t0, err_status);
     check_status(err_status, "TF_GraphGetTensorNumDims");
-    Log::info() << "Layer " << name_text
+    Log::info() << "Layer " << name
                 << " [id=" << op_id << "]"
                 << " has " << t0_ndims
                 << " dims." << std::endl;
@@ -389,6 +355,70 @@ TF_Output InferenceModelTFC::getOperation(std::string name)
     return t0;
 
 }
+
+TF_Output InferenceModelTFC::GetInputOperationBuffer_(std::string name)
+{
+
+    /// TODO: this logic is overcomplicated, need to find a better way
+    /// of getting input layer when no layer name is passed!
+    std::string inputLayerName;
+
+    if (name.empty()){
+
+        size_t pos = 0;
+        TF_Operation* input_oper;
+        input_oper = TF_GraphNextOperation(network_graph, &pos);
+        std::vector<std::string> inputLayVecStr = eckit::StringTools::split("/", TF_OperationName(input_oper));
+        inputLayerName = "serving_default_"+inputLayVecStr[0]+"_input";
+        TF_Output t1 = {TF_GraphOperationByName(network_graph, inputLayerName.c_str()), 0};
+
+        if(!t1.oper){
+            Log::info() << "Model input layer name : " << inputLayerName << " not valid, trying again.." << std::endl;
+            inputLayerName = "serving_default_input_1";
+            t1 = {TF_GraphOperationByName(network_graph, inputLayerName.c_str()), 0};
+            if(!t1.oper){
+                Log::error() << "Model input layer name : " << inputLayerName << " also not valid => aborting!" << std::endl;
+                throw eckit::BadValue("Model input layer name could not be detected, "
+                                      "Try assigning it through MIMO interface", Here());
+            }
+        }
+
+    } else {
+        inputLayerName = name;
+    }
+    Log::info() << "Input layer: " << inputLayerName << std::endl;
+
+    // input tensor buffer
+    TF_Output t1 = {TF_GraphOperationByName(network_graph, inputLayerName.c_str()), 0};
+    INFERO_CHECK(t1.oper)
+
+    return t1;
+}
+
+TF_Output InferenceModelTFC::GetOutputOperationBuffer_(std::string name)
+{
+    // output layer name (use default if empty)
+    std::string outputLayerName;
+    if (name.empty()){
+        outputLayerName = "StatefulPartitionedCall";
+    } else {
+        outputLayerName = name;
+    }
+
+    // try to extract op ID from name
+    std::vector<std::string> name_split = StringTools::split(":", outputLayerName);
+    std::string name_text = name_split[0];
+
+    // by default op id = 0, otherwise try "<name>:id"
+    int op_id = 0;
+    if(name_split.size() > 1){
+        op_id = std::stoi(name_split[1]);
+    }
+
+    return GetOperationBuffer_(name_text, op_id);
+
+}
+
 
 TF_Tensor* InferenceModelTFC::TF_TensorFromData(const std::vector<size_t>& dims, float* data){
 

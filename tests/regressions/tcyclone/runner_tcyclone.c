@@ -35,7 +35,8 @@ void read_csv(const char* file_path, float* values){
 
 int main(int argc, char** argv){
 
-    const float tol = 1e-5;
+    const float tol = 1e-3;
+    const int nInferenceReps = 10;
 
     char* model_path = argv[1];
     char* model_type = argv[2];
@@ -105,9 +106,11 @@ int main(int argc, char** argv){
     infero_open_handle(infero_handle);
 
     // 3) run inference
-    infero_inference_float_ctensor( infero_handle,
-                                    4, input_tensor, input_size,
-                                    4, output_tensor, output_size );
+    for (int i=0; i<nInferenceReps; i++){
+        infero_inference_float_ctensor( infero_handle,
+                                        4, input_tensor, input_size,
+                                        4, output_tensor, output_size );
+    }
 
     // 4) close and delete the handle
     infero_close_handle( infero_handle );

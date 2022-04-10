@@ -16,6 +16,7 @@ use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 implicit none
 
 real(c_float), parameter :: tol = 1e-3;
+integer, parameter :: n_inference_reps = 10
 
 ! Command line arguments
 character(1024) :: model_path
@@ -100,7 +101,7 @@ yaml_config = "---"//NEW_LINE('A') &
 call infero_check(model%initialise_from_yaml_string(yaml_config))
 
 ! run inference
-do i = 1,20
+do i = 1, n_inference_reps
   call infero_check(model%infer(iset, oset))
 end do
 
