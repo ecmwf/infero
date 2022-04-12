@@ -121,7 +121,7 @@ int main(int argc, char** argv){
     read_csv(ref_output_path, output_tensor_ref);
 
     for(int i=0; i<output_size_flatten; i++){
-        if ( *(output_tensor+i) - *(output_tensor_ref+i) > tol){
+        if ( abs(*(output_tensor+i) - *(output_tensor_ref+i)) > tol){
             printf("ERROR: output element %d (%f) is "
                    "different from expected value %f\n", i, *(output_tensor+i), *(output_tensor_ref+i) );
             exit(1);
