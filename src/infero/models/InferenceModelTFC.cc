@@ -190,7 +190,7 @@ void InferenceModelTFC::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
     void* buff = TF_TensorData(OutputValues[0]);
     float* offsets = static_cast<float*>(buff);
 
-    eckit::Timing t_start(statistics_.timer());
+    eckit::Timing t_start(statistics_.timer_);
     if (tOut.isRight()) {
 
         // TFC uses Left (C) tensor layouts, so we need to convert
@@ -204,7 +204,7 @@ void InferenceModelTFC::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
         Log::info() << "output size " << tOut.size() << std::endl;
         memcpy(tOut.data(), offsets, tOut.size() * sizeof(float));
     }
-    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer()} - t_start;
+    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
 }
 
 
@@ -265,7 +265,7 @@ void InferenceModelTFC::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>
 
 
     // --------------- copy output -------------------
-    eckit::Timing t_start(statistics_.timer());
+    eckit::Timing t_start(statistics_.timer_);
     for (size_t i=0; i<NOutputs; i++){
 
         void* buff = TF_TensorData(*(OutputValues+i));
@@ -287,7 +287,7 @@ void InferenceModelTFC::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>
             memcpy(tOut[i]->data(), offsets, tOut[i]->size() * sizeof(float));
         }
     }
-    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer()} - t_start;
+    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
     // -----------------------------------------------
 
     free(Input);
