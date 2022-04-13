@@ -45,46 +45,42 @@ if (HAVE_TENSORRT)
     list(APPEND tests_models_ model.trt)
 endif()
 
-list(POP_FRONT tests_layers_)
-
-message("MIMO test models: ${tests_models_}")
+message("ORO_DRAG test models: ${tests_models_}")
 
 list( LENGTH tests_types_ _count )
-
 math( EXPR _count "${_count}-1" )
 
-foreach( _i RANGE ${_count} )
+if(NOT ${_count} EQUAL "-1")
+    foreach( _i RANGE ${_count} )
 
-    list( GET tests_types_ ${_i} type_ )
-    list( GET tests_models_ ${_i} model_ )
+        list( GET tests_types_ ${_i} type_ )
+        list( GET tests_models_ ${_i} model_ )
 
-    # C-runner
-    SET(runner_exe "runner_oro_drag")
-    ecbuild_configure_file(
-        test_oro_drag_template.sh.in
-        test_oro_drag_${type_}_c.sh @ONLY
-    )
+        # C-runner
+        SET(runner_exe "runner_oro_drag")
+        ecbuild_configure_file(
+            test_oro_drag_template.sh.in
+            test_oro_drag_${type_}_c.sh @ONLY
+        )
 
-    ecbuild_add_test(
-        TYPE     SCRIPT
-        COMMAND  test_oro_drag_${type_}_c.sh
-    )
+        ecbuild_add_test(
+            TYPE     SCRIPT
+            COMMAND  test_oro_drag_${type_}_c.sh
+        )
 
-    # F90-runner
-    SET(runner_exe "runner_oro_drag_f90")
-    ecbuild_configure_file(
-        test_oro_drag_template.sh.in
-        test_oro_drag_${type_}_f90.sh @ONLY
-    )
+        # F90-runner
+        SET(runner_exe "runner_oro_drag_f90")
+        ecbuild_configure_file(
+            test_oro_drag_template.sh.in
+            test_oro_drag_${type_}_f90.sh @ONLY
+        )
 
-    ecbuild_add_test(
-        TYPE     SCRIPT
-        COMMAND  test_oro_drag_${type_}_f90.sh
-    )
-
-
-
-endforeach()
+        ecbuild_add_test(
+            TYPE     SCRIPT
+            COMMAND  test_oro_drag_${type_}_f90.sh
+        )
+    endforeach()
+endif()
 
 
 

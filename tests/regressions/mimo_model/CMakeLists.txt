@@ -57,35 +57,37 @@ message("MIMO test models: ${tests_models_}")
 list( LENGTH tests_types_ _count )
 math( EXPR _count "${_count}-1" )
 
-foreach( _i RANGE ${_count} )
+if(NOT ${_count} EQUAL "-1")
+    foreach( _i RANGE ${_count} )
 
-    list( GET tests_types_ ${_i} type_ )
-    list( GET tests_models_ ${_i} model_ )
-    list( GET tests_layers_ ${_i} layers_ )
+        list( GET tests_types_ ${_i} type_ )
+        list( GET tests_models_ ${_i} model_ )
+        list( GET tests_layers_ ${_i} layers_ )
 
-    # C-runner
-    SET(runner_exe "runner_mimo")
-    ecbuild_configure_file(
-        test_mimo_template.sh.in
-        test_mimo_${type_}_c.sh @ONLY
-    )
+        # C-runner
+        SET(runner_exe "runner_mimo")
+        ecbuild_configure_file(
+            test_mimo_template.sh.in
+            test_mimo_${type_}_c.sh @ONLY
+        )
 
-    ecbuild_add_test(
-        TYPE     SCRIPT
-        COMMAND  test_mimo_${type_}_c.sh
-    )
+        ecbuild_add_test(
+            TYPE     SCRIPT
+            COMMAND  test_mimo_${type_}_c.sh
+        )
 
-    # F90-runner
-    SET(runner_exe "runner_mimo_f90")
-    ecbuild_configure_file(
-        test_mimo_template.sh.in
-        test_mimo_${type_}_f90.sh @ONLY
-    )
+        # F90-runner
+        SET(runner_exe "runner_mimo_f90")
+        ecbuild_configure_file(
+            test_mimo_template.sh.in
+            test_mimo_${type_}_f90.sh @ONLY
+        )
 
-    ecbuild_add_test(
-        TYPE     SCRIPT
-        COMMAND  test_mimo_${type_}_f90.sh
-    )
+        ecbuild_add_test(
+            TYPE     SCRIPT
+            COMMAND  test_mimo_${type_}_f90.sh
+        )
 
-endforeach()
+    endforeach()
+endif()
 

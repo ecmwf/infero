@@ -78,26 +78,57 @@ jobs:
         #   compiler_fc: gfortran-10
     runs-on: ${{ matrix.os }}
     env:
-      ONNXRUNTIME_VERSION: v1.9.1
-      ONNXRUNTIME_SRC_DIR: ${{ github.workspace }}/onnxruntime
-      TENSORFLOW_VERSION: v2.6.0
-      TENSORFLOW_SRC_DIR: ${{ github.workspace }}/tensorflow
+
+      ONNX_VERSION: 1.10.0
+      ONNX_URL: https://github.com/microsoft/onnxruntime/releases/download
+      ONNX_TARFILE: onnxruntime-linux-x64-${ONNX_VERSION}.tgz
+      ONNX_TARFILE_URL: ${ONNX_URL}/v${ONNX_VERSION}/onnxruntime-linux-x64-${ONNX_VERSION}.tgz
+
+      TFC_VERSION: 2.6.0
+      TFC_URL: https://storage.googleapis.com/tensorflow/libtensorflow
+      TFC_TARFILE: libtensorflow-cpu-linux-x86_64-${TFC_VERSION}.tar.gz
+      TFC_TARFILE_URL: ${TFC_URL}/libtensorflow-cpu-linux-x86_64-${TFC_VERSION}.tar.gz
+
+      TFLITE_VERSION: 2.6.0
+
     outputs:
       deps-cache-key: ${{ steps.setup-environment.outputs.deps-cache-key }}
+
     steps:
     - name: Setup Environment
       id: setup-environment
       shell: bash -eux {0}
       run: |
         DEPS_PATH="${{ runner.temp }}/deps"
-        ONNXRUNTIME_PATH="$DEPS_PATH/onnxruntime"
-        TENSORFLOW_PATH="$DEPS_PATH/tensorflow"
-        TFLITE_PATH="$DEPS_PATH/tensorflow/tensorflow/lite/build"
-        DEPS_ENV="DEPS_PATH=$DEPS_PATH"$'\n'"ONNXRUNTIME_PATH=$ONNXRUNTIME_PATH"$'\n'"TENSORFLOW_PATH=$TENSORFLOW_PATH"$'\n'"TFLITE_PATH=$TFLITE_PATH"
-        mkdir -p $DEPS_PATH
-        echo "$DEPS_ENV" > $DEPS_PATH/.env
-        echo "$DEPS_ENV" >> $GITHUB_ENV
-        echo ::set-output name=deps-cache-key::"deps-onnxruntime-${{ env.ONNXRUNTIME_VERSION }}-tensorflow-${{ env.TENSORFLOW_VERSION }}-"
+        INSTALL_PATH="${{ runner.temp }}/install"
+        BACKENDS_INSTALL_PATH="${{ runner.temp }}/install_deps"
+
+        ONNX_PATH="${DEPS_PATH}/onnxruntime"
+        TFC_PATH="${DEPS_PATH}/tensorflow_c_api"
+        TFLITE_PATH="${DEPS_PATH}/tflite"
+
+        DEPS_ENV="DEPS_PATH=${DEPS_PATH}"$'\n'"INSTALL_PATH=${INSTALL_PATH}"$'\n'"BACKENDS_INSTALL_PATH=${BACKENDS_INSTALL_PATH}"
+        DEPS_ENV_ONNX="ONNX_PATH=${ONNX_PATH}"$'\n'"ONNX_TARFILE=${ONNX_TARFILE}"
+        DEPS_ENV_TFC="TFC_PATH=${TFC_PATH}"$'\n'"TFC_TARFILE=${TFC_TARFILE}"
+        DEPS_ENV_TFLITE="TFLITE_PATH=${TFLITE_PATH}"$'\n'"TFLITE_VERSION=${TFLITE_VERSION}"
+
+        mkdir -p ${DEPS_PATH}
+        mkdir -p ${INSTALL_PATH}
+        mkdir -p ${BACKENDS_INSTALL_PATH}
+
+        echo "${DEPS_ENV}" > ${DEPS_PATH}/.env
+        echo "${DEPS_ENV_ONNX}" >> ${DEPS_PATH}/.env
+        echo "${DEPS_ENV_TFC}" >> ${DEPS_PATH}/.env
+        echo "${DEPS_ENV_TFLITE}" >> ${DEPS_PATH}/.env
+
+        cat ${DEPS_PATH}/.env
+
+        echo "${DEPS_ENV}" >> ${GITHUB_ENV}
+        echo "${DEPS_ENV_ONNX}" >> ${GITHUB_ENV}
+        echo "${DEPS_ENV_TFC}" >> ${GITHUB_ENV}
+        echo "${DEPS_ENV_TFLITE}" >> ${GITHUB_ENV}
+
+        echo ::set-output name=deps-cache-key::"deps-onnxruntime-${{ env.ONNX_VERSION }}-tfc-${{ env.TFC_VERSION }}-tflite-${{ env.TFLITE_VERSION }}-cache_v1"
 
     - name: Check for Dependency Cache
       id: deps-cache
@@ -106,53 +137,57 @@ jobs:
         path: ${{ env.DEPS_PATH }}
         key: ${{ steps.setup-environment.outputs.deps-cache-key }}${{ matrix.compiler }}@${{ matrix.os }}
 
-    - name: Checkout ONNX Runtime Repository
-      if: steps.deps-cache.outputs.cache-hit != 'true'
-      uses: actions/checkout@v2
-      with:
-        repository: Microsoft/onnxruntime
-        ref: ${{ env.ONNXRUNTIME_VERSION }}
-        path: ${{ env.ONNXRUNTIME_SRC_DIR }}
-
-    - name: Build ONNX Runtime
+    - name: Download and install ONNX Runtime Lib
       if: steps.deps-cache.outputs.cache-hit != 'true'
       env:
         CC: ${{ matrix.compiler_cc }}
         CXX: ${{ matrix.compiler_cxx }}
         FC: ${{ matrix.compiler_fc }}
-      working-directory: ${{ env.ONNXRUNTIME_SRC_DIR }}
+      working-directory: ${{ env.DEPS_PATH }}
       shell: bash -eux {0}
       run: |
-        ./build.sh --config Release --build_shared_lib --parallel 2
-        mkdir -p ${{ env.ONNXRUNTIME_PATH }}
-        mv build include ${{ env.ONNXRUNTIME_PATH }}
+        wget ${{ env.ONNX_TARFILE_URL }} -P ${{ env.ONNX_PATH }}
+        tar xzvf ${{ env.ONNX_PATH }}/${{ env.ONNX_TARFILE }} --strip-components=1 -C ${{ env.BACKENDS_INSTALL_PATH }}
+        echo "ONNX Lib downloaded and installed"
 
-    - name: Checkout TensorFlow Repository
-      if: steps.deps-cache.outputs.cache-hit != 'true'
-      uses: actions/checkout@v2
-      with:
-        repository: tensorflow/tensorflow
-        ref: ${{ env.TENSORFLOW_VERSION }}
-        path: ${{ env.TENSORFLOW_SRC_DIR }}
-
-    - name: Build TensorFlow Lite
+    - name: Download and install TF-CAPI Runtime Lib
       if: steps.deps-cache.outputs.cache-hit != 'true'
       env:
         CC: ${{ matrix.compiler_cc }}
         CXX: ${{ matrix.compiler_cxx }}
         FC: ${{ matrix.compiler_fc }}
-      working-directory: ${{ env.TENSORFLOW_SRC_DIR }}
+      working-directory: ${{ env.DEPS_PATH }}
       shell: bash -eux {0}
       run: |
-        INSTALL_DIR=${{ env.TENSORFLOW_PATH }}
-        mkdir -p $INSTALL_DIR
-        mv tensorflow third_party $INSTALL_DIR
-        cd $INSTALL_DIR/tensorflow/lite
-        SRC_DIR=$(pwd)
-        BUILD_DIR=build
-        rm -rf $BUILD_DIR && mkdir -p $BUILD_DIR && cd $BUILD_DIR
-        cmake -DCMAKE_PREFIX_PATH=$INSTALL_DIR -DBUILD_SHARED_LIBS=ON $SRC_DIR
-        cmake --build . -j2
+        wget ${{ env.TFC_TARFILE_URL }} -P ${{ env.TFC_PATH }}
+        tar xzvf ${{ env.TFC_PATH }}/${{ env.TFC_TARFILE }} --strip-components=1 -C ${{ env.BACKENDS_INSTALL_PATH }}
+        echo "TFC Lib downloaded and installed"
+
+#    - name: Checkout TensorFlow Repository
+#      if: steps.deps-cache.outputs.cache-hit != 'true'
+#      uses: actions/checkout@v2
+#      with:
+#        repository: tensorflow/tensorflow
+#        ref: ${{ env.TFLITE_VERSION }}
+#        path: ${{ github.workspace }}/tensorflow
+#
+#    - name: Build TensorFlow Lite
+#      if: steps.deps-cache.outputs.cache-hit != 'true'
+#      env:
+#        CC: ${{ matrix.compiler_cc }}
+#        CXX: ${{ matrix.compiler_cxx }}
+#        FC: ${{ matrix.compiler_fc }}
+#      working-directory: ${{ github.workspace }}/tensorflow
+#      shell: bash -eux {0}
+#      run: |
+#        mkdir -p ${{ env.TFLITE_PATH }}
+#        mv tensorflow third_party ${{ env.TFLITE_PATH }}
+#        cd ${{ env.TFLITE_PATH }}/tensorflow/lite
+#        SRC_DIR=$(pwd)
+#        BUILD_DIR=build
+#        rm -rf ${BUILD_DIR} && mkdir -p ${BUILD_DIR} && cd ${BUILD_DIR}
+#        cmake -DCMAKE_PREFIX_PATH=${{ env.TFLITE_PATH }} -DBUILD_SHARED_LIBS=ON ${SRC_DIR}
+#        cmake --build . -j2
 
   # Calls a reusable CI workflow to build & test the current repository.
   #   It will pull in all needed dependencies and produce a code coverage report on success.
@@ -166,14 +201,15 @@ jobs:
       skip_matrix_jobs: |
         gnu-10@macos-10.15
         clang-12@macos-10.15
-      codecov_upload: true
+      codecov_upload: false
       notify_teams: true
       deps_cache_key: ${{ needs.deps.outputs.deps-cache-key }}
       build_package_inputs: |
-        cmake_options: -DENABLE_MPI=OFF -DENABLE_TF_LITE=ON -DTENSORFLOWLITE_PATH=$TENSORFLOW_PATH -DTENSORFLOWLITE_ROOT=$TFLITE_PATH -DENABLE_ONNX=ON -DONNX_ROOT=$ONNXRUNTIME_PATH -DENABLE_TENSORRT=OFF
+        cmake_options: -DENABLE_MPI=OFF -DENABLE_FCKIT=ON -DFCKIT_ROOT=${INSTALL_PATH} -DENABLE_TF_C=OFF -DTENSORFLOWC_ROOT=${BACKENDS_INSTALL_PATH} -DENABLE_ONNX=OFF -DONNX_ROOT=${BACKENDS_INSTALL_PATH} -DENABLE_TF_LITE=OFF -DTENSORFLOWLITE_ROOT=$TFLITE_PATH -DENABLE_TENSORRT=OFF
         dependencies: |
           ecmwf/ecbuild
-          ecmwf/eckit
+          ecmwf/eckit@refs/tags/1.19.0
+          ecmwf/fckit
         dependency_branch: develop
     secrets:
       incoming_webhook: ${{ secrets.MS_TEAMS_INCOMING_WEBHOOK }}
