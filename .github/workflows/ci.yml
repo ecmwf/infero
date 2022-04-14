@@ -100,22 +100,26 @@ jobs:
       shell: bash -eux {0}
       run: |
         DEPS_PATH="${{ runner.temp }}/deps"
-        INSTALL_PATH="${{ runner.temp }}/install"
-        BACKENDS_INSTALL_PATH="${{ runner.temp }}/install_deps"
+        INSTALL_PATH="${{ runner.temp }}/install"        
 
         ONNX_PATH="${DEPS_PATH}/onnxruntime"
+        ONNX_INSTALL_PATH="${DEPS_PATH}/install_onnx"
+        
         TFC_PATH="${DEPS_PATH}/tensorflow_c_api"
+        TFC_INSTALL_PATH="${DEPS_PATH}/install_tfc"
+        
         TENSORFLOW_PATH="$DEPS_PATH/tensorflow"
         TFLITE_PATH="${DEPS_PATH}/tensorflow/tensorflow/lite/build"
 
-        DEPS_ENV="DEPS_PATH=${DEPS_PATH}"$'\n'"INSTALL_PATH=${INSTALL_PATH}"$'\n'"BACKENDS_INSTALL_PATH=${BACKENDS_INSTALL_PATH}"
-        DEPS_ENV_ONNX="ONNX_PATH=${ONNX_PATH}"$'\n'"ONNX_TARFILE=${ONNX_TARFILE}"
-        DEPS_ENV_TFC="TFC_PATH=${TFC_PATH}"$'\n'"TFC_TARFILE=${TFC_TARFILE}"
+        DEPS_ENV="DEPS_PATH=${DEPS_PATH}"$'\n'"INSTALL_PATH=${INSTALL_PATH}"
+        DEPS_ENV_ONNX="ONNX_PATH=${ONNX_PATH}"$'\n'"ONNX_TARFILE=${ONNX_TARFILE}"$'\n'"ONNX_INSTALL_PATH=${ONNX_INSTALL_PATH}"
+        DEPS_ENV_TFC="TFC_PATH=${TFC_PATH}"$'\n'"TFC_TARFILE=${TFC_TARFILE}"$'\n'"TFC_INSTALL_PATH=${TFC_INSTALL_PATH}"
         DEPS_ENV_TFLITE="TFLITE_PATH=${TFLITE_PATH}"$'\n'"TFLITE_VERSION=${TFLITE_VERSION}"$'\n'"TENSORFLOW_PATH=${TENSORFLOW_PATH}"
 
         mkdir -p ${DEPS_PATH}
         mkdir -p ${INSTALL_PATH}
-        mkdir -p ${BACKENDS_INSTALL_PATH}
+        mkdir -p ${ONNX_INSTALL_PATH}
+        mkdir -p ${TFC_INSTALL_PATH}
 
         echo "${DEPS_ENV}" > ${DEPS_PATH}/.env
         echo "${DEPS_ENV_ONNX}" >> ${DEPS_PATH}/.env
@@ -129,7 +133,7 @@ jobs:
         echo "${DEPS_ENV_TFC}" >> ${GITHUB_ENV}
         echo "${DEPS_ENV_TFLITE}" >> ${GITHUB_ENV}
 
-        echo ::set-output name=deps-cache-key::"deps-onnxruntime-${{ env.ONNX_VERSION }}-tfc-${{ env.TFC_VERSION }}-tflite-${{ env.TFLITE_VERSION }}-cache_v4-"
+        echo ::set-output name=deps-cache-key::"deps-onnxruntime-${{ env.ONNX_VERSION }}-tfc-${{ env.TFC_VERSION }}-tflite-${{ env.TFLITE_VERSION }}-cache_v8-"
 
     - name: Check for Dependency Cache
       id: deps-cache
@@ -147,9 +151,10 @@ jobs:
       working-directory: ${{ env.DEPS_PATH }}
       shell: bash -eux {0}
       run: |
+        mkdir -p ${{ env.ONNX_PATH }}
         wget ${{ env.ONNX_TARFILE_URL }} -P ${{ env.ONNX_PATH }}
-        tar xzvf ${{ env.ONNX_PATH }}/${{ env.ONNX_TARFILE }} --strip-components=1 -C ${{ env.BACKENDS_INSTALL_PATH }}
-        ls -R ${{ env.BACKENDS_INSTALL_PATH }}
+        tar xzvf ${{ env.ONNX_PATH }}/${{ env.ONNX_TARFILE }} --strip-components=1 -C ${{ env.ONNX_INSTALL_PATH }}
+        ls -R ${{ env.ONNX_INSTALL_PATH }}
         echo "ONNX Lib downloaded and installed"
 
     - name: Download and install TF-CAPI Runtime Lib
@@ -161,9 +166,10 @@ jobs:
       working-directory: ${{ env.DEPS_PATH }}
       shell: bash -eux {0}
       run: |
+        mkdir -p ${{ env.TFC_PATH }}
         wget ${{ env.TFC_TARFILE_URL }} -P ${{ env.TFC_PATH }}
-        tar xzvf ${{ env.TFC_PATH }}/${{ env.TFC_TARFILE }} --strip-components=1 -C ${{ env.BACKENDS_INSTALL_PATH }}
-        ls -R ${{ env.BACKENDS_INSTALL_PATH }}
+        tar xzvf ${{ env.TFC_PATH }}/${{ env.TFC_TARFILE }} --strip-components=1 -C ${{ env.TFC_INSTALL_PATH }}
+        ls -R ${{ env.TFC_INSTALL_PATH }}
         echo "TFC Lib downloaded and installed"
 
     - name: Checkout TensorFlow Repository
@@ -209,7 +215,7 @@ jobs:
       notify_teams: true
       deps_cache_key: ${{ needs.deps.outputs.deps-cache-key }}
       build_package_inputs: |
-        cmake_options: -DENABLE_MPI=OFF -DENABLE_FCKIT=ON -DFCKIT_ROOT=${INSTALL_PATH} -DENABLE_TF_C=OFF -DTENSORFLOWC_ROOT=${BACKENDS_INSTALL_PATH} -DENABLE_ONNX=OFF -DONNX_ROOT=${BACKENDS_INSTALL_PATH} -DENABLE_TF_LITE=ON -DTENSORFLOWLITE_PATH=${TENSORFLOW_PATH} -DTENSORFLOWLITE_ROOT=${TFLITE_PATH} -DENABLE_TENSORRT=OFF
+        cmake_options: -DENABLE_MPI=OFF -DENABLE_FCKIT=ON -DFCKIT_ROOT=${INSTALL_PATH} -DENABLE_TF_C=ON -DTENSORFLOWC_ROOT=${TFC_INSTALL_PATH} -DENABLE_ONNX=ON -DONNX_ROOT=${ONNX_INSTALL_PATH} -DENABLE_TF_LITE=ON -DTENSORFLOWLITE_PATH=${TENSORFLOW_PATH} -DTENSORFLOWLITE_ROOT=${TFLITE_PATH} -DENABLE_TENSORRT=OFF
         dependencies: |
           ecmwf/ecbuild
           ecmwf/eckit@refs/tags/1.19.0
