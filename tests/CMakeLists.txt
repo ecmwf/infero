@@ -31,6 +31,6 @@ add_subdirectory(c_api)
 
 
 # f-api
-if(HAVE_FCKIT)
+if(infero_HAVE_FORTRAN_APIS)
     add_subdirectory(f_api)
 endif()

@@ -74,9 +74,11 @@ find_package(ZLIB REQUIRED) # for cnpy
 
 if (HAVE_FCKIT)
     set(infero_HAVE_FINAL ${fckit_HAVE_FINAL})
+    set(infero_HAVE_FORTRAN_APIS TRUE)
     set(infero_LIBRARIES "MLclustering inferoapi inferof")
 else()
     set(infero_HAVE_FINAL 0)
+    set(infero_HAVE_FORTRAN_APIS FALSE)
     set(infero_LIBRARIES "MLclustering inferoapi")
 endif()
 

@@ -59,12 +59,12 @@ ecbuild_add_library(
 
     PRIVATE_INCLUDES
         "${eckit_INCLUDE_DIRS}"
-        "${fckit_INCLUDE_DIRS}"
+        "${FCKIT_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
         inferoapi
         eckit
-        fckit
+        ${FCKIT_LIBRARIES}
 )
 
 install( DIRECTORY ${CMAKE_Fortran_MODULE_DIRECTORY}/${CMAKE_CFG_INTDIR}

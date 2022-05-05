@@ -28,7 +28,6 @@ WITH_TFC_RUNTIME=ON
 WITH_TFLITE_RUNTIME=ON
 WITH_TRT=OFF
 
-
 BUILD_NPROCS=8
 # ===============================
 
@@ -52,11 +51,17 @@ FCKIT_SRC_DIR=${ROOT_SRC_DIR}/fckit
 FCKIT_BUILD_DIR=${ROOT_BUILD_DIR}/fckit
 
 # ONNX runtime
-ONNX_VERSION=1.10.0
+arch=$(uname -m)
+if [[ "${OSTYPE}" == "linux"* ]] && [[ "${arch}" == "x86_64" ]]; then
+  ONNX_VERSION=1.10.0
+  ONNX_TARFILE=onnxruntime-linux-x64-${ONNX_VERSION}.tgz
+elif [[ "${OSTYPE}" == "darwin"* ]] && [[ "${arch}" == "arm64" ]]; then
+  ONNX_VERSION=1.11.1
+  ONNX_TARFILE=onnxruntime-osx-arm64-${ONNX_VERSION}.tgz
+fi
 ONNX_SOURCE_DIR=${ROOT_SRC_DIR}/onnxruntime
 ONNX_BUILD_DIR=${ROOT_SRC_DIR}/onnxruntime
 ONNX_URL=https://github.com/microsoft/onnxruntime/releases/download
-ONNX_TARFILE=onnxruntime-linux-x64-${ONNX_VERSION}.tgz
     
 # TF_C
 TFC_VERSION=2.6.0
@@ -78,5 +83,4 @@ TRT_BUILD_DIR=${ROOT_SRC_DIR}/TensorRT-8.0.0.3
 INFERO_SRC_DIR=$(dirname ${SCRIPT_DIR})
 INFERO_BUILD_DIR=${ROOT_BUILD_DIR}/infero
 # ===============================
-
 

@@ -35,13 +35,13 @@ find_library(FCKIT_LIB fckit
 find_library(FCKIT_LIB fckit PATH_SUFFIXES lib64 lib )
 
 set( FCKIT_LIBRARIES    ${FCKIT_LIB} )
-set( FCKIT_INCLUDE_DIRS ${FCKIT_INCLUDE_DIR})
+set( FCKIT_INCLUDE_DIRS ${FCKIT_INCLUDE_DIR};${FCKIT_INCLUDE_DIR}/../module/fckit)
 
 include(FindPackageHandleStandardArgs)
 
 # handle the QUIET and REQUIRED arguments and set FCKIT_FOUND to TRUE
 # if all listed variables are TRUE
 # Note: capitalisation of the package name must be the same as in the file name
-find_package_handle_standard_args(FCKIT DEFAULT_MSG FCKIT_LIB FCKIT_INCLUDE_DIR)
+find_package_handle_standard_args(fckit DEFAULT_MSG FCKIT_LIB FCKIT_INCLUDE_DIR)
 
 mark_as_advanced(FCKIT_INCLUDE_DIR FCKIT_LIB)

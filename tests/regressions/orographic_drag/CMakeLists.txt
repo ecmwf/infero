@@ -10,16 +10,18 @@ set_target_properties( runner_oro_drag
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-ecbuild_add_executable( TARGET runner_oro_drag_f90
-   SOURCES   runner_oro_drag.F90
-   CONDITION HAVE_BUILD_TOOLS
-   INCLUDES  ${eckit_INCLUDE_DIRS}
-   LIBS      inferof
-   NOINSTALL
-)
-set_target_properties( runner_oro_drag_f90
-    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
+if(infero_HAVE_FORTRAN_APIS)
+    ecbuild_add_executable( TARGET runner_oro_drag_f90
+       SOURCES   runner_oro_drag.F90
+       CONDITION HAVE_BUILD_TOOLS
+       INCLUDES  ${eckit_INCLUDE_DIRS}
+       LIBS      inferof
+       NOINSTALL
+    )
+    set_target_properties( runner_oro_drag_f90
+        PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+endif()
 
 # ----------------- tests ------------------
 list(APPEND tests_types_ "")
@@ -69,16 +71,18 @@ if(NOT ${_count} EQUAL "-1")
         )
 
         # F90-runner
-        SET(runner_exe "runner_oro_drag_f90")
-        ecbuild_configure_file(
-            test_oro_drag_template.sh.in
-            test_oro_drag_${type_}_f90.sh @ONLY
-        )
+        if(infero_HAVE_FORTRAN_APIS)
+            SET(runner_exe "runner_oro_drag_f90")
+            ecbuild_configure_file(
+                test_oro_drag_template.sh.in
+                test_oro_drag_${type_}_f90.sh @ONLY
+            )
 
-        ecbuild_add_test(
-            TYPE     SCRIPT
-            COMMAND  test_oro_drag_${type_}_f90.sh
-        )
+            ecbuild_add_test(
+                TYPE     SCRIPT
+                COMMAND  test_oro_drag_${type_}_f90.sh
+            )
+        endif()
     endforeach()
 endif()
 

@@ -11,17 +11,22 @@ set_target_properties( runner_mimo
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-ecbuild_add_executable( TARGET runner_mimo_f90
-   SOURCES   runner_mimo.F90
-   CONDITION HAVE_BUILD_TOOLS
-   INCLUDES  ${eckit_INCLUDE_DIRS}
-   LIBS      inferof
-   NOINSTALL
-)
 
-set_target_properties( runner_mimo_f90
-    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
-)
+if(infero_HAVE_FORTRAN_APIS)
+
+    ecbuild_add_executable( TARGET runner_mimo_f90
+       SOURCES   runner_mimo.F90
+       CONDITION HAVE_BUILD_TOOLS
+       INCLUDES  ${eckit_INCLUDE_DIRS}
+       LIBS      inferof
+       NOINSTALL
+    )
+
+    set_target_properties( runner_mimo_f90
+        PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+    )
+
+endif()
 
 # ----------------- tests ------------------
 list(APPEND tests_types_ "")
@@ -77,16 +82,18 @@ if(NOT ${_count} EQUAL "-1")
         )
 
         # F90-runner
-        SET(runner_exe "runner_mimo_f90")
-        ecbuild_configure_file(
-            test_mimo_template.sh.in
-            test_mimo_${type_}_f90.sh @ONLY
-        )
+        if(infero_HAVE_FORTRAN_APIS)
+            SET(runner_exe "runner_mimo_f90")
+            ecbuild_configure_file(
+                test_mimo_template.sh.in
+                test_mimo_${type_}_f90.sh @ONLY
+            )
 
-        ecbuild_add_test(
-            TYPE     SCRIPT
-            COMMAND  test_mimo_${type_}_f90.sh
-        )
+            ecbuild_add_test(
+                TYPE     SCRIPT
+                COMMAND  test_mimo_${type_}_f90.sh
+            )
+        endif()
 
     endforeach()
 endif()
