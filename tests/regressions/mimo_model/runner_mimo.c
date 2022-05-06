@@ -189,7 +189,7 @@ int main(int argc, char** argv){
     float res = *(*outputs);
 
     for(int i=0; i<batchSize; i++){
-        if (abs(*(*(outputs)+i)-(*(expectedOutput+i))) > tol){
+        if (fabs(*(*(outputs)+i)-(*(expectedOutput+i))) > tol){
             printf("ERROR: output element %d (%f) is "
                    "different from expected value %f\n", i, *(*(outputs)+i), (*(expectedOutput+i)) );
             exit(1);

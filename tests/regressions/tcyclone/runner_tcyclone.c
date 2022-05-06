@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <math.h>
 #include "infero/api/infero.h"
 
 void read_csv(const char* file_path, float* values){
@@ -124,7 +125,7 @@ int main(int argc, char** argv){
     read_csv(ref_output_path, output_tensor_ref);
 
     for(int i=0; i<output_size_flatten; i++){
-        if ( abs(*(output_tensor+i) - *(output_tensor_ref+i)) > tol){
+        if ( fabs(*(output_tensor+i) - *(output_tensor_ref+i)) > tol){
             printf("ERROR: output element %d (%f) is "
                    "different from expected value %f\n", i, *(output_tensor+i), *(output_tensor_ref+i) );
             exit(1);
