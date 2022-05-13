@@ -28,11 +28,12 @@ character(len=128) :: t3_name
 
 integer :: i, j, cc
 
-integer, parameter :: n_batch = 10
+integer, parameter :: n_batch_i = 10
+integer, parameter :: n_batch = 256
 real(c_float) :: t1(n_batch,32) = 0
 real(c_float) :: t2(n_batch,128) = 0
 real(c_float) :: t3(n_batch,1) = 0
-real(c_float) :: expected_output(n_batch) = (/ &
+real(c_float) :: expected_output(n_batch_i) = (/ &
                                              253.61697,&
                                              764.88446,&
                                              1276.1512,&
@@ -60,21 +61,27 @@ CALL get_command_argument(5, t3_name)
 ! init the input tensors
 cc=0
 do i=1,n_batch
-    do j=1,32
-        t1(i,j) = cc
-        cc = cc + 1
-    end do
+   if (mod(i-1,n_batch_i) == 0) then
+      cc = 0
+   end if
+   do j=1,32
+      t1(i,j) = cc
+      cc = cc + 1
+   end do
 end do
-t1 = t1 / (n_batch*32)
+t1 = t1 / (n_batch_i*32)
 
 cc=0
 do i=1,n_batch
+   if (mod(i-1,n_batch_i) == 0) then
+      cc = 0
+   end if
     do j=1,128
         t2(i,j) = cc
         cc = cc + 1
     end do
 end do
-t2 = t2 / (n_batch*128)
+t2 = t2 / (n_batch_i*128)
 
 
 ! init infero library
@@ -84,6 +91,7 @@ call infero_check(infero_initialise())
 call infero_check(iset%initialise())
 call infero_check(iset%push_tensor(t1, TRIM(t1_name)))
 call infero_check(iset%push_tensor(t2, TRIM(t2_name)))
+print*, shape(t1),shape(t2),shape(t3)
 call infero_check(iset%print())
 
 ! prepare output tensors for named layers
@@ -113,12 +121,12 @@ call infero_check(model%print_config())
 call infero_check(oset%print())
 
 ! check all elements of the output
-do i = 1,n_batch
-
-  if (abs(t3(i,1) - expected_output(i)) .gt. tol) then
-    write(*,*) "ERROR: output element ",i, " (", t3(i,1) ,") ", &
-    "is different from expected value ", expected_output(i)
-    stop 1
+do j = 1,n_batch
+   i = mod(j-1,n_batch_i)+1
+   if (abs(t3(j,1) - expected_output(i)) .gt. tol) then
+      write(*,*) "ERROR: output element ",j, " (", t3(j,1) ,") ", &
+           "is different from expected value ", expected_output(i)
+      stop 1
   end if
 
 end do
