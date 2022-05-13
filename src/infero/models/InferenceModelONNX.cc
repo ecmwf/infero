@@ -144,6 +144,7 @@ void InferenceModelONNX::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*
 {
 
     auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+    std::vector<Ort::Value> inputTensors;
 
     // N Input tensors
     size_t NInputs = input_names.size();

@@ -54,8 +54,7 @@ private:
 
     // input interface
     size_t numInputs;
-    std::vector<char*> inputNames;
-    std::vector<Ort::Value> inputTensors;
+    std::vector<char*> inputNames;    
     std::vector<std::vector<int64_t>> inputLayerShapes;
 
     // output interface
