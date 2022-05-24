@@ -5,7 +5,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pyinfero",
-    version='0.1.0',
+    version='0.1.1',
     author='ECMWF',
     author_email='software.support@ecmwf.int',
     license='Apache 2.0',
