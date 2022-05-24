@@ -132,7 +132,7 @@ void InferenceModelTRT::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
     // ======================= output =======================    
     Log::info() << "Copying output...";
 
-    eckit::Timing t_start(statistics_.timer_);
+    eckit::Timing t_start(statistics_.timer());
     float* output = static_cast<float*>(buffers.getHostBuffer(output_tensor_name));    
     if (tOut.isRight()) {
         // TRT uses Left (C) tensor layouts, so we need to convert
@@ -144,7 +144,7 @@ void InferenceModelTRT::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
         // TRT uses Left (C) tensor layouts, so we can copy straight into memory of tOut
         ::memcpy(tOut.data(), output, tOut.size() * sizeof(float));
     }
-    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
+    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer()} - t_start;
     // ======================================================
 }
 
@@ -190,7 +190,7 @@ void infero::InferenceModelTRT::infer_mimo_impl(std::vector<eckit::linalg::Tenso
     // ====================== Output tensors ======================
     // N Output tensors
     size_t NOutputs = output_names.size();
-    eckit::Timing t_start(statistics_.timer_);
+    eckit::Timing t_start(statistics_.timer());
     for (size_t i=0; i<NOutputs; i++){
 
         // output buffer
@@ -210,7 +210,7 @@ void infero::InferenceModelTRT::infer_mimo_impl(std::vector<eckit::linalg::Tenso
             ::memcpy(tOut[i]->data(), output, tOut[i]->size() * sizeof(float));
         }
     }
-    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer_} - t_start;
+    statistics_.oTensorLayoutTiming_ += eckit::Timing{statistics_.timer()} - t_start;
 }
 
 
