@@ -109,8 +109,8 @@ ecbuild_info("---> fckit_HAVE_FINAL ${HAVE_FINAL}")
 
 
 ### infero version header
-if (EXISTS "${CMAKE_SOURCE_DIR}/VERSION")
-    file(READ "${CMAKE_SOURCE_DIR}/VERSION" INFERO_VERSION_STR)
+if (EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION")
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" INFERO_VERSION_STR)
     string(STRIP "${INFERO_VERSION_STR}" INFERO_VERSION_STR)
     string(REPLACE "." ";" INFERO_VERSION_FULL "${INFERO_VERSION_STR}")
 
@@ -119,16 +119,16 @@ if (EXISTS "${CMAKE_SOURCE_DIR}/VERSION")
     list( GET INFERO_VERSION_FULL 2 INFERO_VERSION_PATCH )
 
     ecbuild_configure_file(
-        "${CMAKE_SOURCE_DIR}/src/infero_version.h.in"
-        "${CMAKE_SOURCE_DIR}/src/infero_version.h" @ONLY
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/infero_version.h.in"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src/infero_version.h" @ONLY
     )
 
-    install(FILES "${CMAKE_SOURCE_DIR}/src/infero_version.h"
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/infero_version.h"
         TYPE INCLUDE
     )
 
 else()
-    message(FATAL_ERROR "Version file ${CMAKE_SOURCE_DIR}/VERSION NOT FOUND!")
+    message(FATAL_ERROR "Version file ${CMAKE_CURRENT_SOURCE_DIR}/VERSION NOT FOUND!")
 endif()
 
 
