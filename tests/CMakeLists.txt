@@ -19,12 +19,14 @@ ecbuild_add_test(TARGET        infero_test_inference_model
 # regression tests
 add_subdirectory(regressions)
 
-# copy test data to build directory
-add_custom_command(TARGET infero_test_inference_model POST_BUILD
-                   COMMAND ${CMAKE_COMMAND} -E copy_directory
-                   ${CMAKE_CURRENT_SOURCE_DIR}/data
-                   ${CMAKE_BINARY_DIR}/tests/data
-                   )
+# Copy test data to build directory (if tests are enabled)
+if(HAVE_TESTS)
+  add_custom_command(TARGET infero_test_inference_model POST_BUILD
+                     COMMAND ${CMAKE_COMMAND} -E copy_directory
+                     ${CMAKE_CURRENT_SOURCE_DIR}/data
+                     ${CMAKE_BINARY_DIR}/tests/data
+                     )
+endif()
 
 # c-api
 add_subdirectory(c_api)

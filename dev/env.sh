@@ -28,6 +28,10 @@ WITH_TFC_RUNTIME=ON
 WITH_TFLITE_RUNTIME=ON
 WITH_TRT=OFF
 
+# Tests
+ENABLE_TESTS=ON
+
+# build #procs
 BUILD_NPROCS=8
 # ===============================
 
