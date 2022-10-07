@@ -72,7 +72,7 @@ int main(int argc, char** argv){
     sprintf(yaml_str, " path: %s\n type: %s", model_path, model_type);
     printf("yaml_str:\n%s\n", yaml_str);
 
-    // tcyclone model input size [ 1, 200, 200, 17 ]
+    // tcyclone model input size [ n_batch, 200, 200, 17 ]
     input_size[0] = n_batch;
     input_size[1] = 200;
     input_size[2] = 200;
@@ -96,7 +96,7 @@ int main(int argc, char** argv){
         memcpy(input_tensor+(i*isample_size_flatten), input_tensor, isample_size_flatten*sizeof(float));
     }
 
-    // tcyclone model output size [ 1, 200, 200, 1 ]
+    // tcyclone model output size [ n_batch, 200, 200, 1 ]
     output_size[0] = n_batch;
     output_size[1] = 200;
     output_size[2] = 200;
