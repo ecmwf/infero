@@ -22,10 +22,17 @@ WITH_MPI=OFF
 # Fortran API support
 WITH_FCKIT=ON
 
-# ML backends
+# ONNX
 WITH_ONNX_RUNTIME=ON
+
+# TFC
 WITH_TFC_RUNTIME=ON
-WITH_TFLITE_RUNTIME=ON
+TFC_GPU=1
+
+# TFLITE
+WITH_TFLITE_RUNTIME=OFF
+
+# TensorRT
 WITH_TRT=OFF
 
 # Tests
@@ -72,7 +79,11 @@ TFC_VERSION=2.6.0
 TFC_SOURCE_DIR=${ROOT_SRC_DIR}/tensorflow_c
 TFC_BUILD_DIR=${ROOT_SRC_DIR}/tensorflow_c
 TFC_URL=https://storage.googleapis.com/tensorflow/libtensorflow
-TFC_TARFILE=libtensorflow-cpu-linux-x86_64-${TFC_VERSION}.tar.gz
+if [[ ${TFC_GPU} == "0" ]]; then
+  TFC_TARFILE=libtensorflow-cpu-linux-x86_64-${TFC_VERSION}.tar.gz
+else
+  TFC_TARFILE=libtensorflow-gpu-linux-x86_64-${TFC_VERSION}.tar.gz
+fi
 
 # TFLITE
 TFLITE_SOURCE_DIR=${ROOT_SRC_DIR}/tensorflow

@@ -12,6 +12,8 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <math.h>
+#include <string.h>
+
 #include "infero/api/infero.h"
 
 void read_csv(const char* file_path, float* values){
@@ -38,6 +40,7 @@ int main(int argc, char** argv){
 
     const float tol = 1e-3;
     const int nInferenceReps = 10;
+    const int n_batch = 32;
 
     char* model_path = argv[1];
     char* model_type = argv[2];
@@ -47,9 +50,11 @@ int main(int argc, char** argv){
 
     int input_size[4];
     size_t input_size_flatten;
+    size_t isample_size_flatten;
 
     int output_size[4];
     size_t output_size_flatten;
+    size_t osample_size_flatten;
 
     float* input_tensor;
     float* output_tensor;
@@ -68,33 +73,42 @@ int main(int argc, char** argv){
     printf("yaml_str:\n%s\n", yaml_str);
 
     // tcyclone model input size [ 1, 200, 200, 17 ]
-    input_size[0] = 1;
+    input_size[0] = n_batch;
     input_size[1] = 200;
     input_size[2] = 200;
     input_size[3] = 17;
+    
 
-    input_size_flatten = 1;
-    for (int i=0; i<4; i++){
-        input_size_flatten *= (size_t)input_size[i];
+    isample_size_flatten = 1;
+    for (int i=1; i<4; i++){
+        isample_size_flatten *= (size_t)input_size[i];
     }
+    input_size_flatten = isample_size_flatten * n_batch;
 
-    printf("input_size_flatten %li \n", input_size_flatten);
+    printf("input_size_flatten= %li \n", input_size_flatten);
     input_tensor = (float*)malloc( sizeof (float) * input_size_flatten);
 
-    // read input tensor..
+    // read input tensor (1 sample only)
     read_csv(input_path, input_tensor);
 
+    // copy memory (n_batch)
+    for(int i=1; i<n_batch; i++) {
+        memcpy(input_tensor+(i*isample_size_flatten), input_tensor, isample_size_flatten*sizeof(float));
+    }
+
     // tcyclone model output size [ 1, 200, 200, 1 ]
-    output_size[0] = 1;
+    output_size[0] = n_batch;
     output_size[1] = 200;
     output_size[2] = 200;
     output_size[3] = 1;
 
-    output_size_flatten = 1;
-    for (int i=0; i<4; i++){
-        output_size_flatten *= (size_t)output_size[i];
+    osample_size_flatten = 1;
+    for (int i=1; i<4; i++){
+        osample_size_flatten *= (size_t)output_size[i];
     }
-    printf("output_size_flatten %li \n", output_size_flatten);
+    output_size_flatten = osample_size_flatten * n_batch;
+
+    printf("output_size_flatten= %li \n", output_size_flatten);
     output_tensor = (float*)malloc( sizeof (float) * output_size_flatten);
 
     // 0) init infero
@@ -123,6 +137,11 @@ int main(int argc, char** argv){
     // check output
     output_tensor_ref = (float*)malloc( sizeof (float) * output_size_flatten);
     read_csv(ref_output_path, output_tensor_ref);
+
+    // copy memory (n_batch)
+    for(int i=1; i<n_batch; i++) {
+        memcpy(output_tensor_ref+(i*osample_size_flatten), output_tensor_ref, osample_size_flatten*sizeof(float));
+    }
 
     for(int i=0; i<output_size_flatten; i++){
         if ( fabs(*(output_tensor+i) - *(output_tensor_ref+i)) > tol){
