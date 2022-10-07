@@ -98,5 +98,7 @@ ecbuild_add_library(
         "${tensorflow_lite_libs}"
         "${onnx_libs}"
         "${tensor_rt_libs}"
+
+    PUBLIC_LIBS
         cnpy
 )
