@@ -69,7 +69,10 @@ int main(int argc, char** argv){
     printf("input_path %s \n", input_path);
     printf("ref_output_path %s \n", ref_output_path);
 
-    sprintf(yaml_str, " path: %s\n type: %s", model_path, model_type);
+    sprintf(yaml_str, " path: %s\n type: %s\n", model_path, model_type);
+    // ------------------- Example of selecting device (TFC only) ----------------------
+    // sprintf(yaml_str, " path: %s\n type: %s\n device: %i", model_path, model_type, 2);
+    // ---------------------------------------------------------------------------------
     printf("yaml_str:\n%s\n", yaml_str);
 
     // tcyclone model input size [ n_batch, 200, 200, 17 ]

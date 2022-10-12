@@ -36,6 +36,7 @@ ModelParams_t InferenceModelTFC::implDefaultParams_(){
        
     params_["numInteropThreads"] = "1";
     params_["numIntraopThreads"] = "1";
+    params_["device"] = "-1";
 
     return params_;
 }
@@ -60,8 +61,20 @@ InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
 
     uint8_t numInteropThreads_ = ModelConfig_->getInt("numInteropThreads");
     uint8_t numIntraopThreads_ = ModelConfig_->getInt("numIntraopThreads");
-    uint8_t buf[]={0x10,numInteropThreads_,0x28,numIntraopThreads_};
-    TF_SetConfig(session_options, buf,sizeof(buf), err_status);    
+
+    // device not set
+    if (ModelConfig_->getInt("device") < 0){
+        uint8_t buf[]={0x10,numInteropThreads_,0x28,numIntraopThreads_};
+        TF_SetConfig(session_options, buf, sizeof(buf), err_status);    
+    } else {
+    
+        // NB: assume one digit only in [0,1,2,3,4,5,6,7,8,9]
+        uint8_t device_ = ModelConfig_->getInt("device") + 48; // 48 ASCII decimal code for char "0"
+        uint8_t buf[]={0x10,numInteropThreads_,0x28,numIntraopThreads_,0x32,0x3,0x2a,0x1,device_};
+        TF_SetConfig(session_options, buf, sizeof(buf), err_status);    
+    }
+
+
 
     run_options = nullptr;
 
