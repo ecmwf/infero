@@ -1,4 +1,4 @@
-.. _getting_started:
+.. _usage_examples:
 
 Examples
 ========
