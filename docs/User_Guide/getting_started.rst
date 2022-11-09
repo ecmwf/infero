@@ -23,10 +23,10 @@ Runtime dependencies:
 
 Optional runtime dependencies:
 
-  * *TensorFlow Lite* : `<https://github.com/tensorflow/tensorflow.git>`__
-  * *TensorFlow C-API* : `<https://www.tensorflow.org/install/lang_c>`__
-  * *ONNX-Runtime* : `<https://github.com/Microsoft/onnxruntime>`__
-  * *TensorRT* : `<https://developer.nvidia.com/tensorrt>`__
+ * *TensorFlow Lite* : `<https://github.com/tensorflow/tensorflow.git>`__
+ * *TensorFlow C-API* : `<https://www.tensorflow.org/install/lang_c>`__
+ * *ONNX-Runtime* : `<https://github.com/Microsoft/onnxruntime>`__
+ * *TensorRT* : `<https://developer.nvidia.com/tensorrt>`__
 
 
 Installation scripts
@@ -41,8 +41,8 @@ Installation environment can also be customised by editing the following variabl
 
 +----------------------------+-------------------------------+-------------------------------+
 |          Variable          |          Description          |            Default            |
-+----------------------------+-------------------------------+-------------------------------+
-|INFERO_VERBOSE_COMPILATION  |       Verbose flag            |              0                |
++============================+===============================+===============================+
+|INFERO_VERBOSE_COMPILATION  |      Verbose flag             |              0                |
 +----------------------------+-------------------------------+-------------------------------+
 |ROOT_DIR                    |      Infero root path         |           ${HOME}             |
 +----------------------------+-------------------------------+-------------------------------+
@@ -74,8 +74,9 @@ Installation environment can also be customised by editing the following variabl
 
 Manual Installation
 ```````````````````
-Infero employs an out-of-source build/install based on CMake.
-To manually invoke cmake, make sure that ecbuild is installed and the ecbuild executable script is found
+This installation procedure gives more control on the building/installation process.
+Infero employs an out-of-source build/install based on CMake. To manually invoke cmake,
+make sure that ecbuild is installed and the ecbuild executable script is found.
 
 .. code-block:: bash
 
@@ -92,33 +93,58 @@ Now proceed with installation as follows:
 
 .. code-block:: console
 
-   # 1. Create the build directory:
+   # Create the build directory:
    mkdir $builddir
    cd $builddir
 
 .. code-block:: console
 
-   # 2. Run CMake
+   # Run CMake
    ecbuild --prefix=$installdir -- -DECKIT_PATH=<path/to/eckit/install> $srcdir
 
 .. code-block:: console
 
-   # 3. Compile / Install
+   # Compile / Install
    make -j10
    make install
 
+Useful Cmake arguments:
 
-Useful cmake arguments:
- - -DENABLE_TF_LITE=ON
- - -DTENSORFLOWLITE_PATH=</path/to/tensorflow/sources>
- - -DTENSORFLOWLITE_ROOT=</path/to/tflite/root/dir>
- - -DENABLE_TF_C=ON
- - -DTENSORFLOWC_ROOT=</path/to/tf_c/root/dir>
- - -DENABLE_ONNX=ON
- - -DONNX_ROOT=</path/to/onnxruntime/root/dir>
- - -DENABLE_TENSORRT=ON
- - -DTENSORRT_ROOT=</path/to/tensorRT/root/dir>
-
++-----------------------------------+---------------------------------+
+|             Variable              |            Description          |
++===================================+=================================+
+| -DENABLE_TESTS                    |   Enable Infero tests           |
++-----------------------------------+---------------------------------+
+| -DCMAKE_INSTALL_PREFIX            |   Installation root path        |
++-----------------------------------+---------------------------------+
+| -DCMAKE_Fortran_MODULE_DIRECTORY  |   Fortran module path           |
++-----------------------------------+---------------------------------+
+| -Deckit_ROOT                      |   eckit root path               |
++-----------------------------------+---------------------------------+
+| -DENABLE_MPI                      |   Enable MPI                    |
++-----------------------------------+---------------------------------+
+| -DENABLE_FCKIT                    |   Enable fckit                  |
++-----------------------------------+---------------------------------+
+| -DFCKIT_ROOT                      |   fckit root path               |
++-----------------------------------+---------------------------------+
+| -DENABLE_TF_LITE                  |   Enable Tensorflow lite        |
++-----------------------------------+---------------------------------+
+| -DTENSORFLOWLITE_PATH             |   TensorFlow lite sources path  |
++-----------------------------------+---------------------------------+
+| -DTENSORFLOWLITE_ROOT             |   TensorFlow lite root path     |
++-----------------------------------+---------------------------------+
+| -DENABLE_TF_C                     |   Enable TensorFlow C-API       |
++-----------------------------------+---------------------------------+
+| -DTENSORFLOWC_ROOT                |   TensorFlow C-API root path    |
++-----------------------------------+---------------------------------+
+| -DENABLE_ONNX                     |   Enable onnx-runtime           |
++-----------------------------------+---------------------------------+
+| -DONNX_ROOT                       |   ONNX-runtime root path        |
++-----------------------------------+---------------------------------+
+| -DENABLE_TENSORRT                 |   Enable tensor-rt              |
++-----------------------------------+---------------------------------+
+| -DTENSORRT_ROOT                   |   TensorRT root path            |
++-----------------------------------+---------------------------------+
 
 
 Run Tests
@@ -126,4 +152,6 @@ Run Tests
 
 Tests can be run from the script:
 
- * dev/3_run_tests.sh : run Infero tests
+.. code-block:: console
+
+   dev/3_run_tests.sh
