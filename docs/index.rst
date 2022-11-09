@@ -9,6 +9,13 @@ Infero requires a relatively small dependency stack and is therefore also suitab
 
 .. Warning:: This software is still under heavy development and not yet ready for operational use
 
+.. toctree::
+   :maxdepth: 1
+   :caption: User Guide:
+
+   User_Guide/getting_started
+   User_Guide/usage_examples
+
 Architecture
 ------------
 Infero is designed as a thin layer on top of interchangeable inference engines (backends) and provides a common API usable by multiple programming languages. It performs three main steps:
@@ -19,7 +26,7 @@ Infero is designed as a thin layer on top of interchangeable inference engines (
 
 Infero accepts commonly used Input/output data formats for each language of the API. For example, a C++ application will transfer data to/from Infero as raw memory buffers, a Python application will use numpy objects and a Fortran application Fortran arrays.
 
-.. image:: docs/infero_diagram.png
+.. image:: ./infero_diagram.png
    :width: 400pt
    :align: center
    :alt: Infero diagram
@@ -35,6 +42,10 @@ Features
  * `TensorRT <https://developer.nvidia.com/tensorrt>`__
 * Support for Multiple-input Multiple-output models
 * Automatic handling of C-style and Fortran-style tensors
+
+Installation
+------------
+
 
 License
 -------
