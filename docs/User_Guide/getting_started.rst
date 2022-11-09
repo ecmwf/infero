@@ -6,6 +6,7 @@ Getting Started
 Install
 -------
 
+
 Build dependencies
 ``````````````````
 
@@ -27,7 +28,8 @@ Optional runtime dependencies:
   * *ONNX-Runtime* : `<https://github.com/Microsoft/onnxruntime>`__
   * *TensorRT* : `<https://developer.nvidia.com/tensorrt>`__
 
-Step-by-Step Installation scripts
+
+Installation scripts
 `````````````````````````````````
 Utility installation scripts are provided in the /dev directory and can be used for default installation of Infero.
 
@@ -70,8 +72,53 @@ Installation environment can also be customised by editing the following variabl
 +----------------------------+-------------------------------+-------------------------------+
 
 
-Configuration
-`````````````
+Manual Installation
+```````````````````
+Infero employs an out-of-source build/install based on CMake.
+To manually invoke cmake, make sure that ecbuild is installed and the ecbuild executable script is found
+
+.. code-block:: bash
+
+   which ecbuild
+
+Now proceed with installation as follows:
+
+.. code-block:: bash
+
+   # Environment --- Edit as needed
+   srcdir=$(pwd)
+   builddir=build
+   installdir=$HOME/local
+
+.. code-block:: console
+
+   # 1. Create the build directory:
+   mkdir $builddir
+   cd $builddir
+
+.. code-block:: console
+
+   # 2. Run CMake
+   ecbuild --prefix=$installdir -- -DECKIT_PATH=<path/to/eckit/install> $srcdir
+
+.. code-block:: console
+
+   # 3. Compile / Install
+   make -j10
+   make install
+
+
+Useful cmake arguments:
+ - -DENABLE_TF_LITE=ON
+ - -DTENSORFLOWLITE_PATH=</path/to/tensorflow/sources>
+ - -DTENSORFLOWLITE_ROOT=</path/to/tflite/root/dir>
+ - -DENABLE_TF_C=ON
+ - -DTENSORFLOWC_ROOT=</path/to/tf_c/root/dir>
+ - -DENABLE_ONNX=ON
+ - -DONNX_ROOT=</path/to/onnxruntime/root/dir>
+ - -DENABLE_TENSORRT=ON
+ - -DTENSORRT_ROOT=</path/to/tensorRT/root/dir>
+
 
 
 Run Tests
