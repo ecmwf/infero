@@ -78,7 +78,7 @@ This installation procedure gives more control on the building/installation proc
 Infero employs an out-of-source build/install based on CMake. To manually invoke cmake,
 make sure that ecbuild is installed and the ecbuild executable script is found.
 
-.. code-block:: bash
+.. code-block:: console
 
    which ecbuild
 
@@ -91,20 +91,23 @@ Now proceed with installation as follows:
    builddir=build
    installdir=$HOME/local
 
+Create the build directory:
+
 .. code-block:: console
 
-   # Create the build directory:
    mkdir $builddir
    cd $builddir
 
+Run CMake:
+
 .. code-block:: console
 
-   # Run CMake
    ecbuild --prefix=$installdir -- -DECKIT_PATH=<path/to/eckit/install> $srcdir
 
+Compile and Install:
+
 .. code-block:: console
 
-   # Compile / Install
    make -j10
    make install
 

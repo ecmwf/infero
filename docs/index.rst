@@ -27,7 +27,7 @@ Infero is designed as a thin layer on top of interchangeable inference engines (
 Infero accepts commonly used Input/output data formats for each language of the API. For example, a C++ application will transfer data to/from Infero as raw memory buffers, a Python application will use numpy objects and a Fortran application Fortran arrays.
 
 .. image:: _static/infero_diagram.png
-   :width: 400pt
+   :width: 50%
    :align: center
    :alt: Infero diagram
 
@@ -42,10 +42,6 @@ Features
    * `TensorRT <https://developer.nvidia.com/tensorrt>`__
 * Support for Multiple-input Multiple-output models
 * Automatic handling of C-style and Fortran-style tensors
-
-Installation
-------------
-
 
 License
 -------
