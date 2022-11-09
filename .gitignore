@@ -39,3 +39,4 @@ infero_version.h
 .idea/
 *.swp
 *.txt.user
+.DS_Store
