@@ -58,7 +58,7 @@ int main(int argc, char** argv){
 
     infero_handle_t* infero_handle;
 
-    assert(argc == 4);
+    assert(argc == 5);
 
     printf("model_path %s \n", model_path);
     printf("model_type %s \n", model_type);
