@@ -3,6 +3,10 @@
 Examples
 ========
 
+
+Overview
+--------
+
 Infero comes with examples that demonstrate how to use Infero API's for different languages.
 Examples can be found in:
 
@@ -19,6 +23,39 @@ output values are expected for the all the examples.
  * *1_example_mimo_c.c*
  * *2_example_mimo_cpp.cc*
  * *3_example_mimo_fortran.F90*
+
+
+Run the examples
+----------------
+
+The examples can be run as follows (in this specific case shown below, the onnx backend is used - therefore to run the
+example as below, make sure that ONNX backend is installed - see :ref:`getting_started`).
+
+C example:
+
+.. code-block:: bash
+
+cd <path/to/infero/build>
+./bin/1_example_mimo_c <path/to/infero/sources>/tests/data/mimo_model/mimo_model.onnx onnx input_1 input_2 dense_6
+
+C++ example:
+
+.. code-block:: bash
+
+cd <path/to/infero/build>
+./bin/2_example_mimo_cpp <path/to/infero/sources>/tests/data/mimo_model/mimo_model.onnx onnx input_1 input_2 dense_6
+
+Fortran example:
+
+.. code-block:: bash
+
+cd <path/to/infero/build>
+./bin/3_example_mimo_fortran <path/to/infero/sources>/tests/data/mimo_model/mimo_model.onnx onnx input_1 input_2 dense_6
+
+
+
+Code Explained
+----------------
 
 The examples are extensively commented to describe the usage of the API's step-by-step. A brief description
 of the main sections from the Fortran example is also reported here below (for the full example, refer
