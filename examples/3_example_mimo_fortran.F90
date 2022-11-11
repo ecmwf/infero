@@ -20,25 +20,27 @@ character(1024) :: model_path
 character(1024) :: model_type
 character(1024) :: yaml_config
 
-! Fortran array containing input data
-character(len=128) :: t1_name
-character(len=128) :: t2_name
-character(len=128) :: t3_name
-
 ! n batches
 integer, parameter :: n_batch = 3
-
-! infero_tensor_set: key-value store of input tensors
-type(infero_tensor_set) :: iset
 
 ! input tensors
 real(c_float) :: t1(n_batch,32) = 0
 real(c_float) :: t2(n_batch,128) = 0
 
+! names of input layers
+character(len=128) :: t1_name
+character(len=128) :: t2_name
+
+! infero_tensor_set: map {name: tensor}
+type(infero_tensor_set) :: iset
+
 ! output tensor
 real(c_float) :: t3(n_batch,1) = 0
 
-! infero_tensor_set: key-value store of output tensors
+! names of output layers
+character(len=128) :: t3_name
+
+! infero_tensor_set: map {name: tensor}
 type(infero_tensor_set) :: oset
 
 ! the infero model
@@ -77,7 +79,6 @@ call infero_check(iset%print())
 
 ! prepare output tensors for named layers
 call infero_check(oset%initialise())
-
 call infero_check(oset%push_tensor(t3, TRIM(t3_name)))
 call infero_check(oset%print())
 
