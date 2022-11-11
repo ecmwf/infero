@@ -36,6 +36,7 @@ using ModelParams_t = std::map<std::string,std::string>;
 /// Interface for an inference model
 class InferenceModel {
 
+    using TensorMap = std::map<std::string, eckit::linalg::TensorFloat*>;
 
 public:
 
@@ -57,7 +58,11 @@ public:
 
     /// run the inference (multi-input/multi-output inference)
     virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
-                            std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
+                        std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
+
+
+    /// Interface for mimo with tensor map 
+    virtual void infer_mimo(TensorMap& iMap, TensorMap& oMap);
 
     virtual void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
                                  std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);

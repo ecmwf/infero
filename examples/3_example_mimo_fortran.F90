@@ -111,4 +111,3 @@ call infero_check(model%free())
 call infero_check(infero_finalise())
 
 end program
-

@@ -82,21 +82,14 @@ int main(int argc, char** argv) {
     std::cout << *engine << std::endl;
 
     // pack input/output
-    std::vector<eckit::linalg::TensorFloat*> inputs(2);
-    inputs[0] = t1;
-    inputs[1] = t2;
+    std::map<std::string, eckit::linalg::TensorFloat*> input_map;
+    input_map.insert(make_pair(name_input1, t1));
+    input_map.insert(make_pair(name_input2, t2));
 
-    std::vector<const char*> input_names(2);
-    input_names[0] = name_input1.c_str();
-    input_names[1] = name_input2.c_str();
+    std::map<std::string, eckit::linalg::TensorFloat*> output_map;
+    output_map.insert(make_pair(name_output, t3));
 
-    std::vector<eckit::linalg::TensorFloat*> outputs(1);
-    outputs[0] = t3;
-    std::vector<const char*> output_names(1);
-    output_names[0] = name_output.c_str();
-
-    // run inference
-    engine->infer_mimo(inputs, input_names, outputs, output_names);
+    engine->infer_mimo(input_map, output_map);
 
     // print output tensor
     std::cout << *t3 << std::endl;
