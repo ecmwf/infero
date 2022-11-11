@@ -31,26 +31,28 @@ Run the examples
 The examples can be run as follows (in this specific case shown below, the onnx backend is used - therefore to run the
 example as below, make sure that ONNX backend is installed - see :ref:`getting_started`).
 
+Note that mimo_model_path is: <path/to/infero/sources>/tests/data/mimo_model
+
 C example:
 
-.. code-block:: bash
+.. code-block:: console
 
-cd <path/to/infero/build>
-./bin/1_example_mimo_c <path/to/infero/sources>/tests/data/mimo_model/mimo_model.onnx onnx input_1 input_2 dense_6
+   cd path/to/infero/build
+   ./bin/1_example_mimo_c <mimo_model_path>/mimo_model.onnx onnx input_1 input_2 dense_6
 
 C++ example:
 
-.. code-block:: bash
+.. code-block:: console
 
-cd <path/to/infero/build>
-./bin/2_example_mimo_cpp <path/to/infero/sources>/tests/data/mimo_model/mimo_model.onnx onnx input_1 input_2 dense_6
+   cd <path/to/infero/build>
+   ./bin/2_example_mimo_cpp <mimo_model_path>/mimo_model.onnx onnx input_1 input_2 dense_6
 
 Fortran example:
 
-.. code-block:: bash
+.. code-block:: console
 
-cd <path/to/infero/build>
-./bin/3_example_mimo_fortran <path/to/infero/sources>/tests/data/mimo_model/mimo_model.onnx onnx input_1 input_2 dense_6
+   cd <path/to/infero/build>
+   ./bin/3_example_mimo_fortran <<mimo_model_path>/mimo_model.onnx onnx input_1 input_2 dense_6
 
 
 
