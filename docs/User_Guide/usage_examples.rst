@@ -10,15 +10,15 @@ Examples can be found in:
 
 And when compiled, the corresponding executables are found in:
 
-* <infero-build-path>/bin
+ * <infero-build-path>/bin
 
 The examples show how to use Infero for a multi-input single-output Machine Learning model. The examples show how to
 call Infero API's from C, C++ and Fortran (same model and input data are used for all the cases). The same
 output values are expected for the all the examples.
 
-* *1_example_mimo_c.c*
-* *2_example_mimo_cpp.cc*
-* *3_example_mimo_fortran.F90*
+ * *1_example_mimo_c.c*
+ * *2_example_mimo_cpp.cc*
+ * *3_example_mimo_fortran.F90*
 
 The examples are extensively commented to describe the usage of the API's step-by-step. A brief description
 of the main sections from the Fortran example is also reported here below (for the full example, refer
@@ -143,8 +143,3 @@ finalise the library itself
 
    ! finalise library
    call infero_check(infero_finalise())
-
-
-
-TODO
-----

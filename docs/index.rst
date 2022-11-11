@@ -31,6 +31,15 @@ Infero accepts commonly used Input/output data formats for each language of the 
    :align: center
    :alt: Infero diagram
 
+Infero is primarily developed in C++, but provides API for multiple languages. A diagram of the API architecture is
+shown here below:
+
+.. image:: _static/infero_api.png
+   :width: 90%
+   :align: center
+   :alt: Infero diagram
+
+
 Features
 --------
 * API available for multiple languages:
