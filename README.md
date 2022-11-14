@@ -7,7 +7,7 @@ a common interface to multiple inference engines and can be called
 from multiple languages (C/C++, Fortran, Python).
 
 ### Documentation
-Infero Documentation can be found here: https://infero.readthedocs.io/en/feature-docs/index.html.
+Infero Documentation can be found on [Read-the-docs](https://infero.readthedocs.io/en/feature-docs/index.html).
 
 ### Disclaimer
 This software is still under heavy development and not yet ready 
