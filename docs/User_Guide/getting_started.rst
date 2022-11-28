@@ -10,7 +10,7 @@ Install
 Build dependencies
 ``````````````````
 
-Compilation dependencies
+Compilation dependencies:
 
  * C/C++ compiler
  * Fortran 90 compiler
@@ -37,7 +37,7 @@ Utility installation scripts are provided in the /dev directory and can be used 
  * 1_install_deps.sh : installs dependencies
  * 2_install_infero.sh : installs Infero
 
-Installation environment can also be customised by editing the following variables in the *env.sh* script:
+The installation environment can also be customised by editing the following variables in the *env.sh* script:
 
 +----------------------------+-------------------------------+-------------------------------+
 |          Variable          |          Description          |            Default            |
@@ -76,7 +76,7 @@ Manual Installation
 ```````````````````
 This installation procedure gives more control on the building/installation process.
 Infero employs an out-of-source build/install based on CMake. To manually invoke cmake,
-make sure that ecbuild is installed and the ecbuild executable script is found.
+make sure that ecbuild is installed and the ecbuild executable script is found:
 
 .. code-block:: console
 
