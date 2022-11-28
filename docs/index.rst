@@ -14,8 +14,9 @@ Infero requires a relatively small dependency stack and is therefore also suitab
    :maxdepth: 1
    :caption: User Guide:
 
-   User_Guide/getting_started
-   User_Guide/usage_examples
+   User_Guide/quick_start
+   User_Guide/build_and_install
+   User_Guide/examples
 
 Architecture
 ------------

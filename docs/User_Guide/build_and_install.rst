@@ -1,43 +1,40 @@
-.. _getting_started:
+.. _build_and_install:
 
-Getting Started
+Build & Install
 ===============
-
-Install
--------
 
 
 Build dependencies
-``````````````````
+------------------
 
-Compilation dependencies:
+Compilation dependencies
 
  * C/C++ compiler
  * Fortran 90 compiler
- * *CMake* > 3.16 --- For use and installation: `<http://www.cmake.org/>`__
- * *ecbuild* --- ECMWF library of CMake macros: `<https://github.com/ecmwf/ecbuild>`__
+ * `CMake <http://www.cmake.org/>`__ > 3.16
+ * `ecbuild <https://github.com/ecmwf/ecbuild>`__ --- ECMWF library of CMake macros
 
 Runtime dependencies:
 
- * *eckit*: `<https://github.com/ecmwf/eckit>`__
+ * `eckit <https://github.com/ecmwf/eckit>`__ --- ECMWF C++ toolkit
 
 Optional runtime dependencies:
 
- * *TensorFlow Lite* : `<https://github.com/tensorflow/tensorflow.git>`__
- * *TensorFlow C-API* : `<https://www.tensorflow.org/install/lang_c>`__
- * *ONNX-Runtime* : `<https://github.com/Microsoft/onnxruntime>`__
- * *TensorRT* : `<https://developer.nvidia.com/tensorrt>`__
+ * `TensorFlow Lite <https://github.com/tensorflow/tensorflow.git>`__
+ * `TensorFlow C-API <https://www.tensorflow.org/install/lang_c>`__
+ * `ONNX-Runtime <https://github.com/Microsoft/onnxruntime>`__
+ * `TensorRT <https://developer.nvidia.com/tensorrt>`__
 
 
 Installation scripts
-`````````````````````````````````
+--------------------
 Utility installation scripts are provided in the /dev directory and can be used for default installation of Infero.
 
  * env.sh : defines installation environment
  * 1_install_deps.sh : installs dependencies
  * 2_install_infero.sh : installs Infero
 
-The installation environment can also be customised by editing the following variables in the *env.sh* script:
+Installation environment can also be customised by editing the following variables in the *env.sh* script:
 
 +----------------------------+-------------------------------+-------------------------------+
 |          Variable          |          Description          |            Default            |
@@ -73,10 +70,10 @@ The installation environment can also be customised by editing the following var
 
 
 Manual Installation
-```````````````````
+-------------------
 This installation procedure gives more control on the building/installation process.
 Infero employs an out-of-source build/install based on CMake. To manually invoke cmake,
-make sure that ecbuild is installed and the ecbuild executable script is found:
+make sure that ecbuild is installed and the ecbuild executable script is found.
 
 .. code-block:: console
 
