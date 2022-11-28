@@ -3,12 +3,12 @@ Infero
 
 Description
 -----------
-Infero is a Machine Learning support library that runs a pre-trained Machine Learning model for inference. Infero
+Infero is a machine learning support library that runs a pre-trained machine learning model for inference. Infero
 provides a common interface to multiple inference engines and can be called from multiple languages (C/C++, Fortran, Python).
 
 Infero requires a relatively small dependency stack and is therefore also suitable for tightly-managed HPC environments.
 
-.. Warning:: This software is still under heavy development and not yet ready for operational use
+.. Warning:: This software is still under development and not yet ready for operational use.
 
 .. toctree::
    :maxdepth: 1
@@ -26,7 +26,7 @@ usable by multiple programming languages. It performs three main steps:
  2. Runs the inference engine
  3. Transfers output data back to the caller application
 
-Infero accepts commonly used Input/output data formats for each language of the API. For example, a C++ application
+Infero accepts commonly used input/output data formats for each language of the API. For example, a C++ application
 will transfer data to/from Infero as raw memory buffers, a Python application will use numpy objects and a Fortran
 application Fortran arrays.
 
@@ -35,7 +35,7 @@ application Fortran arrays.
    :align: center
    :alt: Infero diagram
 
-Infero is primarily developed in C++ and the additional API for C, Fortran and Python are built ont top of the C++ code.
+Infero is primarily developed in C++ and the additional APIs for C, Fortran and Python are built on top of the C++ code.
 A schematic diagram of the API architecture is shown here below:
 
 .. image:: _static/infero_api.png
