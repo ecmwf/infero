@@ -31,7 +31,7 @@ Run the examples
 The examples can be run as follows (in this specific case shown below, the onnx backend is used - therefore to run the
 example as below, make sure that ONNX backend is installed - see :ref:`getting_started`).
 
-Note that here below <path/to/mimo/model> is: <path/to/infero/sources>/tests/data/mimo_model
+Note that here <path/to/mimo/model> is <path/to/infero/sources>/tests/data/mimo_model
 
 C example:
 
@@ -64,7 +64,7 @@ of the main sections from the Fortran example is also reported here below (for t
 to *3_example_mimo_fortran.F90*).
 
 This section below contains the declarations of the necessary input variables. t1 and t2 are the fortran arrays containing
-the data and t1_name and t2_name are the corresponding names. Each tensor must in fact be associated to the name of the
+the data and t1_name and t2_name are the corresponding names. Each tensor must be associated to the name of the
 input layer of the machine learning model that receives the tensor data as input.
 
 .. code-block:: fortran
@@ -130,7 +130,7 @@ Input tensors are filled row-wise with dummy values for this example and the *in
    ! print the input tensor set
    call infero_check(iset%print())
 
-Same thing is done for the output tensor
+The same is done for the output tensor:
 
 .. code-block:: fortran
 
@@ -140,7 +140,7 @@ Same thing is done for the output tensor
    call infero_check(oset%print())
 
 
-Configure and call infero inference method
+Configure and call infero inference method:
 
 .. code-block:: fortran
 
@@ -156,7 +156,7 @@ Configure and call infero inference method
    call infero_check(model%infer(iset, oset))
 
 
-Print inference statistics, configuration and output values
+Print inference statistics, configuration and output values:
 
 .. code-block:: fortran
 
@@ -169,7 +169,7 @@ Print inference statistics, configuration and output values
 
 
 Finally free the allocated memory for the input and output tensor sets and, free the model and
-finalise the library itself
+finalise the library itself:
 
 .. code-block:: fortran
 
