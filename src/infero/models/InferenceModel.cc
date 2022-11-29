@@ -127,6 +127,27 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
 
 }
 
+
+void InferenceModel::infer_mimo(TensorMap& iMap, TensorMap& oMap) {
+
+    std::vector<eckit::linalg::TensorFloat*> input_tensors;
+    std::vector<const char*> input_names;
+    for(auto& p: iMap){
+        input_names.push_back(p.first.c_str());
+        input_tensors.push_back(p.second);        
+    }
+
+    std::vector<eckit::linalg::TensorFloat*> output_tensors;
+    std::vector<const char*> output_names;
+    for(auto& p: oMap){
+        output_names.push_back(p.first.c_str());
+        output_tensors.push_back(p.second);        
+    }
+
+    infer_mimo(input_tensors, input_names, output_tensors, output_names);
+
+}
+
 // inference for models with multiple inputs and outputs
 void InferenceModel::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>& tIn, std::vector<const char*>& input_names,
                                      std::vector<eckit::linalg::TensorFloat*>& tOut, std::vector<const char*>& output_names)
