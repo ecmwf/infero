@@ -26,14 +26,8 @@ jobs:
         name:
         - gnu-10@ubuntu-20.04
         - clang-12@ubuntu-20.04
-        - gnu-10@ubuntu-18.04
-        - clang-9@ubuntu-18.04
-        # Currently disabled due to ONNX Runtime build issue (flatbuffers dependency):
-        #   - g++-10: error: unrecognized command-line option '-stdlib=libc++'
-        # - gnu-10@macos-10.15
-        # Currently disabled due to infero build issue:
-        #  - Undefined symbols for architecture x86_64: "eckit::mpi::comm(char const*)"
-        # - clang-12@macos-10.15
+        - gnu-11@ubuntu-22.04
+        - clang-14@ubuntu-22.04
         include:
         - name: gnu-10@ubuntu-20.04
           os: ubuntu-20.04
@@ -47,35 +41,18 @@ jobs:
           compiler_cc: clang-12
           compiler_cxx: clang++-12
           compiler_fc: gfortran-10
-        - name: gnu-10@ubuntu-18.04
-          os: ubuntu-18.04
-          compiler: gnu-10
-          compiler_cc: gcc-10
-          compiler_cxx: g++-10
-          compiler_fc: gfortran-10
-        - name: clang-9@ubuntu-18.04
-          os: ubuntu-18.04
-          compiler: clang-9
-          compiler_cc: clang-9
-          compiler_cxx: clang++-9
-          compiler_fc: gfortran-9
-        # Currently disabled due to ONNX Runtime build issue (flatbuffers dependency):
-        #   - g++-10: error: unrecognized command-line option '-stdlib=libc++'
-        # - name: gnu-10@macos-10.15
-        #   os: macos-10.15
-        #   compiler: gnu-10
-        #   compiler_cc: gcc-10
-        #   compiler_cxx: g++-10
-        #   compiler_fc: gfortran-10
-        # Currently disabled due to infero build issue:
-        #  - Undefined symbols for architecture x86_64: "eckit::mpi::comm(char const*)"
-        # # Xcode compiler requires empty environment variables, so we pass null (~) here
-        # - name: clang-12@macos-10.15
-        #   os: macos-10.15
-        #   compiler: clang-12
-        #   compiler_cc: ~
-        #   compiler_cxx: ~
-        #   compiler_fc: gfortran-10
+        - name: gnu-11@ubuntu-22.04
+          os: ubuntu-22.04
+          compiler: gnu-11
+          compiler_cc: gcc-11
+          compiler_cxx: g++-11
+          compiler_fc: gfortran-11
+        - name: clang-14@ubuntu-22.04
+          os: ubuntu-22.04
+          compiler: clang-14
+          compiler_cc: clang-14
+          compiler_cxx: clang++-14
+          compiler_fc: gfortran-14
     runs-on: ${{ matrix.os }}
     env:
 
@@ -100,14 +77,14 @@ jobs:
       shell: bash -eux {0}
       run: |
         DEPS_PATH="${{ runner.temp }}/deps"
-        INSTALL_PATH="${{ runner.temp }}/install"        
+        INSTALL_PATH="${{ runner.temp }}/install"
 
         ONNX_PATH="${DEPS_PATH}/onnxruntime"
         ONNX_INSTALL_PATH="${DEPS_PATH}/install_onnx"
-        
+
         TFC_PATH="${DEPS_PATH}/tensorflow_c_api"
         TFC_INSTALL_PATH="${DEPS_PATH}/install_tfc"
-        
+
         TENSORFLOW_PATH="$DEPS_PATH/tensorflow"
         TFLITE_PATH="${DEPS_PATH}/tensorflow/tensorflow/lite/build"
 
@@ -133,11 +110,11 @@ jobs:
         echo "${DEPS_ENV_TFC}" >> ${GITHUB_ENV}
         echo "${DEPS_ENV_TFLITE}" >> ${GITHUB_ENV}
 
-        echo ::set-output name=deps-cache-key::"deps-onnxruntime-${{ env.ONNX_VERSION }}-tfc-${{ env.TFC_VERSION }}-tflite-${{ env.TFLITE_VERSION }}-cache_v8-"
+        echo deps-cache-key="deps-onnxruntime-${{ env.ONNX_VERSION }}-tfc-${{ env.TFC_VERSION }}-tflite-${{ env.TFLITE_VERSION }}-cache_v8-" >> $GITHUB_OUTPUT
 
     - name: Check for Dependency Cache
       id: deps-cache
-      uses: actions/cache@v2
+      uses: actions/cache@v3
       with:
         path: ${{ env.DEPS_PATH }}
         key: ${{ steps.setup-environment.outputs.deps-cache-key }}${{ matrix.compiler }}@${{ matrix.os }}
@@ -209,8 +186,7 @@ jobs:
     - deps
     with:
       skip_matrix_jobs: |
-        gnu-10@macos-10.15
-        clang-12@macos-10.15
+        clang-14@macos-12
       codecov_upload: false
       notify_teams: true
       deps_cache_key: ${{ needs.deps.outputs.deps-cache-key }}
