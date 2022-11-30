@@ -1,14 +1,14 @@
 Infero
 ======
 
+.. Warning:: This software is still under development and not yet ready for operational use.
+
 Description
 -----------
 Infero is a machine learning support library that runs a pre-trained machine learning model for inference. Infero
 provides a common interface to multiple inference engines and can be called from multiple languages (C/C++, Fortran, Python).
 
 Infero requires a relatively small dependency stack and is therefore also suitable for tightly-managed HPC environments.
-
-.. Warning:: This software is still under development and not yet ready for operational use.
 
 .. toctree::
    :maxdepth: 1
@@ -59,7 +59,7 @@ Features
 
 License
 -------
-*Infero* is available under the open source `Apache License`__. In applying this licence, ECMWF does not waive
+*Infero* is available under the open source `Apache License Version 2`__. In applying this licence, ECMWF does not waive
 the privileges and immunities granted to it by virtue of its status as an intergovernmental organisation nor
 does it submit to any jurisdiction.
 
