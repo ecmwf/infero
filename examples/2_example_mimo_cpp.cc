@@ -46,7 +46,7 @@ int main(int argc, char** argv) {
     // t1(2,:) = 0.2
     // t1(3,:) = 0.3
     std::vector<size_t> input1_shape{batchSize,32};
-    eckit::linalg::TensorFloat* t1{new eckit::linalg::TensorFloat(input1_shape, false)};
+    eckit::linalg::TensorFloat* t1{new eckit::linalg::TensorFloat(input1_shape, eckit::linalg::TensorFloat::Layout::RowMajor)};
     for (size_t i=0; i<batchSize * 32; i++){
         if(i>=0 && i<32*1){
           *(t1->data()+i) = 0.1;
@@ -62,7 +62,7 @@ int main(int argc, char** argv) {
     // t2(2,:) = 66.0
     // t2(3,:) = 99.0
     std::vector<size_t> input2_shape{batchSize,128};
-    eckit::linalg::TensorFloat* t2{new eckit::linalg::TensorFloat(input2_shape, false)};
+    eckit::linalg::TensorFloat* t2{new eckit::linalg::TensorFloat(input2_shape, eckit::linalg::TensorFloat::Layout::RowMajor)};
     for (size_t i=0; i<batchSize * 128; i++){
         if(i>=0 && i<128*1){
           *(t2->data()+i) = 33.0;
@@ -75,7 +75,7 @@ int main(int argc, char** argv) {
 
     // Output tensor
     std::vector<size_t> out_shape_vec{batchSize, 1};
-    eckit::linalg::TensorFloat* t3{new eckit::linalg::TensorFloat(out_shape_vec, false)};
+    eckit::linalg::TensorFloat* t3{new eckit::linalg::TensorFloat(out_shape_vec, eckit::linalg::TensorFloat::Layout::RowMajor)};
 
     // Inference model
     std::unique_ptr<InferenceModel> engine(InferenceModelFactory::instance().build(model_type, local));

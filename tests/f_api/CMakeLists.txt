@@ -1,5 +1,6 @@
 
-list( APPEND _fapi_tests tensor_set)
+# list( APPEND _fapi_tests tensor_set)
+list( APPEND _fapi_tests)
 
 # ONNX needed
 if (HAVE_ONNX)

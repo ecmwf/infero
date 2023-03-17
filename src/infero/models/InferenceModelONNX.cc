@@ -119,14 +119,15 @@ void InferenceModelONNX::infer_impl(TensorFloat& tIn, TensorFloat& tOut,
     ASSERT(output_tensors.size() == 1 && output_tensors.front().IsTensor());
 
     eckit::Timing t_start(statistics_.timer());
-    if (tOut.isRight()) {
+    if (tOut.layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
 
          // ONNX uses Left (C) tensor layouts, so we need to convert
          auto out_shape = output_tensors.front().GetTensorTypeAndShapeInfo().GetShape();
          TensorFloat tLeft(const_cast<float*>(output_tensors.front().GetTensorData<float>()),
-                           utils::convert_shape<int64_t, size_t>(out_shape), false);
+                           utils::convert_shape<int64_t, size_t>(out_shape), 
+                           eckit::linalg::TensorFloat::Layout::RowMajor);
 
-         TensorFloat tRight = tLeft.transformLeftToRightLayout();
+         TensorFloat tRight = tLeft.transformRowMajorToColMajor();
          tOut = tRight;
     }
 
@@ -177,15 +178,15 @@ void InferenceModelONNX::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*
 
          ASSERT(output_tensors[i].IsTensor());
 
-         if (tOut[i]->isRight()) {
+         if (tOut[i]->layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
 
              // ONNX uses Left (C) tensor layouts, so we need to convert
              auto out_shape = output_tensors[i].GetTensorTypeAndShapeInfo().GetShape();
              TensorFloat tLeft(const_cast<float*>(output_tensors[i].GetTensorData<float>()),
                                utils::convert_shape<int64_t, size_t>(out_shape),
-                               false);  // wrap data
+                               eckit::linalg::TensorFloat::Layout::RowMajor);  // wrap data
 
-             TensorFloat tRight = tLeft.transformLeftToRightLayout();
+             TensorFloat tRight = tLeft.transformRowMajorToColMajor();
              *tOut[i] = tRight;
          }
          else {

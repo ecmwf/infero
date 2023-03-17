@@ -56,7 +56,7 @@ std::vector<T> convert_shape(const std::vector<F>& vec) {
 ///  right-ness bool, rank, [tensor shape components], data...
 ///
 template <typename S>
-Tensor<S>* tensor_from_csv(const std::string& filename, bool isright = false) {
+Tensor<S>* tensor_from_csv(const std::string& filename, typename Tensor<S>::Layout layout = Tensor<S>::Layout::RowMajor) {
 
     Log::info() << "Reading Tensor CSV file " << filename << std::endl;
 
@@ -86,7 +86,7 @@ Tensor<S>* tensor_from_csv(const std::string& filename, bool isright = false) {
     }
 
     // fill the tensor (which has now ownership of allocated memory)
-    Tensor<S>* tensor_ptr = new Tensor<S>(local_shape, isright);
+    Tensor<S>* tensor_ptr = new Tensor<S>(local_shape, layout);
     for (size_t i = 0; i < sz; i++) {
         file >> *(tensor_ptr->data() + i);
         file.get();
@@ -110,7 +110,7 @@ void tensor_to_csv(const Tensor<S>& T, const std::string& filename) {
     std::ofstream of(filename);
 
     // layout
-    of << T.isRight() << ',';
+    of << static_cast<int>(T.layout()) << ',';
 
     // dims
     of << T.shape().size() << ',';
@@ -130,7 +130,7 @@ void tensor_to_csv(const Tensor<S>& T, const std::string& filename) {
 
 /// Tensor from numpy file .npy
 template <typename S>
-Tensor<S>* tensor_from_numpy(const std::string& filename, bool isright = false) {
+Tensor<S>* tensor_from_numpy(const std::string& filename, typename Tensor<S>::Layout layout = Tensor<S>::Layout::RowMajor) {
 
     Log::info() << "Reading numpy file " << filename << std::endl;
 
@@ -145,7 +145,7 @@ Tensor<S>* tensor_from_numpy(const std::string& filename, bool isright = false) 
     }
 
     // fill the tensor (which has now ownership of allocated memory)
-    Tensor<S>* tensor_ptr = new Tensor<S>(local_shape, isright);
+    Tensor<S>* tensor_ptr = new Tensor<S>(local_shape, layout);
 
     std::vector<S> vv = arr.as_vec<S>();
     for (size_t i = 0; i < vv.size(); i++) {
@@ -165,16 +165,16 @@ void tensor_to_numpy(const Tensor<S>& T, const std::string& filename) {
 
 
 template <typename S>
-Tensor<S>* tensor_from_file(const std::string& filename, bool isright = false) {
+Tensor<S>* tensor_from_file(const std::string& filename, typename Tensor<S>::Layout layout = Tensor<S>::Layout::RowMajor) {
 
     Tensor<S>* tensor_ptr;
 
     std::string ext = filename.substr(filename.find_last_of("."));
     if (ext == ".csv") {
-        tensor_ptr = tensor_from_csv<S>(filename, isright);
+        tensor_ptr = tensor_from_csv<S>(filename, layout);
     }
     else if (ext == ".npy") {
-        tensor_ptr = tensor_from_numpy<S>(filename, isright);
+        tensor_ptr = tensor_from_numpy<S>(filename, layout);
     }
     else {
         throw eckit::BadValue("File format " + ext + " not supported!", Here());

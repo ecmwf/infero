@@ -105,9 +105,9 @@ int main(int argc, char** argv){
 
     // 3) run inference
     for (int i=0; i<nInferenceReps; i++){
-        infero_inference_float_ctensor( infero_handle,
-                                        2, input_tensor, input_size,
-                                        2, output_tensor, output_size );
+        infero_inference_float( infero_handle,
+                                2, input_tensor, input_size, 0,
+                                2, output_tensor, output_size, 0 );
     }
 
     // 4) close and delete the handle

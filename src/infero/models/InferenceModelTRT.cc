@@ -134,10 +134,10 @@ void InferenceModelTRT::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
 
     eckit::Timing t_start(statistics_.timer());
     float* output = static_cast<float*>(buffers.getHostBuffer(output_tensor_name));    
-    if (tOut.isRight()) {
+    if (tOut.layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
         // TRT uses Left (C) tensor layouts, so we need to convert
         eckit::linalg::TensorFloat tLeft(output, tOut.shape(), false);  // wrap data
-        eckit::linalg::TensorFloat tRight = tLeft.transformLeftToRightLayout();
+        eckit::linalg::TensorFloat tRight = tLeft.transformRowMajorToColMajor();
         tOut = tRight;
     }
     else {
@@ -196,11 +196,11 @@ void infero::InferenceModelTRT::infer_mimo_impl(std::vector<eckit::linalg::Tenso
         // output buffer
         float* output = static_cast<float*>(buffers.getHostBuffer(output_names[i]));
 
-        if (tOut[i]->isRight()) {
+        if (tOut[i]->layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
 
             // TFC uses Left (C) tensor layouts, so we need to convert
             eckit::linalg::TensorFloat tLeft(output, tOut[i]->shape(), false);  // wrap data
-            eckit::linalg::TensorFloat tRight = tLeft.transformLeftToRightLayout();
+            eckit::linalg::TensorFloat tRight = tLeft.transformRowMajorToColMajor();
             *tOut[i] = tRight;
 
         } else {

@@ -125,10 +125,10 @@ void InferenceModelTFlite::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::li
     Log::info() << "Copying output..." << std::endl;
     eckit::Timing t_start(statistics_.timer());
     ASSERT(tOut.shape() == out_shape);
-    if (tOut.isRight()) {
+    if (tOut.layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
         // TFlite uses Left (C) tensor layouts, so we need to convert
         TensorFloat tLeft(output, out_shape, false);  // wrap data
-        TensorFloat tRight = tLeft.transformLeftToRightLayout();
+        TensorFloat tRight = tLeft.transformRowMajorToColMajor();
         tOut = tRight;
     }
     else {
@@ -187,10 +187,10 @@ void InferenceModelTFlite::infer_mimo_impl(std::vector<eckit::linalg::TensorFloa
         // copy output data
         Log::info() << "Copying output..." << std::endl;
 
-        if (tOut[i]->isRight()) {
+        if (tOut[i]->layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
             // TFlite uses Left (C) tensor layouts, so we need to convert
             TensorFloat tLeft(output, tOut[i]->shape(), false);  // wrap data
-            TensorFloat tRight = tLeft.transformLeftToRightLayout();
+            TensorFloat tRight = tLeft.transformRowMajorToColMajor();
             *tOut[i] = tRight;
         }
         else {

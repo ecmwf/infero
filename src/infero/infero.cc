@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
         getline( ss, val, ',' );
         out_shape_vec.push_back( std::stoull(val) );
     }
-    TensorFloat predT(out_shape_vec, false);
+    TensorFloat predT(out_shape_vec, eckit::linalg::TensorFloat::Layout::RowMajor);
 
     // Inference model
     std::unique_ptr<InferenceModel> engine(InferenceModelFactory::instance().build(engine_type, local));

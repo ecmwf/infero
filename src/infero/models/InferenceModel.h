@@ -53,19 +53,8 @@ public:
     virtual void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
                        std::string input_name = "", std::string output_name = "");
 
-    virtual void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
-                            std::string input_name = "", std::string output_name = "");
-
-    /// run the inference (multi-input/multi-output inference)
-    virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
-                        std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
-
-
-    /// Interface for mimo with tensor map 
+    /// MIMO (Multi Input Multi Output) inference 
     virtual void infer_mimo(TensorMap& iMap, TensorMap& oMap);
-
-    virtual void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
-                                 std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
 
     /// closes the engine
     virtual void close();    
@@ -77,6 +66,17 @@ public:
     ModelStatistics& statistics(){ return statistics_; }
 
 protected:
+
+    virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
+                        std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
+
+    virtual void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
+                            std::string input_name = "", std::string output_name = "");
+
+    virtual void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
+                                 std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
+
+
 
     /// print the model
     virtual void print(std::ostream& os) const = 0;

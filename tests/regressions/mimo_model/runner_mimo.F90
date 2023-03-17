@@ -11,6 +11,8 @@
 program my_program
 
 use inferof
+use fckit_map_module, only : fckit_map
+use fckit_tensor_module, only : fckit_tensor_float
 use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 
 implicit none
@@ -25,6 +27,10 @@ character(1024) :: yaml_config
 character(len=128) :: t1_name
 character(len=128) :: t2_name
 character(len=128) :: t3_name
+
+type(fckit_tensor_float) :: tensor1
+type(fckit_tensor_float) :: tensor2
+type(fckit_tensor_float) :: tensor3
 
 integer :: i, j, cc
 
@@ -45,8 +51,8 @@ real(c_float) :: expected_output(n_batch_i) = (/ &
                                              4343.7505,&
                                              4855.0225 /)
 
-type(infero_tensor_set) :: iset
-type(infero_tensor_set) :: oset
+type(fckit_map) :: imap
+type(fckit_map) :: omap
 
 type(infero_model) :: model
 
@@ -88,17 +94,17 @@ t2 = t2 / (n_batch_i*128)
 call infero_check(infero_initialise())
 
 ! prepare input tensors for named layers
-call infero_check(iset%initialise())
-call infero_check(iset%push_tensor(t1, TRIM(t1_name)))
-call infero_check(iset%push_tensor(t2, TRIM(t2_name)))
-print*, shape(t1),shape(t2),shape(t3)
-call infero_check(iset%print())
+tensor1 = fckit_tensor_float(t1)
+tensor2 = fckit_tensor_float(t2)
+
+imap = fckit_map()
+call imap%insert(TRIM(t1_name), tensor1%c_ptr())
+call imap%insert(TRIM(t2_name), tensor2%c_ptr())
 
 ! prepare output tensors for named layers
-call infero_check(oset%initialise())
-
-call infero_check(oset%push_tensor(t3, TRIM(t3_name)))
-call infero_check(oset%print())
+tensor3 = fckit_tensor_float(t3)
+omap = fckit_map()
+call omap%insert(TRIM(t3_name), tensor3%c_ptr())
 
 ! YAML config string
 yaml_config = "---"//NEW_LINE('A') &
@@ -110,15 +116,12 @@ call infero_check(model%initialise_from_yaml_string(yaml_config))
 
 ! run inference
 do i = 1, n_inference_reps
-  call infero_check(model%infer(iset, oset))
+  call infero_check(model%infer(imap, omap))
 end do
 
 ! explicitely request to print stats and config
 call infero_check(model%print_statistics())
 call infero_check(model%print_config())
-
-! print output
-call infero_check(oset%print())
 
 ! check all elements of the output
 do j = 1,n_batch
@@ -130,10 +133,6 @@ do j = 1,n_batch
   end if
 
 end do
-
-! free tensor sets
-call infero_check(iset%free())
-call infero_check(oset%free())
 
 ! free the model
 call infero_check(model%free())

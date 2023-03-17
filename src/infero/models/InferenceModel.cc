@@ -61,10 +61,10 @@ void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, 
     eckit::Timing t_start(statistics_.timer());
     eckit::linalg::TensorFloat input_tensor;
 
-    if (tIn.isRight()) {
+    if (tIn.layout()==eckit::linalg::TensorFloat::Layout::ColMajor) {
         Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
                     << "Transforming to left.." << std::endl;
-        input_tensor = tIn.transformRightToLeftLayout();
+        input_tensor = tIn.transformColMajorToRowMajor();
     } else {
 
         // TODO: this still makes a copy (for now)
@@ -108,12 +108,12 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
 
     eckit::Timing t_start(statistics_.timer());
     for (int i = 0; i < inputTensors.size(); ++i) {
-        if (inputTensors[i]->isRight()) {
+        if (inputTensors[i]->layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
 
             Log::info() << i << "-th Input Tensor has right-layout, "
                         << "but left-layout is needed. Transforming to left.." << std::endl;
 
-            temporaryCopies.emplace_back(new eckit::linalg::TensorFloat(inputTensors[i]->transformRightToLeftLayout()));
+            temporaryCopies.emplace_back(new eckit::linalg::TensorFloat(inputTensors[i]->transformColMajorToRowMajor()));
             inputTensors[i] = temporaryCopies.back().get();
         }
     }

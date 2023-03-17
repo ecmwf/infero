@@ -56,14 +56,16 @@ ecbuild_add_library(
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
         $<INSTALL_INTERFACE:include>
         $<INSTALL_INTERFACE:module/infero>
+        "${FCKIT_INCLUDE_DIRS}"
 
     PRIVATE_INCLUDES
-        "${eckit_INCLUDE_DIRS}"
-        "${FCKIT_INCLUDE_DIRS}"
+        "${eckit_INCLUDE_DIRS}"        
 
     PRIVATE_LIBS
         inferoapi
-        eckit
+        eckit        
+
+    PUBLIC_LIBS
         ${FCKIT_LIBRARIES}
 )
 
