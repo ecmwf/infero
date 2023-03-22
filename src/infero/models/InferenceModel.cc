@@ -214,7 +214,7 @@ void InferenceModel::readConfig_(const eckit::Configuration& conf)
 
         try {
             ASSERT(Params.find(k) != Params.end());
-        } catch (eckit::Exception e) {
+        } catch (eckit::Exception& e) {
             Log::error() << "[ERROR]: Parameter: " << k
                          << " NOT recognised by model: " << this->name()
                          << " !"

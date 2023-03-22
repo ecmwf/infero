@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
     std::vector<size_t> input1_shape{batchSize,32};
     eckit::linalg::TensorFloat* t1{new eckit::linalg::TensorFloat(input1_shape, eckit::linalg::TensorFloat::Layout::RowMajor)};
     for (size_t i=0; i<batchSize * 32; i++){
-        if(i>=0 && i<32*1){
+        if(i<32*1){
           *(t1->data()+i) = 0.1;
         } else if(i>=32*1 && i<32*2) {
           *(t1->data()+i) = 0.2;  
@@ -64,7 +64,7 @@ int main(int argc, char** argv) {
     std::vector<size_t> input2_shape{batchSize,128};
     eckit::linalg::TensorFloat* t2{new eckit::linalg::TensorFloat(input2_shape, eckit::linalg::TensorFloat::Layout::RowMajor)};
     for (size_t i=0; i<batchSize * 128; i++){
-        if(i>=0 && i<128*1){
+        if(i<128*1){
           *(t2->data()+i) = 33.0;
         } else if(i>=128*1 && i<128*2) {
           *(t2->data()+i) = 66.0;          
