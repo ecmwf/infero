@@ -194,7 +194,7 @@ void InferenceModelTFC::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
     if (tOut.layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
 
         // TFC uses Left (C) tensor layouts, so we need to convert
-        TensorFloat tLeft(offsets, tOut.shape(), false);  // wrap data        
+        TensorFloat tLeft(offsets, tOut.shape(), eckit::linalg::TensorFloat::Layout::RowMajor);  // wrap data        
         TensorFloat tRight = tLeft.transformRowMajorToColMajor();
         tOut = tRight;
 
@@ -277,7 +277,7 @@ void InferenceModelTFC::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*>
                         << "Transforming left to right.." << std::endl;
 
             // TFC uses Left (C) tensor layouts, so we need to convert
-            TensorFloat tLeft(offsets, tOut[i]->shape(), false);  // wrap data
+            TensorFloat tLeft(offsets, tOut[i]->shape(), eckit::linalg::TensorFloat::Layout::RowMajor);  // wrap data
             TensorFloat tRight = tLeft.transformRowMajorToColMajor();
             *tOut[i] = tRight;
 
