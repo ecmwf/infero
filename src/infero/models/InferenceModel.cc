@@ -27,7 +27,8 @@ using namespace eckit;
 namespace infero {
 
 InferenceModel::InferenceModel(const eckit::Configuration& conf) :
-    modelBuffer_{size_t(0)} {
+    modelBuffer_{size_t(0)},
+    isOpen_{false} {
 }
 
 InferenceModel::~InferenceModel() {
