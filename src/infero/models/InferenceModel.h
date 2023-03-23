@@ -51,10 +51,10 @@ public:
 
     /// run the inference
     virtual void infer(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
-                       std::string input_name = "", std::string output_name = "");
+                       const std::string& input_name = "", const std::string& output_name = "");
 
     /// MIMO (Multi Input Multi Output) inference 
-    virtual void infer_mimo(TensorMap& iMap, TensorMap& oMap);
+    virtual void infer_mimo(const TensorMap& iMap, const TensorMap& oMap);
 
     /// closes the engine
     virtual void close();    
@@ -109,6 +109,7 @@ protected:
 private:            
 
     bool isOpen_;
+    mutable std::mutex modelMutex_;
 
 };
 

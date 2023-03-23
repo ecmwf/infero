@@ -28,6 +28,24 @@ set_target_properties( 2_example_mimo_cpp
     PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
+# example-2: C++ API
+ecbuild_add_executable( TARGET 4_example_mimo_thread
+   SOURCES   4_example_mimo_thread.cc
+   CONDITION HAVE_BUILD_TOOLS
+   INCLUDES  ${eckit_INCLUDE_DIRS}
+   LIBS      
+     infero
+     eckit
+     eckit_option
+   NOINSTALL
+)
+
+set_target_properties( 4_example_mimo_thread
+    PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)
+
+
+
 # example-3: Fortran API
 if(infero_HAVE_FORTRAN_APIS)
 

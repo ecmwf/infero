@@ -54,8 +54,10 @@ void InferenceModel::open()  {
     }
 }
 
-void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, std::string input_name, std::string output_name)
+void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, const std::string& input_name, const std::string& output_name)
 {
+
+    std::lock_guard<std::mutex> lock(modelMutex_);
 
     // Input Tensor re-ordering as needed
     eckit::Timing t_start(statistics_.timer());
@@ -100,6 +102,8 @@ void InferenceModel::infer_impl(linalg::TensorFloat& tIn, linalg::TensorFloat& t
 void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
                                 std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
 {
+    std::lock_guard<std::mutex> lock(modelMutex_);
+
     // Take copy of the input tensors
     std::vector<eckit::linalg::TensorFloat*> inputTensors(tIn.begin(), tIn.end());
 
@@ -128,7 +132,7 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
 }
 
 
-void InferenceModel::infer_mimo(TensorMap& iMap, TensorMap& oMap) {
+void InferenceModel::infer_mimo(const TensorMap& iMap, const TensorMap& oMap) {
 
     std::vector<eckit::linalg::TensorFloat*> input_tensors;
     std::vector<const char*> input_names;
