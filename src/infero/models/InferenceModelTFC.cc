@@ -14,6 +14,9 @@
 #include <vector>
 
 #include "eckit/log/Log.h"
+#ifdef HAVE_MPI
+#include "eckit/mpi/Comm.h"
+#endif
 
 #include "infero/models/InferenceModelTFC.h"
 #include "infero/infero_utils.h"
@@ -36,6 +39,7 @@ eckit::LocalConfiguration InferenceModelTFC::defaultConfig() {
     static eckit::LocalConfiguration config;
     config.set("numInteropThreads", std::string{"1"});
     config.set("numIntraopThreads", std::string{"1"});
+    config.set("device", std::string{"rank"});
     return config;
 }
 
@@ -49,13 +53,9 @@ InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
     network_graph = TF_NewGraph();
     err_status = TF_NewStatus();
 
-    // options
-    session_options = TF_NewSessionOptions();
+    // configure session options
+    configureSessionOptions();
 
-    uint8_t numInteropThreads_ = config().getInt("numInteropThreads");
-    uint8_t numIntraopThreads_ = config().getInt("numIntraopThreads");
-    uint8_t buf[]={0x10,numInteropThreads_,0x28,numIntraopThreads_};
-    TF_SetConfig(session_options, buf,sizeof(buf), err_status);    
 
     run_options = nullptr;
 
@@ -440,11 +440,43 @@ TF_Tensor* InferenceModelTFC::TF_TensorFromData(const std::vector<size_t>& dims,
 
 
 
-void InferenceModelTFC::broadcast_model(const std::string path){
-
+void InferenceModelTFC::broadcast_model(const std::string path) {
   // Not available for this class, as TF_C needs to read a
   // whole directory rather than a single file
-
 }
+
+
+
+void InferenceModelTFC::configureSessionOptions() {
+
+    // options
+    session_options = TF_NewSessionOptions();
+
+    uint8_t numInteropThreads_ = config().getInt("numInteropThreads");
+    uint8_t numIntraopThreads_ = config().getInt("numIntraopThreads");
+
+    int deviceID = 0;
+    if (config().getString("device") == "rank") {
+#ifdef HAVE_MPI
+        deviceID = eckit::mpi::comm().rank();
+#endif
+    } else {
+        try {
+            deviceID = std::stoi(config().getString("device"));
+        } catch(std::invalid_argument const& ex) {
+            eckit::Log::info() << "Model configuration <device> not valid. "
+                            << "It must be either an integer in [0..9] or \"rank\". "
+                            << "Found instead:" << config().getString("device") 
+                            << " => defaulting to deviceID=0" << std::endl;
+            eckit::Log::info() << ex.what() << std::endl;
+            deviceID = 0;
+        }
+    }
+        // NB: assume one digit only in [0,1,2,3,4,5,6,7,8,9]
+        uint8_t device_ = deviceID + 48; // 48 ASCII decimal code for char "0"
+        uint8_t buf[]={0x10,numInteropThreads_,0x28,numIntraopThreads_,0x32,0x3,0x2a,0x1,device_};
+        TF_SetConfig(session_options, buf, sizeof(buf), err_status);    
+
+    }
 
 }  // namespace infero

@@ -59,6 +59,9 @@ private:
 
     static eckit::LocalConfiguration defaultConfig();
 
+    // configure session options from model configuration
+    void configureSessionOptions();
+
 private:
 
     TF_Session* session;

@@ -69,7 +69,8 @@ int main(int argc, char** argv){
     printf("input_path %s \n", input_path);
     printf("ref_output_path %s \n", ref_output_path);
 
-    sprintf(yaml_str, " path: %s\n type: %s", model_path, model_type);
+    sprintf(yaml_str, "{path: %s, type: %s}", model_path, model_type);
+    // sprintf(yaml_str, "{path: %s, type: %s, model_config: {device: rank}}", model_path, model_type); // TFC: to select deviceID=rank
     printf("yaml_str:\n%s\n", yaml_str);
 
     // tcyclone model input size [ n_batch, 200, 200, 17 ]
@@ -119,6 +120,8 @@ int main(int argc, char** argv){
 
     // 2) open the handle
     infero_open_handle(infero_handle);
+
+    infero_print_config(infero_handle);
 
     // 3) run inference
     for (int i=0; i<nInferenceReps; i++){
