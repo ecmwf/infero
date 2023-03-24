@@ -26,8 +26,12 @@ using namespace eckit;
 
 namespace infero {
 
-InferenceModel::InferenceModel(const eckit::Configuration& conf) :
+// Configuration and model-specific defaults
+InferenceModel::InferenceModel(const eckit::Configuration& conf, const eckit::Configuration& defaults) :
+    Configurable(conf.getSubConfiguration("model_config"), defaults),
     modelBuffer_{size_t(0)},
+    modelType_{conf.getString("type")},
+    modelPath_{conf.getString("path")},
     isOpen_{false} {
 }
 
@@ -171,64 +175,9 @@ void InferenceModel::close() {
 }
 
 void InferenceModel::broadcast_model(const std::string path) {
-
 #ifdef HAVE_MPI
     modelBuffer_ = eckit::mpi::comm().broadcastFile(path, 0);
 #endif
-}
-
-
-ModelParams_t InferenceModel::defaultParams_(){
-    ModelParams_t params_;
-
-    // by default, model path is assumed cwd()
-    params_["path"] = eckit::LocalPathName::cwd();
-    params_["type"] = this->name();
-
-    return params_;
-}
-
-ModelParams_t InferenceModel::implDefaultParams_()
-{
-    // by default, no implementation-specific
-    // parameters are required
-    return ModelParams_t();
-}
-
-void InferenceModel::readConfig_(const eckit::Configuration& conf)
-{    
-
-    ModelConfig_.reset(new eckit::LocalConfiguration());
-
-    ModelParams_t Params = defaultParams_();
-    ModelParams_t implParams = implDefaultParams_();
-
-    // merge default and model-specific params
-    for (const auto& p: implParams){
-        Params[p.first] = p.second;
-    }
-
-    // Set params into config
-    for (const auto& p: Params){
-        ModelConfig_->set(p.first, p.second);
-    }
-
-    // Assert and set user-provided Params
-    for (const auto& k: conf.keys()){
-        std::cout << "Checking key " << k << std::endl;
-
-        try {
-            ASSERT(Params.find(k) != Params.end());
-        } catch (eckit::Exception& e) {
-            Log::error() << "[ERROR]: Parameter: " << k
-                         << " NOT recognised by model: " << this->name()
-                         << " !"
-                         << std::endl;
-            throw eckit::BadParameter(e.what(), Here());
-        }
-
-        ModelConfig_->set(k, conf.getString(k));
-    }
 }
 
 
@@ -242,9 +191,10 @@ void InferenceModel::print_config()
 {
     Log::info() << std::endl;
     Log::info() << "**** Infero Model Configuration ****" << std::endl;
-    for (const auto& k: ModelConfig_->keys()){
-        Log::info() << k << ": " << ModelConfig_->getString(k) << std::endl;
-    }
+    Log::info() << "Model type: " << modelType_ << std::endl;
+    Log::info() << "Model path: " << modelPath_ << std::endl;
+    Log::info() << "Configuration: " << std::endl;
+    Log::info() << config() << std::endl;
     Log::info() << "************************************" << std::endl;
     Log::info() << std::endl;
 }

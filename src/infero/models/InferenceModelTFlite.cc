@@ -28,17 +28,18 @@ namespace infero {
 
 static InferenceModelBuilder<InferenceModelTFlite> tfliteBuilder;
 
+eckit::LocalConfiguration InferenceModelTFlite::defaultConfig() {
+    static eckit::LocalConfiguration config;
+    // empty defaults..
+    return config;
+}
+
 
 InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
-    InferenceModel(conf) {
-
-    // Model configuration
-    readConfig_(conf);
-
-    std::string ModelPath(ModelConfig_->getString("path"));
+    InferenceModel(conf, InferenceModelTFlite::defaultConfig()) {
 
     // read/bcast model by mpi (when possible)
-    broadcast_model(ModelPath);
+    broadcast_model(modelPath());
 
     // if not null, use the model buffer
     if (modelBuffer_.size()){
@@ -49,7 +50,7 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
                                                           modelBuffer_.size());
 
     } else {  // otherwise construct from model path
-        model_ = tflite::FlatBufferModel::BuildFromFile(ModelPath.c_str());
+        model_ = tflite::FlatBufferModel::BuildFromFile( modelPath().c_str() );
     }
 
     INFERO_CHECK(model_ != nullptr);

@@ -43,6 +43,8 @@ private:
     void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
                          std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names) override;
 
+    static eckit::LocalConfiguration defaultConfig();
+
     // TFlite model and interpreter
     std::unique_ptr<tflite::FlatBufferModel> model_;
     std::unique_ptr<tflite::Interpreter> interpreter_;

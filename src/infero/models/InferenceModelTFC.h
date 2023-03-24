@@ -32,10 +32,6 @@ public:
 
     void print(std::ostream& os) const override;
 
-    virtual void broadcast_model(const std::string path) override;
-
-    virtual ModelParams_t implDefaultParams_() override;
-
 private:
 
     void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
@@ -57,6 +53,11 @@ private:
     /// Get an oeration tensor buffer from layer name
     /// + contains specialised logic for output layer
     TF_Output GetOutputOperationBuffer_(std::string name);
+
+
+    virtual void broadcast_model(const std::string path);
+
+    static eckit::LocalConfiguration defaultConfig();
 
 private:
 

@@ -77,6 +77,8 @@ private:
     // utility converter std::vector to TRT Dims
     static Dims Vector2Dims(std::vector<int>& vecdims);
 
+    static eckit::LocalConfiguration defaultConfig();
+
 private:
     nvinfer1::IRuntime* InferRuntime_;
 

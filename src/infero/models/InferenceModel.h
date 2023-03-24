@@ -23,24 +23,22 @@
 #include "eckit/log/Log.h"
 #include "eckit/io/SharedBuffer.h"
 
-#include "ModelStatistics.h"
+#include "infero/Configurable.h"
+#include "infero/models/ModelStatistics.h"
 
 
 using eckit::Log;
 
 namespace infero {
 
-using ModelParams_t = std::map<std::string,std::string>;
-
-
 /// Interface for an inference model
-class InferenceModel {
+class InferenceModel : public Configurable {
 
     using TensorMap = std::map<std::string, eckit::linalg::TensorFloat*>;
 
 public:
 
-    InferenceModel(const eckit::Configuration& conf);
+    InferenceModel(const eckit::Configuration& conf, const eckit::Configuration& defaults = eckit::LocalConfiguration());
 
     virtual ~InferenceModel();
 
@@ -65,7 +63,7 @@ public:
 
     ModelStatistics& statistics(){ return statistics_; }
 
-protected:
+protected: // methods
 
     virtual void infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
                         std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
@@ -75,8 +73,6 @@ protected:
 
     virtual void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
                                  std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names);
-
-
 
     /// print the model
     virtual void print(std::ostream& os) const = 0;
@@ -88,25 +84,25 @@ protected:
 
     virtual void broadcast_model(const std::string path);
 
-    /// default model Configuration
-    virtual ModelParams_t defaultParams_();
+    const std::string& modelPath() const { return modelPath_; }
 
-    /// implementation-specific default configuration
-    virtual ModelParams_t implDefaultParams_();
+    const std::string& modelType() const { return modelType_; }
 
-    /// Assemble the Configuration (defaults + user + env)
-    void readConfig_(const eckit::Configuration& conf);
+protected: // members
 
-    /// env-variables configuration
-    std::unique_ptr<eckit::LocalConfiguration> ModelConfig_;
-
-    /// Inference model buffer
+    // Model buffer
     eckit::SharedBuffer modelBuffer_;
 
-    /// Stats
+    // Stats
     ModelStatistics statistics_;
 
 private:            
+
+    // Model type
+    std::string modelType_;
+
+    // Path to model file
+    std::string modelPath_;
 
     bool isOpen_;
     mutable std::mutex modelMutex_;
@@ -173,15 +169,6 @@ public: // methods
         return new T(config);
     }
 };
-
-
-
-
-
-
-
-
-
 
 
 

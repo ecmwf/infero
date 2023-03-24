@@ -31,26 +31,20 @@ void NoOpDeallocator(void* data, size_t a, void* b) {
     // no input/output tensor deallocation here..
 }
 
-ModelParams_t InferenceModelTFC::implDefaultParams_(){
-    ModelParams_t params_;
-       
-    params_["numInteropThreads"] = "1";
-    params_["numIntraopThreads"] = "1";
 
-    return params_;
+eckit::LocalConfiguration InferenceModelTFC::defaultConfig() {
+    static eckit::LocalConfiguration config;
+    config.set("numInteropThreads", std::string{"1"});
+    config.set("numIntraopThreads", std::string{"1"});
+    return config;
 }
 
 
 InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
-    InferenceModel(conf) {
-
-    // Model configuration
-    readConfig_(conf);
-
-    std::string ModelPath(ModelConfig_->getString("path"));
+    InferenceModel(conf, InferenceModelTFC::defaultConfig()) {
 
     // read/bcast model by mpi (when possible)
-    broadcast_model(ModelPath);
+    broadcast_model(modelPath());
 
     network_graph = TF_NewGraph();
     err_status = TF_NewStatus();
@@ -58,8 +52,8 @@ InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
     // options
     session_options = TF_NewSessionOptions();
 
-    uint8_t numInteropThreads_ = ModelConfig_->getInt("numInteropThreads");
-    uint8_t numIntraopThreads_ = ModelConfig_->getInt("numIntraopThreads");
+    uint8_t numInteropThreads_ = config().getInt("numInteropThreads");
+    uint8_t numIntraopThreads_ = config().getInt("numIntraopThreads");
     uint8_t buf[]={0x10,numInteropThreads_,0x28,numIntraopThreads_};
     TF_SetConfig(session_options, buf,sizeof(buf), err_status);    
 
@@ -80,7 +74,7 @@ InferenceModelTFC::InferenceModelTFC(const eckit::Configuration& conf) :
 
         session = TF_LoadSessionFromSavedModel(session_options,
                                                run_options,
-                                               ModelPath.c_str(),
+                                               modelPath().c_str(),
                                                &tags,
                                                ntags,
                                                network_graph,

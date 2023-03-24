@@ -33,8 +33,6 @@ public:
 
     void print(std::ostream& os) const override;
 
-    virtual ModelParams_t implDefaultParams_() override;
-
 private:
 
     void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
@@ -66,6 +64,9 @@ private:
 
 
 private:
+
+    static eckit::LocalConfiguration defaultConfig();
+
     void setupInputLayers();
 
     void setupOutputLayers();

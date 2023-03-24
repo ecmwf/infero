@@ -4,6 +4,8 @@ list(APPEND infero_srcs
     InferenceModel.cc
     ModelStatistics.h
     ModelStatistics.cc
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Configurable.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Configurable.cc
 )
 
 ### support for ONNX

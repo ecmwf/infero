@@ -28,33 +28,26 @@ namespace infero {
 static InferenceModelBuilder<InferenceModelONNX> onnxBuilder;
 
 
-ModelParams_t InferenceModelONNX::implDefaultParams_(){
-    ModelParams_t params_;
-       
-    params_["numInteropThreads"] = "1";
-    params_["numIntraopThreads"] = "1";
-
-    return params_;
+eckit::LocalConfiguration InferenceModelONNX::defaultConfig() {
+    eckit::LocalConfiguration config;
+    config.set("numInteropThreads", std::string{"1"});
+    config.set("numIntraopThreads", std::string{"1"});
+    return config;
 }
 
 
 InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
-    InferenceModel(conf){
-
-    // Model configuration
-    readConfig_(conf);
-
-    std::string ModelPath(ModelConfig_->getString("path"));
+    InferenceModel(conf, InferenceModelONNX::defaultConfig()) {
 
     // read/bcast model by mpi (when possible)
-    broadcast_model(ModelPath);
+    broadcast_model(modelPath());
 
     env = std::unique_ptr<Ort::Env>(new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "onnx_model"));
 
     // Session options
     session_options = std::unique_ptr<Ort::SessionOptions>(new Ort::SessionOptions);
-    session_options->SetInterOpNumThreads(ModelConfig_->getInt("numInteropThreads"));
-    session_options->SetIntraOpNumThreads(ModelConfig_->getInt("numIntraopThreads"));
+    session_options->SetInterOpNumThreads(config().getInt("numInteropThreads"));
+    session_options->SetIntraOpNumThreads(config().getInt("numIntraopThreads"));
     session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     // if not null, use the model buffer
@@ -66,7 +59,7 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
                                                                  modelBuffer_.size(),
                                                                  *session_options));
     } else {  // otherwise construct from model path
-        session = std::unique_ptr<Ort::Session>(new Ort::Session(*env, ModelPath.c_str(), *session_options));
+        session = std::unique_ptr<Ort::Session>(new Ort::Session(*env, modelPath().c_str(), *session_options));
     }
 
 

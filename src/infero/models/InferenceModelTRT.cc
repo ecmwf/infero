@@ -24,17 +24,20 @@ namespace infero {
 
 static InferenceModelBuilder<InferenceModelTRT> TRTBuilder;
 
+eckit::LocalConfiguration InferenceModelTRT::defaultConfig() {
+    static eckit::LocalConfiguration config;
+    // empty defaults..
+    return config;
+}
+
 
 InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
-    InferenceModel(conf), Engine_(nullptr), Network_(nullptr) {
-
-    // Model configuration
-    readConfig_(conf);
-
-    std::string ModelPath(ModelConfig_->getString("path"));
+    InferenceModel(conf, InferenceModelTRT::defaultConfig()), 
+    Engine_(nullptr), 
+    Network_(nullptr) {
 
     // read/bcast model by mpi (when possible)
-    broadcast_model(ModelPath);
+    broadcast_model(modelPath());
 
     InferRuntime_ = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
 
