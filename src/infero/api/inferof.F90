@@ -15,7 +15,8 @@ module inferof
   use fckit_array_module
   use fckit_c_interop_module
   use fckit_map_module
-
+  use fckit_main_module
+  
 implicit none
 
 
@@ -139,14 +140,6 @@ interface
     integer(c_int) :: err
   end function
 
-  function infero_initialise_interf( argc, argv ) result(err) &
-    & bind(C,name="infero_initialise")
-    use iso_c_binding, only: c_int, c_ptr
-    integer(c_int), value :: argc
-    type(c_ptr) :: argv(15)
-    integer(c_int) :: err
-  end function
-
   function infero_create_handle_from_yaml_str_interf( config_str, handle_impl ) result(err) &
     & bind(C,name="infero_create_handle_from_yaml_str")
     use iso_c_binding, only: c_char, c_int, c_ptr
@@ -181,12 +174,6 @@ interface
     & bind(C,name="infero_delete_handle")
     use iso_c_binding, only: c_int, c_ptr
     type(c_ptr), intent(in), value :: handle_impl
-    integer(c_int) :: err
-  end function
-
-  function infero_finalise_interf( ) result(err) &
-    & bind(C,name="infero_finalise")
-    use iso_c_binding
     integer(c_int) :: err
   end function
 
@@ -225,14 +212,6 @@ interface infero_inference ! function overloading
 
   module procedure infero_inference_real32_rank4_rank4
   module procedure infero_inference_real64_rank4_rank4
-end interface
-
-interface infero_initialise
-  module procedure infero_initialise_func
-end interface
-
-interface infero_finalise
-  module procedure infero_finalise_func
 end interface
 
 ! ---------  For utility
@@ -282,19 +261,16 @@ end function
 !---------------------------------------------------------------------------------
 
 ! --------- Infero Model
-function infero_initialise_func( ) result(err)
-  use iso_c_binding, only: c_int, c_ptr
-  integer(c_int) :: argc
-  type(c_ptr) :: argv(15)
+function infero_initialise( ) result(err)
   integer :: err
-  call get_c_commandline_arguments(argc,argv)
-  err = infero_initialise_interf( argc,argv )
+  err = INFERO_SUCCESS
+  call fckit_main%initialise()
 end function
 
-function infero_finalise_func( ) result(err)
-  use iso_c_binding
+function infero_finalise( ) result(err)
   integer :: err
-  err = infero_finalise_interf( )
+  err = INFERO_SUCCESS
+  call fckit_main%finalise()
 end function
 
 function infero_create_handle_from_yaml_string(handle, config_str) result(err)

@@ -16,17 +16,19 @@
 #include <any>
 #include <algorithm>
 
-#include "infero/api/infero.h"
-#include "infero/models/InferenceModel.h"
-
 #include "eckit/config/YAMLConfiguration.h"
-#include "eckit/runtime/Main.h"
 #include "eckit/exception/Exceptions.h"
 
 #ifdef HAVE_MPI
   #include "eckit/io/SharedBuffer.h"
   #include "eckit/mpi/Comm.h"
 #endif
+
+#include "fckit/Main.h"
+
+#include "infero/api/infero.h"
+#include "infero/models/InferenceModel.h"
+
 
 using namespace eckit;
 using namespace std;
@@ -114,14 +116,6 @@ int infero_set_failure_handler(infero_failure_handler_t handler, void* context) 
 extern "C" {
 #endif
 
-// tensors to be used for inference input/output
-struct infero_tensor_set_t {
-    infero_tensor_set_t() {}
-    ~infero_tensor_set_t() noexcept(false) {}
-    std::vector<TensorFloat*> tensors;
-    std::vector<std::string> tensor_names;
-};
-
 // model handle
 struct infero_handle_t {
     infero_handle_t(InferenceModel* mod) : impl_(mod) {}
@@ -131,15 +125,12 @@ struct infero_handle_t {
 
 int infero_initialise(int argc, char** argv){
     return wrapApiFunction([argc, argv]{
-        eckit::Main::initialise(argc, argv);        
-
-        if (infero_initialised) {
-            throw eckit::UnexpectedState("Initialising Infero library twice!", Here());
-        }
 
         if (!infero_initialised) {
-            eckit::Main::initialise(1, const_cast<char**>(argv));
+            fckit::Main::initialise(argc, argv);
             infero_initialised = true;
+        } else {
+            throw eckit::UnexpectedState("Initialising Infero library twice!", Here());
         }
 
     });
@@ -407,6 +398,7 @@ int infero_finalise(){
         if (!infero_initialised) {
             throw eckit::UnexpectedState("Infero library not initialised!", Here());
         } else {
+            fckit::Main::finalise();
             infero_initialised = false;
         }
    });    
