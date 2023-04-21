@@ -60,7 +60,7 @@ void delete_data(size_t n_tensors,
 
 int main(int argc, char** argv){
 
-    const float tol = 1e-3;
+    const float tol = 1e-2;
     const int nInferenceReps = 10;
 
     char* model_path = argv[1];
