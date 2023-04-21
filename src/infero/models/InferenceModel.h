@@ -106,7 +106,7 @@ protected:
     /// Stats
     ModelStatistics statistics_;
 
-private:            
+protected:            
 
     bool isOpen_;
 

@@ -32,11 +32,11 @@ InferenceModel::InferenceModel(const eckit::Configuration& conf) :
 
 InferenceModel::~InferenceModel() {
 
-    print_statistics();
-
     if(isOpen_){
         close();
     }
+
+    print_statistics();
 }
 
 std::string InferenceModel::name() const
