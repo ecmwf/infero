@@ -36,7 +36,8 @@ class PatchedLib:
         ffi.cdef(self.__read_header())        
 
         libName = {
-            'Linux': 'libinferoapi.so'
+            'Linux': 'libinferoapi.so',
+            'Darwin': 'libinferoapi.dylib'
         }
 
         self.__lib = ffi.dlopen(libName[platform.system()])

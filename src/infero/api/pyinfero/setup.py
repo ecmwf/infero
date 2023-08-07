@@ -13,6 +13,8 @@ setup(
     packages=find_packages(exclude=["test_*", "*.tests", "*.tests.*", "tests.*", "tests"]),
     package_data={"": ["*.h"]},
     install_requires=[
+        "numpy",
+        "cffi"
     ],
     tests_require=[
         "pytest",

@@ -13,8 +13,6 @@ import numpy as np
 import pyinfero
 from pyinfero.pyinfero import InferoException
 
-import pytest
-
 def test_mimo():
 
     # config
