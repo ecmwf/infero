@@ -16,6 +16,7 @@
 #include <any>
 #include <algorithm>
 
+#include "eckit/runtime/Main.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 
@@ -23,8 +24,6 @@
   #include "eckit/io/SharedBuffer.h"
   #include "eckit/mpi/Comm.h"
 #endif
-
-#include "fckit/Main.h"
 
 #include "infero/api/infero.h"
 #include "infero/models/InferenceModel.h"
@@ -127,7 +126,7 @@ int infero_initialise(int argc, char** argv){
     return wrapApiFunction([argc, argv]{
 
         if (!infero_initialised) {
-            fckit::Main::initialise(argc, argv);
+            eckit::Main::initialise(argc, argv);
             infero_initialised = true;
         } else {
             throw eckit::UnexpectedState("Initialising Infero library twice!", Here());
@@ -398,7 +397,6 @@ int infero_finalise(){
         if (!infero_initialised) {
             throw eckit::UnexpectedState("Infero library not initialised!", Here());
         } else {
-            fckit::Main::finalise();
             infero_initialised = false;
         }
    });    

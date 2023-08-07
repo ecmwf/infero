@@ -26,11 +26,9 @@ ecbuild_add_library(
 
     PRIVATE_INCLUDES
         "${eckit_INCLUDE_DIRS}"
-        "${FCKIT_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
-        eckit
-        fckit
+        eckit        
 
     PUBLIC_LIBS
         infero
@@ -65,7 +63,7 @@ ecbuild_add_library(
 
     PRIVATE_LIBS
         inferoapi
-        eckit        
+        eckit
 
     PUBLIC_LIBS
         ${FCKIT_LIBRARIES}
