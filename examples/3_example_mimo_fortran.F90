@@ -12,7 +12,7 @@ program my_program
 
 use inferof
 use fckit_map_module, only : fckit_map
-use fckit_tensor_module, only : fckit_tensor_float
+use fckit_tensor_module, only : fckit_tensor_real32
 use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 
 implicit none
@@ -42,9 +42,9 @@ character(len=128) :: t3_name
 ! the infero model
 type(infero_model) :: model
 
-type(fckit_tensor_float) :: tensor1
-type(fckit_tensor_float) :: tensor2
-type(fckit_tensor_float) :: tensor3
+type(fckit_tensor_real32) :: tensor1
+type(fckit_tensor_real32) :: tensor2
+type(fckit_tensor_real32) :: tensor3
 type(fckit_map) :: imap
 type(fckit_map) :: omap
 
@@ -71,15 +71,15 @@ t2(3,:) = 99.0
 call infero_check(infero_initialise())
 
 ! prepare input tensors for named layers
-tensor1 = fckit_tensor_float(t1)
-tensor2 = fckit_tensor_float(t2)
+tensor1 = fckit_tensor_real32(t1)
+tensor2 = fckit_tensor_real32(t2)
 
 imap = fckit_map()
 call imap%insert(TRIM(t1_name), tensor1%c_ptr())
 call imap%insert(TRIM(t2_name), tensor2%c_ptr())
 
 ! prepare output tensors for named layers
-tensor3 = fckit_tensor_float(t3)
+tensor3 = fckit_tensor_real32(t3)
 omap = fckit_map()
 call omap%insert(TRIM(t3_name), tensor3%c_ptr())
 
