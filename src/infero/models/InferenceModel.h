@@ -96,7 +96,7 @@ protected: // members
     // Stats
     ModelStatistics statistics_;
 
-private:            
+protected:            
 
     // Model type
     std::string modelType_;

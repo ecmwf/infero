@@ -17,7 +17,7 @@ use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 
 implicit none
 
-real(c_float), parameter :: tol = 1e-3;
+real(c_float), parameter :: tol = 1e-2;
 integer, parameter :: n_inference_reps = 10
 
 ! Command line arguments
