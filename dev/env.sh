@@ -75,7 +75,7 @@ ONNX_BUILD_DIR=${ROOT_SRC_DIR}/onnxruntime
 ONNX_URL=https://github.com/microsoft/onnxruntime/releases/download
     
 # TF_C
-TFC_VERSION=2.6.0
+TFC_VERSION=2.7.0
 TFC_SOURCE_DIR=${ROOT_SRC_DIR}/tensorflow_c
 TFC_BUILD_DIR=${ROOT_SRC_DIR}/tensorflow_c
 TFC_URL=https://storage.googleapis.com/tensorflow/libtensorflow

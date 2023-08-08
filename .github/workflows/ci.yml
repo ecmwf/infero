@@ -61,7 +61,7 @@ jobs:
       ONNX_TARFILE: onnxruntime-linux-x64-${ONNX_VERSION}.tgz
       ONNX_TARFILE_URL: ${ONNX_URL}/v${ONNX_VERSION}/onnxruntime-linux-x64-${ONNX_VERSION}.tgz
 
-      TFC_VERSION: 2.6.0
+      TFC_VERSION: 2.7.0
       TFC_URL: https://storage.googleapis.com/tensorflow/libtensorflow
       TFC_TARFILE: libtensorflow-cpu-linux-x86_64-${TFC_VERSION}.tar.gz
       TFC_TARFILE_URL: ${TFC_URL}/libtensorflow-cpu-linux-x86_64-${TFC_VERSION}.tar.gz
@@ -195,7 +195,7 @@ jobs:
         dependencies: |
           ecmwf/ecbuild@refs/tags/3.8.0
           ecmwf/eckit@refs/tags/1.24.4
-          ecmwf/fckit
+          ecmwf/fckit@refs/tags/0.11.0
         dependency_branch: develop
     secrets:
       incoming_webhook: ${{ secrets.MS_TEAMS_INCOMING_WEBHOOK }}
