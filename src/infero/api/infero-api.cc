@@ -135,7 +135,7 @@ int infero_initialise(int argc, char** argv){
     });
 }
 
-int infero_create_handle_from_yaml_str(const char str[], infero_handle_t** h) {
+int infero_create_handle_from_yaml_str(const char* str, infero_handle_t** h) {
     return wrapApiFunction([str, h]{
         std::string str_(str);
         eckit::YAMLConfiguration cfg(str_);
@@ -147,7 +147,7 @@ int infero_create_handle_from_yaml_str(const char str[], infero_handle_t** h) {
     });
 }
 
-int infero_create_handle_from_yaml_file(const char path[], infero_handle_t** h) {
+int infero_create_handle_from_yaml_file(const char* path, infero_handle_t** h) {
     return wrapApiFunction([path, h]{
 #ifdef HAVE_MPI
         eckit::SharedBuffer buff = eckit::mpi::comm().broadcastFile(path, 0);

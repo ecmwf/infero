@@ -69,12 +69,12 @@ int infero_initialise(int argc, char** argv);
 /** 
  * Creates an ML engine handle from a YAML string 
  * */
-int infero_create_handle_from_yaml_str(const char str[], infero_handle_t** h);
+int infero_create_handle_from_yaml_str(const char* str, infero_handle_t** h);
 
 /** 
  * Creates an ML engine handle from a YAML file 
  * */
-int infero_create_handle_from_yaml_file(const char path[], infero_handle_t** h);
+int infero_create_handle_from_yaml_file(const char* path, infero_handle_t** h);
 
 /**
  * open a ML engine handle

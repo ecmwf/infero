@@ -14,6 +14,7 @@ module inferof
 
   use fckit_array_module
   use fckit_c_interop_module
+
   use fckit_map_module
   use fckit_main_module
   
@@ -143,7 +144,7 @@ interface
   function infero_create_handle_from_yaml_str_interf( config_str, handle_impl ) result(err) &
     & bind(C,name="infero_create_handle_from_yaml_str")
     use iso_c_binding, only: c_char, c_int, c_ptr
-    character(c_char) :: config_str
+    character(c_char), dimension(*) :: config_str
     type(c_ptr), intent(out) :: handle_impl
     integer(c_int) :: err
   end function
@@ -151,7 +152,7 @@ interface
   function infero_create_handle_from_yaml_file_interf( config_str, handle_impl ) result(err) &
     & bind(C,name="infero_create_handle_from_yaml_file")
     use iso_c_binding, only: c_char, c_int, c_ptr
-    character(c_char) :: config_str
+    character(c_char), dimension(*) :: config_str
     type(c_ptr), intent(out) :: handle_impl
     integer(c_int) :: err
   end function
@@ -275,7 +276,7 @@ end function
 
 function infero_create_handle_from_yaml_string(handle, config_str) result(err)
   class(infero_model), intent(inout) :: handle
-  character(c_char) :: config_str
+  character(kind=c_char,len=*), intent(in) :: config_str
   integer :: err
   err = infero_create_handle_from_yaml_str_interf(config_str, handle%impl)
   err = infero_open_handle_interf( handle%impl )
@@ -284,7 +285,7 @@ end function
 function infero_create_handle_from_yaml_file(handle, config_str ) result(err)
   use iso_c_binding, only: c_char, c_int, c_ptr
   class(infero_model), intent(inout) :: handle
-  character(c_char) :: config_str
+  character(kind=c_char,len=*), intent(in) :: config_str
   integer :: err
   err = infero_create_handle_from_yaml_file_interf(config_str, handle%impl)
   err = infero_open_handle_interf( handle%impl )
