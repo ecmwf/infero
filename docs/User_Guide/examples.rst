@@ -69,9 +69,8 @@ The examples are extensively commented to describe the usage of the API's step-b
 of the main sections from the Fortran example is also reported here below (for the full example, refer
 to *3_example_mimo_fortran.F90*).
 
-This section below contains the declarations of the necessary input variables. t1 and t2 are the fortran arrays containing
-the data and t1_name and t2_name are the corresponding names. Each tensor must be associated with the name of the
-input layer of the machine learning model that receives the tensor data as input.
+This section below contains the declaration of the necessary input variables. t1 and t2 are the fortran arrays 
+containing input data and t1_name and t2_name are the names of the input layers to which the tensors will be assigned.
 
 .. code-block:: fortran
 
@@ -83,19 +82,19 @@ input layer of the machine learning model that receives the tensor data as input
    character(len=128) :: t1_name
    character(len=128) :: t2_name
 
-The association between tensors and their corresponding input layer names is then made through a 
-key/value container of type *fckit_map*.
+The association between tensors and names of the corresponding input layers is then made through a 
+key/value container of type *fckit_map* (here below the necessary declarations):
 
 .. code-block:: fortran
 
-   ! auxiliary fckit tensor objects
+   ! auxiliary fckit tensor wrappers
    type(fckit_tensor_real32) :: tensor1
    type(fckit_tensor_real32) :: tensor2
 
    ! key/value map for name->tensor
    type(fckit_map) :: imap
 
-Output tensor(s) are declared and arranged into an *fckit_map* similarly to input tensors
+Output tensor(s) are declared and arranged into an *fckit_map* in the same way.
 
 .. code-block:: fortran
 
@@ -105,13 +104,13 @@ Output tensor(s) are declared and arranged into an *fckit_map* similarly to inpu
    ! name of output layer
    character(len=128) :: t3_name
 
-   ! auxiliary fckit tensor objects
+   ! auxiliary fckit tensor wrappers
    type(fckit_tensor_real32) :: tensor3
 
    ! key/value map for name->tensor
    type(fckit_map) :: omap
 
-The type for the machine learning model model is called *infero_model*, shown below:
+The type for the machine learning model is called *infero_model*:
 
 .. code-block:: fortran
 
@@ -194,12 +193,15 @@ finalise the library itself
 
 .. code-block:: fortran
 
-   ! free tensor sets
-   call infero_check(iset%free())
-   call infero_check(oset%free())
-
    ! free the model
    call infero_check(model%free())
+
+   ! finalise fckit objects
+   call tensor1%final()
+   call tensor2%final()
+   call tensor3%final()
+   call imap%final()
+   call omap%final()
 
    ! finalise library
    call infero_check(infero_finalise())
