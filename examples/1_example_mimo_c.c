@@ -74,6 +74,17 @@ void delete_data(size_t n_tensors, float** data, int** shapes){
  */
 int main(int argc, char** argv){
 
+    if (argc<6) {
+      printf("Error: This example must be invoked as: \n");  
+      printf("<infero-build-path>/bin/1_example_mimo_c ");
+      printf("<infero-sources-path>/tests/data/mimo_model/mimo_model.onnx ");
+      printf("onnx ");
+      printf("input_1 ");
+      printf("input_2 ");
+      printf("dense_6\n");
+      return 1;
+    }
+
     char* model_path  = argv[1];
     char* model_type  = argv[2];
     char* name_input1 = argv[3];

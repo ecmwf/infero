@@ -18,6 +18,7 @@ use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 implicit none
 
 ! Command line arguments
+integer :: arg_count
 character(1024) :: model_path
 character(1024) :: model_type
 character(1024) :: yaml_config
@@ -51,6 +52,18 @@ type(fckit_map) :: omap
 integer :: i, j, cc
 
 ! Get Command line arguments
+arg_count = command_argument_count()
+if (arg_count<5) then
+   write(*,*) "Error: This example must be invoked as:"
+   write(*,*) "<infero-build-path>/bin/3_example_mimo_fortran & 
+& <infero-sources-path>/tests/data/mimo_model/mimo_model.onnx &
+& onnx  &
+& input_1 &
+& input_2 &
+& dense_6"
+   call exit(1)
+endif
+
 CALL get_command_argument(1, model_path)
 CALL get_command_argument(2, model_type)
 CALL get_command_argument(3, t1_name)

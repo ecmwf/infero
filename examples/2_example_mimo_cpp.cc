@@ -26,6 +26,17 @@ int main(int argc, char** argv) {
 
     eckit::Main::initialise(argc, argv);
 
+    if (argc<6) {
+      printf("Error: This example must be invoked as: \n");  
+      printf("<infero-build-path>/bin/2_example_mimo_cpp ");
+      printf("<infero-sources-path>/tests/data/mimo_model/mimo_model.onnx ");
+      printf("onnx ");
+      printf("input_1 ");
+      printf("input_2 ");
+      printf("dense_6\n");
+      return 1;
+    }    
+
     // Input path
     std::string model_path  = argv[1];
     std::string model_type  = argv[2]; 
