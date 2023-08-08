@@ -43,7 +43,7 @@ character(len=128) :: t3_name
 ! the infero model
 type(infero_model) :: model
 
-! auxiliary fckit tensor objects
+! auxiliary fckit tensor wrappers
 type(fckit_tensor_real32) :: tensor1
 type(fckit_tensor_real32) :: tensor2
 type(fckit_tensor_real32) :: tensor3
@@ -123,6 +123,13 @@ call infero_check(model%print_config())
 
 ! free the model
 call infero_check(model%free())
+
+! finalise fckit objects
+call tensor1%final()
+call tensor2%final()
+call tensor3%final()
+call imap%final()
+call omap%final()
 
 ! finalise library
 call infero_check(infero_finalise())
