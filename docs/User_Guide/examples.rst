@@ -16,13 +16,13 @@ And when compiled, the corresponding executables are found in:
 
  * <infero-build-path>/bin
 
-The examples show how to use Infero for a multi-input single-output Machine Learning model. The examples show how to
-call Infero API's from C, C++ and Fortran (same model and input data are used for all the cases). The same
-output values are expected for the all the examples.
+The examples show how to use Infero for a multi-input single-output Machine Learning model from C, C++ and Fortran 
+(same model and input data are used for all the cases, so also same output is expected).
 
  * *1_example_mimo_c.c*
  * *2_example_mimo_cpp.cc*
  * *3_example_mimo_fortran.F90*
+ * *4_example_mimo_thread.cc*
 
 
 Run the examples
@@ -54,6 +54,12 @@ Fortran example:
    cd <path/to/infero/build>
    ./bin/3_example_mimo_fortran <path/to/mimo/model>/mimo_model.onnx onnx input_1 input_2 dense_6
 
+C++ threaded example:
+
+.. code-block:: console
+
+   cd <path/to/infero/build>
+   ./bin/4_example_mimo_thread <path/to/mimo/model>/mimo_model.onnx onnx input_1 input_2 dense_6
 
 
 Code Explained
@@ -64,7 +70,7 @@ of the main sections from the Fortran example is also reported here below (for t
 to *3_example_mimo_fortran.F90*).
 
 This section below contains the declarations of the necessary input variables. t1 and t2 are the fortran arrays containing
-the data and t1_name and t2_name are the corresponding names. Each tensor must in fact be associated to the name of the
+the data and t1_name and t2_name are the corresponding names. Each tensor must be associated with the name of the
 input layer of the machine learning model that receives the tensor data as input.
 
 .. code-block:: fortran
@@ -77,26 +83,33 @@ input layer of the machine learning model that receives the tensor data as input
    character(len=128) :: t1_name
    character(len=128) :: t2_name
 
-Infero provides a fortran type called *infero_tensor_set* that is used as a dictionary of type {name: tensor} and can be
-used to define the full input interface to the machine learning model.
+The association between tensors and their corresponding input layer names is then made through a 
+key/value container of type *fckit_map*.
 
 .. code-block:: fortran
 
-   ! infero_tensor_set: map {name: tensor}
-   type(infero_tensor_set) :: iset
+   ! auxiliary fckit tensor objects
+   type(fckit_tensor_real32) :: tensor1
+   type(fckit_tensor_real32) :: tensor2
 
-Output tensor(s) are declared and arranged similarly to input tensors
+   ! key/value map for name->tensor
+   type(fckit_map) :: imap
+
+Output tensor(s) are declared and arranged into an *fckit_map* similarly to input tensors
 
 .. code-block:: fortran
 
    ! output tensor
    real(c_float) :: t3(n_batch,1) = 0
 
-   ! names of output layers
+   ! name of output layer
    character(len=128) :: t3_name
 
-   ! infero_tensor_set: map {name: tensor}
-   type(infero_tensor_set) :: oset
+   ! auxiliary fckit tensor objects
+   type(fckit_tensor_real32) :: tensor3
+
+   ! key/value map for name->tensor
+   type(fckit_map) :: omap
 
 The type for the machine learning model model is called *infero_model*, shown below:
 
@@ -105,7 +118,7 @@ The type for the machine learning model model is called *infero_model*, shown be
    ! the infero model
    type(infero_model) :: model
 
-Input tensors are filled row-wise with dummy values for this example and the *infero_tensor_set* is filled in:
+Input tensors are filled row-wise with dummy values for this example and the *fckit_map* is filled in:
 
 .. code-block:: fortran
 
@@ -122,22 +135,30 @@ Input tensors are filled row-wise with dummy values for this example and the *in
    ! init infero library
    call infero_check(infero_initialise())
 
-   ! prepare input tensors for named layers
-   call infero_check(iset%initialise())
-   call infero_check(iset%push_tensor(t1, TRIM(t1_name)))
-   call infero_check(iset%push_tensor(t2, TRIM(t2_name)))
+   ! wrap input tensors into fckit_tensors
+   tensor1 = fckit_tensor_real32(t1)
+   tensor2 = fckit_tensor_real32(t2)
 
-   ! print the input tensor set
-   call infero_check(iset%print())
+   ! construct the fckit input map
+   imap = fckit_map()
+
+   ! insert entries name+tensor into the input map
+   call imap%insert(TRIM(t1_name), tensor1%c_ptr())
+   call imap%insert(TRIM(t2_name), tensor2%c_ptr())
+
 
 Same thing is done for the output tensor
 
 .. code-block:: fortran
 
-   ! prepare output tensors for named layers
-   call infero_check(oset%initialise())
-   call infero_check(oset%push_tensor(t3, TRIM(t3_name)))
-   call infero_check(oset%print())
+   ! wrap output tensor into fckit_tensor
+   tensor3 = fckit_tensor_real32(t3)
+
+   ! construct the fckit output map
+   omap = fckit_map()
+
+   ! insert entry name+tensor into the output map
+   call omap%insert(TRIM(t3_name), tensor3%c_ptr())
 
 
 Configure and call infero inference method
@@ -153,7 +174,7 @@ Configure and call infero inference method
    call infero_check(model%initialise_from_yaml_string(yaml_config))
 
    ! run inference
-   call infero_check(model%infer(iset, oset))
+   call infero_check(model%infer(imap, omap))
 
 
 Print inference statistics, configuration and output values

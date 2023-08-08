@@ -37,15 +37,18 @@ character(len=128) :: t2_name
 ! output tensor
 real(c_float) :: t3(n_batch,1) = 0
 
-! names of output layers
+! name of output layer
 character(len=128) :: t3_name
 
 ! the infero model
 type(infero_model) :: model
 
+! auxiliary fckit tensor objects
 type(fckit_tensor_real32) :: tensor1
 type(fckit_tensor_real32) :: tensor2
 type(fckit_tensor_real32) :: tensor3
+
+! key/value map for name->tensor
 type(fckit_map) :: imap
 type(fckit_map) :: omap
 
@@ -83,17 +86,24 @@ t2(3,:) = 99.0
 ! init infero library
 call infero_check(infero_initialise())
 
-! prepare input tensors for named layers
+! wrap input tensors into fckit_tensors
 tensor1 = fckit_tensor_real32(t1)
 tensor2 = fckit_tensor_real32(t2)
 
+! construct the fckit input map
 imap = fckit_map()
+
+! insert entries name+tensor into the input map
 call imap%insert(TRIM(t1_name), tensor1%c_ptr())
 call imap%insert(TRIM(t2_name), tensor2%c_ptr())
 
-! prepare output tensors for named layers
+! wrap output tensor into fckit_tensor
 tensor3 = fckit_tensor_real32(t3)
+
+! construct the fckit output map
 omap = fckit_map()
+
+! insert entry name+tensor into the output map
 call omap%insert(TRIM(t3_name), tensor3%c_ptr())
 
 ! YAML configuration string string
