@@ -155,3 +155,8 @@ Tests can be run from the script:
 .. code-block:: console
 
    dev/3_run_tests.sh
+
+Note: The following environment variables can also be set when running tests:
+
+- *INFERO_TEST_NPROCS*: number of processors to use for each regression test (when MPI is enabled)
+- *INFERO_TEST_TOL*: overrides the error tolerance on tests at runtime
