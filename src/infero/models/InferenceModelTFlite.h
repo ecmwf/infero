@@ -33,16 +33,18 @@ public:
 
     constexpr static const char* type() { return "tflite"; }
 
-protected:
+    void print(std::ostream& os) const override;
+
+private:
+
     void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
                     std::string input_name = "", std::string output_name = "") override;
 
     void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
                          std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names) override;
 
-    void print(std::ostream& os) const override;
+    static eckit::LocalConfiguration defaultConfig();
 
-private:
     // TFlite model and interpreter
     std::unique_ptr<tflite::FlatBufferModel> model_;
     std::unique_ptr<tflite::Interpreter> interpreter_;

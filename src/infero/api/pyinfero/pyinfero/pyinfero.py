@@ -36,7 +36,8 @@ class PatchedLib:
         ffi.cdef(self.__read_header())        
 
         libName = {
-            'Linux': 'libinferoapi.so'
+            'Linux': 'libinferoapi.so',
+            'Darwin': 'libinferoapi.dylib'
         }
 
         self.__lib = ffi.dlopen(libName[platform.system()])
@@ -174,9 +175,9 @@ class Infero:
         cdata2p = ffi.cast("float *", cdata2.ctypes.data)
         cshape2 = ffi.new(f"int[]", output_shape)
 
-        lib.infero_inference_float_ctensor(self.infero_hdl[0],
-                                           len(input_data.shape), cdata1p, cshape1,
-                                           len(output_shape), cdata2p, cshape2)
+        lib.infero_inference_float(self.infero_hdl[0],
+                                   len(input_data.shape), cdata1p, cshape1, 0,
+                                   len(output_shape), cdata2p, cshape2, 0)
 
         return_output = copy.deepcopy(cdata2)
         return_output = np.array(return_output)
@@ -243,11 +244,13 @@ class Infero:
                                                 iranks,
                                                 shape_ptr2ptrs,
                                                 data_ptr2ptrs,
+                                                0,
                                                 n_output,
                                                 out_name_ptr2ptrs,
                                                 oranks,
                                                 out_shape_ptr2ptrs,
-                                                out_data_ptr2ptrs)
+                                                out_data_ptr2ptrs,
+                                                0)
 
         output_tensors = {}
         for tidx, t in enumerate(out_data_ptr2ptrs):            
@@ -269,6 +272,8 @@ class Infero:
 
             # delete the handle
             lib.infero_delete_handle(self.infero_hdl[0])
+
+            self._initialised = False
 
     def print_config(self):
         lib.infero_print_config(self.infero_hdl[0])

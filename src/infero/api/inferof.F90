@@ -15,6 +15,9 @@ module inferof
   use fckit_array_module
   use fckit_c_interop_module
 
+  use fckit_map_module
+  use fckit_main_module
+  
 implicit none
 
 
@@ -34,7 +37,7 @@ contains
   procedure :: initialise_from_yaml_string => infero_create_handle_from_yaml_string
   procedure :: initialise_from_yaml_file => infero_create_handle_from_yaml_file
 
-  procedure :: infer_mimo => infer_from_tensor_set
+  procedure :: infer_mimo => infer_from_map
 
   procedure :: infero_inference_r2_r2_f => infero_inference_real32_rank2_rank2
   procedure :: infero_inference_r2_r2_d => infero_inference_real64_rank2_rank2    
@@ -61,27 +64,6 @@ contains
 
 end type
 
-
-! ---------  Tensor set (Tensor set "C"-handle wrapper)
-type infero_tensor_set
-  type(c_ptr) :: impl = c_null_ptr
-  logical :: is_finalised = .false.
-contains
-  procedure :: initialise => infero_tensor_set_initialise
-  procedure :: push_tensor_rank2 => infero_tensor_set_push_rank2
-  procedure :: push_tensor_rank3 => infero_tensor_set_push_rank3
-  procedure :: push_tensor_rank4 => infero_tensor_set_push_rank4
-  generic   :: push_tensor => push_tensor_rank2, push_tensor_rank3, push_tensor_rank4
-  procedure :: print => infero_print_tensor_set
-  procedure :: free => infero_tensor_set_free
-
-#ifdef HAVE_FINAL
-  final :: infero_tensor_set_free_sub
-#endif
-
-end type
-
-
 ! ---------  public interface
 public :: infero_initialise
 public :: infero_finalise
@@ -90,8 +72,6 @@ public :: infero_check
 public :: infero_error_string
 
 public :: infero_model
-public :: infero_tensor_set
-
 
 interface
 
@@ -104,13 +84,15 @@ interface
   !                            int rank1, 
   !                            const float data1[], 
   !                            const int shape1[], 
+  !                            int layout1,
   !                            int rank2,
   !                            float data2[], 
-  !                            const int shape2[]);
+  !                            const int shape2[],
+  !                            int layout2);
   !
   ! ( must be defined within `extern "C" { ... }` scope )
   !-----------------------------------------------------------------------------------------
-  function infero_inference_real32( handle_impl, rank1, data1, shape1, rank2, data2, shape2 ) result(err) &
+  function infero_inference_real32( handle_impl, rank1, data1, shape1, layout1, rank2, data2, shape2, layout2 ) result(err) &
     & bind(C,name="infero_inference_float")
     use iso_c_binding, only: c_int, c_ptr, c_float, c_char, c_null_char
     
@@ -119,10 +101,13 @@ interface
     integer(c_int), value :: rank1
     real(c_float), dimension(*) :: data1    
     integer(c_int), dimension(*) :: shape1
+    integer(c_int), value :: layout1
 
     integer(c_int), value :: rank2
     real(c_float), dimension(*) :: data2    
     integer(c_int), dimension(*) :: shape2
+    integer(c_int), value :: layout2
+
     integer(c_int) :: err
   end function
 
@@ -131,11 +116,13 @@ interface
   !                             int rank1, 
   !                             const double data1[], 
   !                             const int shape1[], 
+  !                             int layout1,
   !                             int rank2,
   !                             double data2[], 
-  !                             const int shape2[]);
+  !                             const int shape2[],
+  !                             int layout2);
   !-----------------------------------------------------------------------------------------
-  function infero_inference_real64( handle_impl, rank1, data1, shape1, rank2, data2, shape2 ) result(err) &
+  function infero_inference_real64( handle_impl, rank1, data1, shape1, layout1, rank2, data2, shape2, layout2 ) result(err) &
     & bind(C,name="infero_inference_double")
     use iso_c_binding, only: c_int, c_ptr, c_double, c_char, c_null_char
 
@@ -144,25 +131,20 @@ interface
     integer(c_int), value :: rank1
     real(c_double), dimension(*) :: data1        
     integer(c_int), dimension(*) :: shape1
+    integer(c_int), value :: layout1
         
     integer(c_int), value :: rank2
     real(c_double), dimension(*) :: data2
     integer(c_int), dimension(*) :: shape2
-    integer(c_int) :: err
-  end function
+    integer(c_int), value :: layout2
 
-  function infero_initialise_interf( argc, argv ) result(err) &
-    & bind(C,name="infero_initialise")
-    use iso_c_binding, only: c_int, c_ptr
-    integer(c_int), value :: argc
-    type(c_ptr) :: argv(15)
     integer(c_int) :: err
   end function
 
   function infero_create_handle_from_yaml_str_interf( config_str, handle_impl ) result(err) &
     & bind(C,name="infero_create_handle_from_yaml_str")
     use iso_c_binding, only: c_char, c_int, c_ptr
-    character(c_char) :: config_str
+    character(c_char), dimension(*) :: config_str
     type(c_ptr), intent(out) :: handle_impl
     integer(c_int) :: err
   end function
@@ -170,7 +152,7 @@ interface
   function infero_create_handle_from_yaml_file_interf( config_str, handle_impl ) result(err) &
     & bind(C,name="infero_create_handle_from_yaml_file")
     use iso_c_binding, only: c_char, c_int, c_ptr
-    character(c_char) :: config_str
+    character(c_char), dimension(*) :: config_str
     type(c_ptr), intent(out) :: handle_impl
     integer(c_int) :: err
   end function
@@ -196,56 +178,12 @@ interface
     integer(c_int) :: err
   end function
 
-  function infero_finalise_interf( ) result(err) &
-    & bind(C,name="infero_finalise")
-    use iso_c_binding
-    integer(c_int) :: err
-  end function
-
-
-  ! --------- tensor set
-  function infero_tensors_initialise_interf( handle_impl ) result(err) &
-    & bind(C,name="infero_create_tensor_set")
-    use iso_c_binding, only: c_int, c_ptr
-    type(c_ptr), intent(out) :: handle_impl
-    integer(c_int) :: err
-  end function
-
-  function infero_tensors_free_interf( handle_impl ) result(err) &
-    & bind(C,name="infero_delete_tensor_set")
-    use iso_c_binding, only: c_int, c_ptr
+  function infer_from_map_interf( handle_impl, imap_ptr, omap_ptr ) result(err) &
+    & bind(C,name="infero_inference_float_map")
+    use iso_c_binding    
     type(c_ptr), intent(in), value :: handle_impl
-    integer(c_int) :: err
-  end function
-
-  function infero_tensor_set_add_tensor_interf( handle_impl, rank, shape_vec, data_vec, name, c_style ) result(err) &
-    & bind(C,name="infero_add_tensor")
-    use iso_c_binding
-    
-    type(c_ptr), intent(in), value :: handle_impl
-    integer(c_int), intent(in), value :: rank
-    integer(c_int), dimension(*) :: shape_vec
-    real(c_float), dimension(*)  :: data_vec
-    character(c_char)            :: name
-    logical(c_bool), value       :: c_style    
-    
-    integer(c_int) :: err    
-  end function
-  
-  function infero_print_tensor_set_interf( handle_impl ) result(err) &
-    & bind(C,name="infero_print_tensor_set")
-    use iso_c_binding, only: c_int, c_ptr
-    type(c_ptr), intent(in), value :: handle_impl
-    integer(c_int) :: err
-  end function
-
-  function infer_from_tensor_set_interf( handle_impl, iset, oset ) result(err) &
-    & bind(C,name="infero_inference_float_tensor_set")
-    use iso_c_binding
-    
-    type(c_ptr), intent(in), value :: handle_impl
-    type(c_ptr), intent(in), value :: iset
-    type(c_ptr), intent(in), value :: oset
+    type(c_ptr), intent(in), value :: imap_ptr
+    type(c_ptr), intent(in), value :: omap_ptr
     integer(c_int) :: err    
   end function
 
@@ -276,21 +214,6 @@ interface infero_inference ! function overloading
   module procedure infero_inference_real32_rank4_rank4
   module procedure infero_inference_real64_rank4_rank4
 end interface
-
-interface infero_initialise
-  module procedure infero_initialise_func
-end interface
-
-interface infero_finalise
-  module procedure infero_finalise_func
-end interface
-
-interface tensor_set_push
-  module procedure infero_tensor_set_push_rank2
-  module procedure infero_tensor_set_push_rank3
-  module procedure infero_tensor_set_push_rank4
-end interface
-
 
 ! ---------  For utility
 interface
@@ -339,24 +262,21 @@ end function
 !---------------------------------------------------------------------------------
 
 ! --------- Infero Model
-function infero_initialise_func( ) result(err)
-  use iso_c_binding, only: c_int, c_ptr
-  integer(c_int) :: argc
-  type(c_ptr) :: argv(15)
+function infero_initialise( ) result(err)
   integer :: err
-  call get_c_commandline_arguments(argc,argv)
-  err = infero_initialise_interf( argc,argv )
+  err = INFERO_SUCCESS
+  call fckit_main%initialise()
 end function
 
-function infero_finalise_func( ) result(err)
-  use iso_c_binding
+function infero_finalise( ) result(err)
   integer :: err
-  err = infero_finalise_interf( )
+  err = INFERO_SUCCESS
+  call fckit_main%finalise()
 end function
 
 function infero_create_handle_from_yaml_string(handle, config_str) result(err)
   class(infero_model), intent(inout) :: handle
-  character(c_char) :: config_str
+  character(kind=c_char,len=*), intent(in) :: config_str
   integer :: err
   err = infero_create_handle_from_yaml_str_interf(config_str, handle%impl)
   err = infero_open_handle_interf( handle%impl )
@@ -365,7 +285,7 @@ end function
 function infero_create_handle_from_yaml_file(handle, config_str ) result(err)
   use iso_c_binding, only: c_char, c_int, c_ptr
   class(infero_model), intent(inout) :: handle
-  character(c_char) :: config_str
+  character(kind=c_char,len=*), intent(in) :: config_str
   integer :: err
   err = infero_create_handle_from_yaml_file_interf(config_str, handle%impl)
   err = infero_open_handle_interf( handle%impl )
@@ -429,7 +349,7 @@ function infero_inference_real32_rank2_rank2(handle, array1, array2 ) result(err
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  err = infero_inference_real32(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+  err = infero_inference_real32(handle%impl, size(shape1), data1, shape1, 1, size(shape2), data2, shape2, 1 )
 end function
 
 function infero_inference_real64_rank2_rank2(handle, array1, array2 ) result(err)
@@ -448,7 +368,7 @@ function infero_inference_real64_rank2_rank2(handle, array1, array2 ) result(err
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+  err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, 1, size(shape2), data2, shape2, 1 )
 end function
 
 function infero_inference_real32_rank3_rank2(handle, array1, array2 ) result(err)
@@ -467,7 +387,7 @@ function infero_inference_real32_rank3_rank2(handle, array1, array2 ) result(err
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  err = infero_inference_real32(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+  err = infero_inference_real32(handle%impl, size(shape1), data1, shape1, 1, size(shape2), data2, shape2, 1 )
 end function
 
 function infero_inference_real64_rank3_rank2(handle, array1, array2 ) result(err)
@@ -486,7 +406,7 @@ function infero_inference_real64_rank3_rank2(handle, array1, array2 ) result(err
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+  err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, 1, size(shape2), data2, shape2, 1 )
 end function
 
 function infero_inference_real32_rank4_rank4(handle, array1, array2 ) result(err)
@@ -505,7 +425,7 @@ function infero_inference_real32_rank4_rank4(handle, array1, array2 ) result(err
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  err = infero_inference_real32(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+  err = infero_inference_real32(handle%impl, size(shape1), data1, shape1, 1, size(shape2), data2, shape2, 1 )
 end function
 
 function infero_inference_real64_rank4_rank4(handle, array1, array2 ) result(err)
@@ -524,147 +444,17 @@ function infero_inference_real64_rank4_rank4(handle, array1, array2 ) result(err
   shape2 = shape(array2)
   data2  => array_view1d( array2 )
 
-  err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, size(shape2), data2, shape2 )
+  err = infero_inference_real64(handle%impl, size(shape1), data1, shape1, 1, size(shape2), data2, shape2, 1 )
 end function
 
 !---------------------------------------------------------------------------------
 
-! ---------  tensor set
-
-function infero_tensor_set_initialise( handle ) result(err)
-  class(infero_tensor_set), intent(inout) :: handle
+function infer_from_map( infero_h, imap, omap ) result(err)
+  class(infero_model), intent(inout) :: infero_h
+  class(fckit_map), intent(inout) :: imap
+  class(fckit_map), intent(inout) :: omap
   integer :: err
-  err = infero_tensors_initialise_interf(handle%impl)
-end function
-
-function infero_tensor_set_free( handle ) result(err)
-  class(infero_tensor_set), intent(inout) :: handle
-  integer :: err
-  if (handle%is_finalised .eqv. .false.) then
-    write(*,'(a)') "INFO: Finalising Tensor Set.."
-    err = infero_tensors_free_interf(handle%impl)
-    handle%is_finalised = .true.
-  end if
-end function
-
-#ifdef HAVE_FINAL
-subroutine infero_tensor_set_free_sub( handle )
-  type(infero_tensor_set), intent(inout) :: handle
-  integer :: err
-  if (handle%is_finalised .eqv. .false.) then
-    write(*,'(a)') "INFO: Finalising Tensor Set.."
-    err = infero_tensors_free_interf(handle%impl)
-    handle%is_finalised = .true.
-  end if
-end subroutine
-#endif
-
-function infero_tensor_set_push_rank2( handle, tensor, name, c_style ) result(err)
-  use iso_c_binding
-
-  class(infero_tensor_set), intent(inout) :: handle
-  real(c_float), intent(in) :: tensor(:,:)
-  character(len=*), intent(in) :: name
-  
-  real(c_float), pointer :: data_vec(:)
-  integer(c_int) :: shape_vec(2)
-  integer(c_int) :: rank  
-  
-  logical, intent(in), optional :: c_style
-  logical(c_bool) :: c_style_actual = .false.
-
-  integer :: err
-
-  if (present(c_style)) c_style_actual = c_style
-
-  data_vec => array_view1d( tensor )
-  shape_vec = shape(tensor)
-  rank = size(shape_vec)
-
-  err = infero_tensor_set_add_tensor_interf(handle%impl, &
-                                            rank, &
-                                            shape_vec, &
-                                            data_vec, &
-                                            name//c_null_char, &
-                                            c_style_actual )
-end function
-
-
-function infero_tensor_set_push_rank3( handle, tensor, name, c_style ) result(err)
-  use iso_c_binding
-
-  class(infero_tensor_set), intent(inout) :: handle
-  real(c_float), intent(in) :: tensor(:,:,:)
-  character(len=*), intent(in) :: name
-  
-  real(c_float), pointer :: data_vec(:)
-  integer(c_int) :: shape_vec(3)
-  integer(c_int) :: rank  
-
-  logical, intent(in), optional :: c_style
-  logical(c_bool) :: c_style_actual = .false.
-
-  integer :: err
-
-  if (present(c_style)) c_style_actual = c_style
-
-  data_vec => array_view1d( tensor )
-  shape_vec = shape(tensor)
-  rank = size(shape_vec)
-
-  err = infero_tensor_set_add_tensor_interf(handle%impl, &
-                                            rank, &
-                                            shape_vec, &
-                                            data_vec, &
-                                            name//c_null_char, &
-                                            c_style_actual )
-end function
-
-
-function infero_tensor_set_push_rank4( handle, tensor, name, c_style) result(err)
-  use iso_c_binding
-
-  class(infero_tensor_set), intent(inout) :: handle
-  real(c_float), intent(in) :: tensor(:,:,:,:)
-  character(len=*), intent(in) :: name
-  
-  real(c_float), pointer :: data_vec(:)
-  integer(c_int) :: shape_vec(4)
-  integer(c_int) :: rank  
-
-  logical, intent(in), optional :: c_style
-  logical(c_bool) :: c_style_actual = .false.
-
-  integer :: err
-
-  if (present(c_style)) c_style_actual = c_style
-
-  data_vec => array_view1d( tensor )
-  shape_vec = shape(tensor)
-  rank = size(shape_vec)
-
-  err = infero_tensor_set_add_tensor_interf(handle%impl, &
-                                            rank, &
-                                            shape_vec, &
-                                            data_vec, &
-                                            name//c_null_char, &
-                                            c_style_actual )
-end function
-
-
-function infero_print_tensor_set( handle ) result(err)
-  class(infero_tensor_set), intent(inout) :: handle
-  integer :: err
-  err = infero_print_tensor_set_interf(handle%impl)
-end function
-
-
-function infer_from_tensor_set( infero_h, iset_h, oset_h ) result(err)
-  class(infero_model),     intent(inout) :: infero_h
-  class(infero_tensor_set), intent(inout) :: iset_h
-  class(infero_tensor_set), intent(inout) :: oset_h
-  integer :: err
-  err = infer_from_tensor_set_interf(infero_h%impl, iset_h%impl, oset_h%impl)
+  err = infer_from_map_interf(infero_h%impl, imap%c_ptr(), omap%c_ptr())
 end function
 
 

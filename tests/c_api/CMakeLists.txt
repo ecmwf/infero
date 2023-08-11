@@ -13,14 +13,6 @@ ecbuild_add_test(TARGET        infero_test_infero_init_c
                  LIBS          inferoapi eckit
 )
 
-# test tensor set
-ecbuild_add_test(TARGET        infero_test_tensor_set
-                 INCLUDES      ${eckit_INCLUDE_DIRS}
-                 SOURCES       test_tensor_set.cc
-                 LIBS          inferoapi eckit
-)
-
-
 if (HAVE_TF_C)
 
     # test c-api with tf_c inference model

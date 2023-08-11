@@ -28,17 +28,18 @@ namespace infero {
 
 static InferenceModelBuilder<InferenceModelTFlite> tfliteBuilder;
 
+eckit::LocalConfiguration InferenceModelTFlite::defaultConfig() {
+    static eckit::LocalConfiguration config;
+    // empty defaults..
+    return config;
+}
+
 
 InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
-    InferenceModel(conf) {
-
-    // Model configuration
-    readConfig_(conf);
-
-    std::string ModelPath(ModelConfig_->getString("path"));
+    InferenceModel(conf, InferenceModelTFlite::defaultConfig()) {
 
     // read/bcast model by mpi (when possible)
-    broadcast_model(ModelPath);
+    broadcast_model(modelPath());
 
     // if not null, use the model buffer
     if (modelBuffer_.size()){
@@ -49,7 +50,7 @@ InferenceModelTFlite::InferenceModelTFlite(const eckit::Configuration& conf) :
                                                           modelBuffer_.size());
 
     } else {  // otherwise construct from model path
-        model_ = tflite::FlatBufferModel::BuildFromFile(ModelPath.c_str());
+        model_ = tflite::FlatBufferModel::BuildFromFile( modelPath().c_str() );
     }
 
     INFERO_CHECK(model_ != nullptr);
@@ -125,10 +126,10 @@ void InferenceModelTFlite::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::li
     Log::info() << "Copying output..." << std::endl;
     eckit::Timing t_start(statistics_.timer());
     ASSERT(tOut.shape() == out_shape);
-    if (tOut.isRight()) {
+    if (tOut.layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
         // TFlite uses Left (C) tensor layouts, so we need to convert
-        TensorFloat tLeft(output, out_shape, false);  // wrap data
-        TensorFloat tRight = tLeft.transformLeftToRightLayout();
+        TensorFloat tLeft(output, out_shape, eckit::linalg::TensorFloat::Layout::RowMajor);  // wrap data
+        TensorFloat tRight = tLeft.transformRowMajorToColMajor();
         tOut = tRight;
     }
     else {
@@ -187,10 +188,10 @@ void InferenceModelTFlite::infer_mimo_impl(std::vector<eckit::linalg::TensorFloa
         // copy output data
         Log::info() << "Copying output..." << std::endl;
 
-        if (tOut[i]->isRight()) {
+        if (tOut[i]->layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
             // TFlite uses Left (C) tensor layouts, so we need to convert
-            TensorFloat tLeft(output, tOut[i]->shape(), false);  // wrap data
-            TensorFloat tRight = tLeft.transformLeftToRightLayout();
+            TensorFloat tLeft(output, tOut[i]->shape(), eckit::linalg::TensorFloat::Layout::RowMajor);  // wrap data
+            TensorFloat tRight = tLeft.transformRowMajorToColMajor();
             *tOut[i] = tRight;
         }
         else {

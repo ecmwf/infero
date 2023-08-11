@@ -46,18 +46,18 @@ BUILD_NPROCS=8
 # ======== other configs ========
 
 # ECBUILD
-ECBUILD_BRANCH=develop
+ECBUILD_BRANCH=3.8.0
 ECBUILD_SRC_DIR=${ROOT_SRC_DIR}/ecbuild
 ECBUILD_BUILD_DIR=${ECBUILD_SRC_DIR}
 ECBUILD_BUILD_EXE=${ECBUILD_BUILD_DIR}/bin/ecbuild
 
 # ECKIT
-ECKIT_BRANCH=1.20.0
+ECKIT_BRANCH=1.24.4
 ECKIT_SRC_DIR=${ROOT_SRC_DIR}/eckit
 ECKIT_BUILD_DIR=${ROOT_BUILD_DIR}/eckit
 
 # FCKIT
-FCKIT_BRANCH=develop
+FCKIT_BRANCH=0.11.0
 FCKIT_SRC_DIR=${ROOT_SRC_DIR}/fckit
 FCKIT_BUILD_DIR=${ROOT_BUILD_DIR}/fckit
 
@@ -75,7 +75,7 @@ ONNX_BUILD_DIR=${ROOT_SRC_DIR}/onnxruntime
 ONNX_URL=https://github.com/microsoft/onnxruntime/releases/download
     
 # TF_C
-TFC_VERSION=2.6.0
+TFC_VERSION=2.7.0
 TFC_SOURCE_DIR=${ROOT_SRC_DIR}/tensorflow_c
 TFC_BUILD_DIR=${ROOT_SRC_DIR}/tensorflow_c
 TFC_URL=https://storage.googleapis.com/tensorflow/libtensorflow

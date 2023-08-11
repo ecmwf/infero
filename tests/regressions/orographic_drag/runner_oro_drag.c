@@ -37,13 +37,17 @@ void read_csv(const char* file_path, float* values){
 
 int main(int argc, char** argv){
 
-    const float tol = 1e-3;
+    float tol = 1e-3;
     const int nInferenceReps = 10;
 
     char* model_path = argv[1];
     char* model_type = argv[2];
     char* input_path = argv[3];
     char* ref_output_path = argv[4];
+    if (argc>5) {
+        tol = atof(argv[5]);
+    }
+
     char yaml_str[1024];
 
     int input_size[2];
@@ -105,9 +109,9 @@ int main(int argc, char** argv){
 
     // 3) run inference
     for (int i=0; i<nInferenceReps; i++){
-        infero_inference_float_ctensor( infero_handle,
-                                        2, input_tensor, input_size,
-                                        2, output_tensor, output_size );
+        infero_inference_float( infero_handle,
+                                2, input_tensor, input_size, 0,
+                                2, output_tensor, output_size, 0 );
     }
 
     // 4) close and delete the handle

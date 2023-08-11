@@ -74,6 +74,17 @@ void delete_data(size_t n_tensors, float** data, int** shapes){
  */
 int main(int argc, char** argv){
 
+    if (argc<6) {
+      printf("Error: This example must be invoked as: \n");  
+      printf("<infero-build-path>/bin/1_example_mimo_c ");
+      printf("<infero-sources-path>/tests/data/mimo_model/mimo_model.onnx ");
+      printf("onnx ");
+      printf("input_1 ");
+      printf("input_2 ");
+      printf("dense_6\n");
+      return 1;
+    }
+
     char* model_path  = argv[1];
     char* model_type  = argv[2];
     char* name_input1 = argv[3];
@@ -195,17 +206,19 @@ int main(int argc, char** argv){
     infero_open_handle(infero_handle);
 
     // 3) run inference
-    infero_inference_float_mimo_ctensor(infero_handle,
-                                        (int)n_inputs,
-                                        (const char**)input_names,
-                                        (const int*)iranks,
-                                        (const int**)input_shapes,
-                                        (const float**)inputs,
-                                        (int)n_outputs,
-                                        (const char**)output_names,
-                                        (const int*)oranks,
-                                        (const int**)output_shapes,
-                                        outputs);
+    infero_inference_float_mimo(infero_handle,
+                                (int)n_inputs,
+                                (const char**)input_names,
+                                (const int*)iranks,
+                                (const int**)input_shapes,
+                                (const float**)inputs,
+                                0,
+                                (int)n_outputs,
+                                (const char**)output_names,
+                                (const int*)oranks,
+                                (const int**)output_shapes,
+                                outputs,
+                                0);
 
     // print output values
     print_data(n_outputs, outputs, output_names, output_shapes, oranks);

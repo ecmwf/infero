@@ -26,17 +26,22 @@ using namespace eckit;
 
 namespace infero {
 
-InferenceModel::InferenceModel(const eckit::Configuration& conf) :
-    modelBuffer_{size_t(0)} {
+// Configuration and model-specific defaults
+InferenceModel::InferenceModel(const eckit::Configuration& conf, const eckit::Configuration& defaults) :
+    Configurable(conf.getSubConfiguration("model_config"), defaults),
+    modelBuffer_{size_t(0)},
+    modelType_{conf.getString("type")},
+    modelPath_{conf.getString("path")},
+    isOpen_{false} {
 }
 
 InferenceModel::~InferenceModel() {
 
-    print_statistics();
-
     if(isOpen_){
         close();
     }
+
+    print_statistics();
 }
 
 std::string InferenceModel::name() const
@@ -54,17 +59,19 @@ void InferenceModel::open()  {
     }
 }
 
-void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, std::string input_name, std::string output_name)
+void InferenceModel::infer(linalg::TensorFloat& tIn, linalg::TensorFloat& tOut, const std::string& input_name, const std::string& output_name)
 {
+
+    std::lock_guard<std::mutex> lock(modelMutex_);
 
     // Input Tensor re-ordering as needed
     eckit::Timing t_start(statistics_.timer());
     eckit::linalg::TensorFloat input_tensor;
 
-    if (tIn.isRight()) {
+    if (tIn.layout()==eckit::linalg::TensorFloat::Layout::ColMajor) {
         Log::info() << "Input Tensor has right-layout, but left-layout is needed. "
                     << "Transforming to left.." << std::endl;
-        input_tensor = tIn.transformRightToLeftLayout();
+        input_tensor = tIn.transformColMajorToRowMajor();
     } else {
 
         // TODO: this still makes a copy (for now)
@@ -100,6 +107,8 @@ void InferenceModel::infer_impl(linalg::TensorFloat& tIn, linalg::TensorFloat& t
 void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
                                 std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names)
 {
+    std::lock_guard<std::mutex> lock(modelMutex_);
+
     // Take copy of the input tensors
     std::vector<eckit::linalg::TensorFloat*> inputTensors(tIn.begin(), tIn.end());
 
@@ -108,12 +117,12 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
 
     eckit::Timing t_start(statistics_.timer());
     for (int i = 0; i < inputTensors.size(); ++i) {
-        if (inputTensors[i]->isRight()) {
+        if (inputTensors[i]->layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
 
             Log::info() << i << "-th Input Tensor has right-layout, "
                         << "but left-layout is needed. Transforming to left.." << std::endl;
 
-            temporaryCopies.emplace_back(new eckit::linalg::TensorFloat(inputTensors[i]->transformRightToLeftLayout()));
+            temporaryCopies.emplace_back(new eckit::linalg::TensorFloat(inputTensors[i]->transformColMajorToRowMajor()));
             inputTensors[i] = temporaryCopies.back().get();
         }
     }
@@ -128,7 +137,7 @@ void InferenceModel::infer_mimo(std::vector<eckit::linalg::TensorFloat*> &tIn, s
 }
 
 
-void InferenceModel::infer_mimo(TensorMap& iMap, TensorMap& oMap) {
+void InferenceModel::infer_mimo(const TensorMap& iMap, const TensorMap& oMap) {
 
     std::vector<eckit::linalg::TensorFloat*> input_tensors;
     std::vector<const char*> input_names;
@@ -166,64 +175,9 @@ void InferenceModel::close() {
 }
 
 void InferenceModel::broadcast_model(const std::string path) {
-
 #ifdef HAVE_MPI
     modelBuffer_ = eckit::mpi::comm().broadcastFile(path, 0);
 #endif
-}
-
-
-ModelParams_t InferenceModel::defaultParams_(){
-    ModelParams_t params_;
-
-    // by default, model path is assumed cwd()
-    params_["path"] = eckit::LocalPathName::cwd();
-    params_["type"] = this->name();
-
-    return params_;
-}
-
-ModelParams_t InferenceModel::implDefaultParams_()
-{
-    // by default, no implementation-specific
-    // parameters are required
-    return ModelParams_t();
-}
-
-void InferenceModel::readConfig_(const eckit::Configuration& conf)
-{    
-
-    ModelConfig_.reset(new eckit::LocalConfiguration());
-
-    ModelParams_t Params = defaultParams_();
-    ModelParams_t implParams = implDefaultParams_();
-
-    // merge default and model-specific params
-    for (const auto& p: implParams){
-        Params[p.first] = p.second;
-    }
-
-    // Set params into config
-    for (const auto& p: Params){
-        ModelConfig_->set(p.first, p.second);
-    }
-
-    // Assert and set user-provided Params
-    for (const auto& k: conf.keys()){
-        std::cout << "Checking key " << k << std::endl;
-
-        try {
-            ASSERT(Params.find(k) != Params.end());
-        } catch (eckit::Exception e) {
-            Log::error() << "[ERROR]: Parameter: " << k
-                         << " NOT recognised by model: " << this->name()
-                         << " !"
-                         << std::endl;
-            throw eckit::BadParameter(e.what(), Here());
-        }
-
-        ModelConfig_->set(k, conf.getString(k));
-    }
 }
 
 
@@ -237,9 +191,10 @@ void InferenceModel::print_config()
 {
     Log::info() << std::endl;
     Log::info() << "**** Infero Model Configuration ****" << std::endl;
-    for (const auto& k: ModelConfig_->keys()){
-        Log::info() << k << ": " << ModelConfig_->getString(k) << std::endl;
-    }
+    Log::info() << "Model type: " << modelType_ << std::endl;
+    Log::info() << "Model path: " << modelPath_ << std::endl;
+    Log::info() << "Configuration: " << std::endl;
+    Log::info() << config() << std::endl;
     Log::info() << "************************************" << std::endl;
     Log::info() << std::endl;
 }

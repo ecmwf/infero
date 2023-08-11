@@ -55,8 +55,8 @@ int infero_set_failure_handler(infero_failure_handler_t handler, void* context);
 
 // -------------------------------------------------------------
 
-struct infero_tensor_set_t;
-typedef struct infero_tensor_set_t infero_tensor_set_t;
+// struct infero_tensor_set_t;
+// typedef struct infero_tensor_set_t infero_tensor_set_t;
 
 struct infero_handle_t;
 typedef struct infero_handle_t infero_handle_t;
@@ -69,12 +69,12 @@ int infero_initialise(int argc, char** argv);
 /** 
  * Creates an ML engine handle from a YAML string 
  * */
-int infero_create_handle_from_yaml_str(const char str[], infero_handle_t** h);
+int infero_create_handle_from_yaml_str(const char* str, infero_handle_t** h);
 
 /** 
  * Creates an ML engine handle from a YAML file 
  * */
-int infero_create_handle_from_yaml_file(const char path[], infero_handle_t** h);
+int infero_create_handle_from_yaml_file(const char* path, infero_handle_t** h);
 
 /**
  * open a ML engine handle
@@ -92,49 +92,30 @@ int infero_close_handle(infero_handle_t* h);
 int infero_delete_handle(infero_handle_t* h);
 
 /**
- * run a ML engine for inference (double)
- */
-int infero_inference_double(infero_handle_t* h, 
-                            int rank1, 
-                            const double data1[], 
-                            const int shape1[], 
-                            int rank2,
-                            double data2[], 
-                            const int shape2[]);
-
-/** run a ML engine for inference (double)
- * for c-style input tensors
- */
-int infero_inference_double_ctensor(infero_handle_t* h, 
-                                    int rank1, 
-                                    const double data1[], 
-                                    const int shape1[], 
-                                    int rank2,
-                                    double data2[], 
-                                    const int shape2[]);
-/**
 * run a ML engine for inference (float)
 */
 int infero_inference_float(infero_handle_t* h, 
                            int rank1, 
                            const float data1[], 
-                           const int shape1[], 
+                           const int shape1[],
+                           int iLayout,
                            int rank2,
                            float data2[], 
-                           const int shape2[]);
+                           const int shape2[],
+                           int oLayout);
 
-
-/** run a ML engine for inference (float)
- * for c-style input tensors
+/**
+ * run a ML engine for inference (double)
  */
-int infero_inference_float_ctensor(infero_handle_t* h, 
-                                   int rank1, 
-                                   const float data1[], 
-                                   const int shape1[], 
-                                   int rank2,
-                                   float data2[], 
-                                   const int shape2[]);
-
+int infero_inference_double(infero_handle_t* h, 
+                            int rank1, 
+                            const double data1[], 
+                            const int shape1[],
+                            int iLayout,
+                            int rank2,
+                            double data2[], 
+                            const int shape2[],
+                            int oLayout);
 
 /** run a ML engine for inference (float)
 * with multi-input and multi-output
@@ -145,33 +126,41 @@ int infero_inference_float_mimo(infero_handle_t* h,
                                 const int* iRanks, 
                                 const int** iShape, 
                                 const float** iData,
+                                int iLayout,
                                 int nOutputs,
                                 const char** oNames, 
                                 const int* oRanks, 
                                 const int** oShape, 
-                                float** oData);
+                                float** oData,
+                                int oLayout);
 
 /** run a ML engine for inference (float)
-* with multi-input and multi-output - for C-style tensors
+* with multi-input and multi-output
 */
-int infero_inference_float_mimo_ctensor(infero_handle_t* h,
-                                        int nInputs,
-                                        const char** iNames,
-                                        const int* iRanks, 
-                                        const int** iShape, 
-                                        const float** iData,
-                                        int nOutputs,
-                                        const char** oNames, 
-                                        const int* oRanks, 
-                                        const int** oShape, 
-                                        float** oData);
+int infero_inference_double_mimo(infero_handle_t* h,
+                                int nInputs,
+                                const char** iNames, 
+                                const int* iRanks, 
+                                const int** iShape, 
+                                const double** iData,
+                                int iLayout,
+                                int nOutputs,
+                                const char** oNames, 
+                                const int* oRanks, 
+                                const int** oShape, 
+                                double** oData,
+                                int oLayout);
 
 /** 
  * Run mimo inference from tensor sets
  */
-int infero_inference_float_tensor_set(infero_handle_t* h,
-                                      infero_tensor_set_t* iset,
-                                      infero_tensor_set_t* oset);
+int infero_inference_float_map(infero_handle_t* h, void* imap, void* omap);
+
+/** 
+ * Run mimo inference from tensor sets
+ */
+int infero_inference_double_map(infero_handle_t* h, void* imap, void* omap);
+
 /**
  * @brief infero_print_statistics
  * @param h: handle
@@ -191,21 +180,6 @@ int infero_print_config(infero_handle_t* h);
  */
 int infero_finalise();
 
-
-// infero tensor_set
-int infero_create_tensor_set(infero_tensor_set_t** h);
-
-int infero_add_tensor(infero_tensor_set_t* h, 
-                      int rank,
-                      int* shape,
-                      float* data,                                            
-                      const char* name,
-                      bool c_style
-                      );
-
-int infero_delete_tensor_set(infero_tensor_set_t* h);
-
-int infero_print_tensor_set(infero_tensor_set_t* h);
 
 #if defined(__cplusplus)
 }  // extern "C"

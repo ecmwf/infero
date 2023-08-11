@@ -11,11 +11,14 @@
 program my_program
 
 use inferof
+use fckit_map_module, only : fckit_map
+use fckit_tensor_module, only : fckit_tensor_real32
 use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 
 implicit none
 
 ! Command line arguments
+integer :: arg_count
 character(1024) :: model_path
 character(1024) :: model_type
 character(1024) :: yaml_config
@@ -31,25 +34,39 @@ real(c_float) :: t2(n_batch,128) = 0
 character(len=128) :: t1_name
 character(len=128) :: t2_name
 
-! infero_tensor_set: map {name: tensor}
-type(infero_tensor_set) :: iset
-
 ! output tensor
 real(c_float) :: t3(n_batch,1) = 0
 
-! names of output layers
+! name of output layer
 character(len=128) :: t3_name
-
-! infero_tensor_set: map {name: tensor}
-type(infero_tensor_set) :: oset
 
 ! the infero model
 type(infero_model) :: model
 
+! auxiliary fckit tensor wrappers
+type(fckit_tensor_real32) :: tensor1
+type(fckit_tensor_real32) :: tensor2
+type(fckit_tensor_real32) :: tensor3
+
+! key/value map for name->tensor
+type(fckit_map) :: imap
+type(fckit_map) :: omap
+
 integer :: i, j, cc
 
-
 ! Get Command line arguments
+arg_count = command_argument_count()
+if (arg_count<5) then
+   write(*,*) "Error: This example must be invoked as:"
+   write(*,*) "<infero-build-path>/bin/3_example_mimo_fortran & 
+& <infero-sources-path>/tests/data/mimo_model/mimo_model.onnx &
+& onnx  &
+& input_1 &
+& input_2 &
+& dense_6"
+   call exit(1)
+endif
+
 CALL get_command_argument(1, model_path)
 CALL get_command_argument(2, model_type)
 CALL get_command_argument(3, t1_name)
@@ -69,18 +86,25 @@ t2(3,:) = 99.0
 ! init infero library
 call infero_check(infero_initialise())
 
-! prepare input tensors for named layers
-call infero_check(iset%initialise())
-call infero_check(iset%push_tensor(t1, TRIM(t1_name)))
-call infero_check(iset%push_tensor(t2, TRIM(t2_name)))
+! wrap input tensors into fckit_tensors
+tensor1 = fckit_tensor_real32(t1)
+tensor2 = fckit_tensor_real32(t2)
 
-! print the input tensor set
-call infero_check(iset%print())
+! construct the fckit input map
+imap = fckit_map()
 
-! prepare output tensors for named layers
-call infero_check(oset%initialise())
-call infero_check(oset%push_tensor(t3, TRIM(t3_name)))
-call infero_check(oset%print())
+! insert entries name+tensor into the input map
+call imap%insert(TRIM(t1_name), tensor1%c_ptr())
+call imap%insert(TRIM(t2_name), tensor2%c_ptr())
+
+! wrap output tensor into fckit_tensor
+tensor3 = fckit_tensor_real32(t3)
+
+! construct the fckit output map
+omap = fckit_map()
+
+! insert entry name+tensor into the output map
+call omap%insert(TRIM(t3_name), tensor3%c_ptr())
 
 ! YAML configuration string string
 yaml_config = "---"//NEW_LINE('A') &
@@ -91,21 +115,21 @@ yaml_config = "---"//NEW_LINE('A') &
 call infero_check(model%initialise_from_yaml_string(yaml_config))
 
 ! run inference
-call infero_check(model%infer(iset, oset))
+call infero_check(model%infer(imap, omap))
 
 ! explicitely request to print stats and config
 call infero_check(model%print_statistics())
 call infero_check(model%print_config())
 
-! print output
-call infero_check(oset%print())
-
-! free tensor sets
-call infero_check(iset%free())
-call infero_check(oset%free())
-
 ! free the model
 call infero_check(model%free())
+
+! finalise fckit objects
+call tensor1%final()
+call tensor2%final()
+call tensor3%final()
+call imap%final()
+call omap%final()
 
 ! finalise library
 call infero_check(infero_finalise())

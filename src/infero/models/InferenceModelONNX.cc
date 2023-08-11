@@ -28,33 +28,26 @@ namespace infero {
 static InferenceModelBuilder<InferenceModelONNX> onnxBuilder;
 
 
-ModelParams_t InferenceModelONNX::implDefaultParams_(){
-    ModelParams_t params_;
-       
-    params_["numInteropThreads"] = "1";
-    params_["numIntraopThreads"] = "1";
-
-    return params_;
+eckit::LocalConfiguration InferenceModelONNX::defaultConfig() {
+    eckit::LocalConfiguration config;
+    config.set("numInteropThreads", std::string{"1"});
+    config.set("numIntraopThreads", std::string{"1"});
+    return config;
 }
 
 
 InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
-    InferenceModel(conf){
-
-    // Model configuration
-    readConfig_(conf);
-
-    std::string ModelPath(ModelConfig_->getString("path"));
+    InferenceModel(conf, InferenceModelONNX::defaultConfig()) {
 
     // read/bcast model by mpi (when possible)
-    broadcast_model(ModelPath);
+    broadcast_model(modelPath());
 
     env = std::unique_ptr<Ort::Env>(new Ort::Env(ORT_LOGGING_LEVEL_WARNING, "onnx_model"));
 
     // Session options
     session_options = std::unique_ptr<Ort::SessionOptions>(new Ort::SessionOptions);
-    session_options->SetInterOpNumThreads(ModelConfig_->getInt("numInteropThreads"));
-    session_options->SetIntraOpNumThreads(ModelConfig_->getInt("numIntraopThreads"));
+    session_options->SetInterOpNumThreads(config().getInt("numInteropThreads"));
+    session_options->SetIntraOpNumThreads(config().getInt("numIntraopThreads"));
     session_options->SetGraphOptimizationLevel(GraphOptimizationLevel::ORT_ENABLE_EXTENDED);
 
     // if not null, use the model buffer
@@ -66,7 +59,7 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
                                                                  modelBuffer_.size(),
                                                                  *session_options));
     } else {  // otherwise construct from model path
-        session = std::unique_ptr<Ort::Session>(new Ort::Session(*env, ModelPath.c_str(), *session_options));
+        session = std::unique_ptr<Ort::Session>(new Ort::Session(*env, modelPath().c_str(), *session_options));
     }
 
 
@@ -119,14 +112,15 @@ void InferenceModelONNX::infer_impl(TensorFloat& tIn, TensorFloat& tOut,
     ASSERT(output_tensors.size() == 1 && output_tensors.front().IsTensor());
 
     eckit::Timing t_start(statistics_.timer());
-    if (tOut.isRight()) {
+    if (tOut.layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
 
          // ONNX uses Left (C) tensor layouts, so we need to convert
          auto out_shape = output_tensors.front().GetTensorTypeAndShapeInfo().GetShape();
          TensorFloat tLeft(const_cast<float*>(output_tensors.front().GetTensorData<float>()),
-                           utils::convert_shape<int64_t, size_t>(out_shape), false);
+                           utils::convert_shape<int64_t, size_t>(out_shape), 
+                           eckit::linalg::TensorFloat::Layout::RowMajor);
 
-         TensorFloat tRight = tLeft.transformLeftToRightLayout();
+         TensorFloat tRight = tLeft.transformRowMajorToColMajor();
          tOut = tRight;
     }
 
@@ -177,15 +171,15 @@ void InferenceModelONNX::infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*
 
          ASSERT(output_tensors[i].IsTensor());
 
-         if (tOut[i]->isRight()) {
+         if (tOut[i]->layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
 
              // ONNX uses Left (C) tensor layouts, so we need to convert
              auto out_shape = output_tensors[i].GetTensorTypeAndShapeInfo().GetShape();
              TensorFloat tLeft(const_cast<float*>(output_tensors[i].GetTensorData<float>()),
                                utils::convert_shape<int64_t, size_t>(out_shape),
-                               false);  // wrap data
+                               eckit::linalg::TensorFloat::Layout::RowMajor);  // wrap data
 
-             TensorFloat tRight = tLeft.transformLeftToRightLayout();
+             TensorFloat tRight = tLeft.transformRowMajorToColMajor();
              *tOut[i] = tRight;
          }
          else {

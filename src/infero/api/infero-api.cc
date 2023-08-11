@@ -12,18 +12,22 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <map>
+#include <any>
+#include <algorithm>
 
-#include "infero/api/infero.h"
-#include "infero/models/InferenceModel.h"
-
-#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/runtime/Main.h"
+#include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
 
 #ifdef HAVE_MPI
   #include "eckit/io/SharedBuffer.h"
   #include "eckit/mpi/Comm.h"
 #endif
+
+#include "infero/api/infero.h"
+#include "infero/models/InferenceModel.h"
+
 
 using namespace eckit;
 using namespace std;
@@ -111,14 +115,6 @@ int infero_set_failure_handler(infero_failure_handler_t handler, void* context) 
 extern "C" {
 #endif
 
-// tensors to be used for inference input/output
-struct infero_tensor_set_t {
-    infero_tensor_set_t() {}
-    ~infero_tensor_set_t() noexcept(false) {}
-    std::vector<TensorFloat*> tensors;
-    std::vector<std::string> tensor_names;
-};
-
 // model handle
 struct infero_handle_t {
     infero_handle_t(InferenceModel* mod) : impl_(mod) {}
@@ -128,21 +124,18 @@ struct infero_handle_t {
 
 int infero_initialise(int argc, char** argv){
     return wrapApiFunction([argc, argv]{
-        eckit::Main::initialise(argc, argv);        
-
-        if (infero_initialised) {
-            throw eckit::UnexpectedState("Initialising Infero library twice!", Here());
-        }
 
         if (!infero_initialised) {
-            eckit::Main::initialise(1, const_cast<char**>(argv));
+            eckit::Main::initialise(argc, argv);
             infero_initialised = true;
+        } else {
+            throw eckit::UnexpectedState("Initialising Infero library twice!", Here());
         }
 
     });
 }
 
-int infero_create_handle_from_yaml_str(const char str[], infero_handle_t** h) {
+int infero_create_handle_from_yaml_str(const char* str, infero_handle_t** h) {
     return wrapApiFunction([str, h]{
         std::string str_(str);
         eckit::YAMLConfiguration cfg(str_);
@@ -154,7 +147,7 @@ int infero_create_handle_from_yaml_str(const char str[], infero_handle_t** h) {
     });
 }
 
-int infero_create_handle_from_yaml_file(const char path[], infero_handle_t** h) {
+int infero_create_handle_from_yaml_file(const char* path, infero_handle_t** h) {
     return wrapApiFunction([path, h]{
 #ifdef HAVE_MPI
         eckit::SharedBuffer buff = eckit::mpi::comm().broadcastFile(path, 0);
@@ -196,54 +189,23 @@ int infero_delete_handle(infero_handle_t* h) {
 
 
 // run a ML engine for inference
-int infero_inference_double(infero_handle_t* h,
-                            int rank1, 
-                            const double data1[], 
-                            const int shape1[], 
-                            int rank2,
-                            double data2[], 
-                            const int shape2[]) {
-
-    return wrapApiFunction([]{
-        std::cout << "infero_inference_double() - NOTIMP" << std::endl;
-        NOTIMP;
-    });
-   
-}
-
-// run a ML engine for inference
-int infero_inference_double_ctensor(infero_handle_t* h, 
-                                    int rank1, 
-                                    const double data1[], 
-                                    const int shape1[], 
-                                    int rank2,
-                                    double data2[], 
-                                    const int shape2[]) {    
-    return wrapApiFunction([]{
-        std::cout << "infero_inference_double_ctensor() "
-                  << "- used for c-style input tensors - NOTIMP" << std::endl;   
-        NOTIMP;   
-    });
-
-}
-
-
-// run a ML engine for inference
 int infero_inference_float(infero_handle_t* h, 
                            int rank1, 
                            const float data1[], 
-                           const int shape1[], 
+                           const int shape1[],
+                           int layout1,
                            int rank2,
                            float data2[], 
-                           const int shape2[]) {
+                           const int shape2[],
+                           int layout2) {
 
-    return wrapApiFunction([h, rank1, data1, shape1, rank2, data2, shape2]{
+    return wrapApiFunction([h, rank1, data1, shape1, layout1, rank2, data2, shape2, layout2]{
         ASSERT(h);
 
         std::vector<size_t> shape1_vec(shape1,shape1+rank1);
         std::vector<size_t> shape2_vec(shape2,shape2+rank2); 
-        TensorFloat* tIn(new TensorFloat(const_cast<float*>(data1), shape1_vec, true));
-        TensorFloat* tOut(new TensorFloat(data2, shape2_vec, true));
+        TensorFloat* tIn(new TensorFloat(const_cast<float*>(data1), shape1_vec, static_cast<TensorFloat::Layout>(layout1)));
+        TensorFloat* tOut(new TensorFloat(data2, shape2_vec, static_cast<TensorFloat::Layout>(layout2)));
 
         h->impl_->infer(*tIn, *tOut);
 
@@ -253,34 +215,24 @@ int infero_inference_float(infero_handle_t* h,
    });
 }
 
+
 // run a ML engine for inference
-int infero_inference_float_ctensor(infero_handle_t* h, 
-                                   int rank1, 
-                                   const float data1[], 
-                                   const int shape1[], 
-                                   int rank2,
-                                   float data2[], 
-                                   const int shape2[]) {
+int infero_inference_double(infero_handle_t* h,
+                            int rank1, 
+                            const double data1[], 
+                            const int shape1[], 
+                            int layout1,
+                            int rank2,
+                            double data2[], 
+                            const int shape2[],
+                            int layout2) {
 
-    return wrapApiFunction([h, rank1, data1, shape1, rank2, data2, shape2]{                                   
-
-        ASSERT(h);
-
-        std::cout << "infero_inference_float_ctensor() - used for c-style input tensors" << std::endl;
-
-        std::vector<size_t> shape1_vec(shape1,shape1+rank1);
-        std::vector<size_t> shape2_vec(shape2,shape2+rank2);
-        TensorFloat* tIn(new TensorFloat(const_cast<float*>(data1), shape1_vec, false));
-        TensorFloat* tOut(new TensorFloat(data2, shape2_vec, false));
-
-        h->impl_->infer(*tIn, *tOut);
-
-        delete tIn;
-        delete tOut;
-
+    return wrapApiFunction([]{
+        std::cout << "infero_inference_double() - NOTIMP" << std::endl;
+        NOTIMP;
     });
+   
 }
-
 
 
 // run a ML engine for inference
@@ -290,31 +242,34 @@ int infero_inference_float_mimo(infero_handle_t* h,
                                 const int* iRanks, 
                                 const int** iShape, 
                                 const float** iData,
+                                int iLayout,
                                 int nOutputs,
                                 const char** oNames, 
                                 const int* oRanks, 
                                 const int** oShape, 
-                                float** oData){
+                                float** oData,
+                                int oLayout ){
 
     return wrapApiFunction([h,
                             nInputs, 
                             iNames, 
                             iRanks, 
                             iShape, 
-                            iData, 
+                            iData,
+                            iLayout,
                             nOutputs, 
                             oNames, 
                             oRanks, 
                             oShape, 
-                            oData]{
+                            oData,
+                            oLayout]{
         ASSERT(h);
 
         std::cout << "infero_inference_float_mimo()" << std::endl;
 
         // loop over INPUT tensors
         ASSERT(nInputs >= 1);
-        std::vector<TensorFloat*> inputData(static_cast<size_t>(nInputs));
-        std::vector<const char*>  inputNames(static_cast<size_t>(nInputs));
+        std::map<std::string,TensorFloat*> imap;
         for (size_t i=0; i<static_cast<size_t>(nInputs); i++){
 
             // rank
@@ -326,16 +281,12 @@ int infero_inference_float_mimo(infero_handle_t* h,
             for (size_t rr=0; rr<rank; rr++){
                 shape_[rr] = static_cast<size_t>(*(*(iShape+i)+rr));
             }
-
-            // name and data
-            inputNames[i] = *(iNames+i);
-            inputData[i] = new TensorFloat(const_cast<float*>(*(iData+i)), shape_, true);
+            imap.insert(make_pair(*(iNames+i), new TensorFloat(const_cast<float*>(*(iData+i)), shape_, static_cast<TensorFloat::Layout>(iLayout))));
         }
 
         // loop over OUTPUT tensors
         ASSERT(nOutputs >= 1);
-        std::vector<TensorFloat*> outputData(static_cast<size_t>(nOutputs));
-        std::vector<const char*>  outputNames(static_cast<size_t>(nOutputs));
+        std::map<std::string,TensorFloat*> omap;
         for (size_t i=0; i<static_cast<size_t>(nOutputs); i++){
 
             // rank
@@ -348,143 +299,81 @@ int infero_inference_float_mimo(infero_handle_t* h,
                 shape_[rr] = static_cast<size_t>(*(*(oShape+i)+rr));
             }
 
-            // name and data
-            outputNames[i] = *(oNames+i);
-            outputData[i] = new TensorFloat(*(oData+i), shape_, true);
+            omap.insert(make_pair(*(oNames+i), new TensorFloat(*(oData+i), shape_, static_cast<TensorFloat::Layout>(oLayout))));
         }
-
 
         // mimo inference
-        h->impl_->infer_mimo(inputData, inputNames, outputData, outputNames);
+        h->impl_->infer_mimo(imap, omap);
 
-        // delete memory for input tensors
-        for (size_t i=0; i<static_cast<size_t>(nInputs); i++){
-            delete inputData[i];
-        }
+        std::for_each(imap.begin(),imap.end(),
+                        [](auto& item){ 
+                            delete item.second;
+                            item.second=nullptr;
+                        });
 
-        // delete memory for output tensors
-        for (size_t i=0; i<static_cast<size_t>(nOutputs); i++){
-            delete outputData[i];
-        }
+        std::for_each(omap.begin(),omap.end(),
+                        [](auto& item){ 
+                            delete item.second;
+                            item.second=nullptr;
+                        });
 
     });
 }
 
 
 // run a ML engine for inference
-int infero_inference_float_mimo_ctensor(infero_handle_t* h,
-                                        int nInputs,
-                                        const char** iNames,
-                                        const int* iRanks, 
-                                        const int** iShape, 
-                                        const float** iData,
-                                        int nOutputs,
-                                        const char** oNames, 
-                                        const int* oRanks, 
-                                        const int** oShape, 
-                                        float** oData) {
-
-    return wrapApiFunction([h,
-                            nInputs, 
-                            iNames, 
-                            iRanks, 
-                            iShape, 
-                            iData, 
-                            nOutputs, 
-                            oNames, 
-                            oRanks, 
-                            oShape, 
-                            oData]{
-        ASSERT(h);
-
-        std::cout << "infero_inference_float_mimo()" << std::endl;
-
-        // loop over INPUT tensors
-        ASSERT(nInputs >= 1);
-        std::vector<TensorFloat*> inputData(static_cast<size_t>(nInputs));
-        std::vector<const char*>  inputNames(static_cast<size_t>(nInputs));
-        for (size_t i=0; i<static_cast<size_t>(nInputs); i++){
-
-            // rank
-            size_t rank = static_cast<size_t>(*(iRanks+i));
-            ASSERT(rank >= 1);
-
-            // shape
-            std::vector<size_t> shape_(rank);
-            for (size_t rr=0; rr<rank; rr++){
-                shape_[rr] = static_cast<size_t>(*(*(iShape+i)+rr));
-            }
-
-            // name and data
-            inputNames[i] = *(iNames+i);
-            inputData[i] = new TensorFloat(const_cast<float*>(*(iData+i)), shape_, false);
-        }
-
-        // loop over OUTPUT tensors
-        ASSERT(nOutputs >= 1);
-        std::vector<TensorFloat*> outputData(static_cast<size_t>(nOutputs));
-        std::vector<const char*>  outputNames(static_cast<size_t>(nOutputs));
-        for (size_t i=0; i<static_cast<size_t>(nOutputs); i++){
-
-            // rank
-            size_t rank = static_cast<size_t>(*(oRanks+i));
-            ASSERT(rank >= 1);
-
-            // shape
-            std::vector<size_t> shape_(rank);
-            for (size_t rr=0; rr<rank; rr++){
-                shape_[rr] = static_cast<size_t>(*(*(oShape+i)+rr));
-            }
-
-            // name and data
-            outputNames[i] = *(oNames+i);
-            outputData[i] = new TensorFloat(*(oData+i), shape_, false);
-        }
-
-
-        // mimo inference
-        h->impl_->infer_mimo(inputData, inputNames, outputData, outputNames);
-
-        // delete memory for input tensors
-        for (size_t i=0; i<static_cast<size_t>(nInputs); i++){
-            delete inputData[i];
-        }
-
-        // delete memory for output tensors
-        for (size_t i=0; i<static_cast<size_t>(nOutputs); i++){
-            delete outputData[i];
-        }
-
+int infero_inference_double_mimo(infero_handle_t* h,
+                                int nInputs,
+                                const char** iNames, 
+                                const int* iRanks, 
+                                const int** iShape, 
+                                const double** iData,
+                                int iLayout,
+                                int nOutputs,
+                                const char** oNames, 
+                                const int* oRanks, 
+                                const int** oShape, 
+                                double** oData,
+                                int oLayout ){
+    return wrapApiFunction([]{
+        std::cout << "infero_inference_double_mimo() - NOTIMP" << std::endl;
+        NOTIMP;
     });
 }
 
 
-int infero_inference_float_tensor_set(infero_handle_t* h,
-                                      infero_tensor_set_t* iset,
-                                      infero_tensor_set_t* oset){
 
-    return wrapApiFunction([h, iset, oset]{
+int infero_inference_float_map(infero_handle_t* h, void* imap_any_ptr, void* omap_any_ptr){
+
+    return wrapApiFunction([h, imap_any_ptr, omap_any_ptr]{
 
         ASSERT(h);
-        ASSERT(iset);
-        ASSERT(oset);
+        ASSERT(imap_any_ptr);
+        ASSERT(omap_any_ptr);
 
-        std::vector<const char*> input_names_c;
-        for (auto& s: iset->tensor_names){
-            input_names_c.push_back(s.c_str());
+        std::map<std::string,std::any>* imap_any = static_cast<std::map<std::string,std::any>*>(imap_any_ptr);
+        std::map<std::string, TensorFloat*> imap;
+        for (const auto& item: *imap_any) {
+            imap.insert(make_pair(item.first, static_cast<TensorFloat*>(std::any_cast<void*>(item.second)) ));
         }
 
-        std::vector<const char*> output_names_c;
-        for (auto& s: oset->tensor_names){
-            output_names_c.push_back(s.c_str());
-        }
+        std::map<std::string,std::any>* omap_any = static_cast<std::map<std::string,std::any>*>(omap_any_ptr);
+        std::map<std::string, TensorFloat*> omap;
+        for (const auto& item: *omap_any) {
+            omap.insert(make_pair(item.first, static_cast<TensorFloat*>(std::any_cast<void*>(item.second))  ));
+        }        
 
-        h->impl_->infer_mimo(iset->tensors, 
-                             input_names_c, 
-                             oset->tensors, 
-                             output_names_c);
+        h->impl_->infer_mimo(imap, omap);
 
         });
+}
+
+int infero_inference_double_map(infero_handle_t* h, void* imap_any_ptr, void* omap_any_ptr){
+
+    return wrapApiFunction([]{
+        std::cout << "infero_inference_double_map() - NOTIMP" << std::endl;
+        NOTIMP;
+    });
 }
 
 
@@ -513,52 +402,6 @@ int infero_finalise(){
    });    
 }
 
-// -----------------------------------------------------------------------
-
-// infero tensor_set
-int infero_create_tensor_set(infero_tensor_set_t** h) {
-    return wrapApiFunction([h]{
-        *h = new infero_tensor_set_t;
-    });
-}
-
-int infero_delete_tensor_set(infero_tensor_set_t* h) {
-    return wrapApiFunction([&h]{
-        for (auto v: h->tensors){
-            delete v;
-        }
-        delete h;
-        h = nullptr;
-    });
-}
-
-int infero_add_tensor(infero_tensor_set_t* h,
-                      int rank,
-                      int* shape,
-                      float* data,
-                      const char* name,
-                      bool c_style
-                      ) {
-    return wrapApiFunction([h, rank, shape, data, name, c_style]{
-
-        if (rank <= 0){
-            throw eckit::BadValue("tensor rank <= 0!", Here());
-        }
-
-        h->tensors.push_back(new TensorFloat(data, std::vector<size_t>(shape, shape+rank), !c_style ));
-        h->tensor_names.push_back(name);
-    });
-}
-
-int infero_print_tensor_set(infero_tensor_set_t* h) {
-    return wrapApiFunction([h]{
-        eckit::Log::info() << "------- Tensor Set ---------" << std::endl;
-        for (int i=0; i< h->tensors.size(); i++){
-            eckit::Log::info() << i << ") Tensor: " << h->tensor_names[i] << std::endl;
-            eckit::Log::info() << *(h->tensors[i]) << std::endl;
-        }
-    });
-}
 
 #ifdef __cplusplus
 }

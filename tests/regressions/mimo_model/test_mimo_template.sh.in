@@ -6,13 +6,25 @@ srcdir=@CMAKE_CURRENT_SOURCE_DIR@
 bindir=@CMAKE_CURRENT_BINARY_DIR@
 datadir=@CMAKE_BINARY_DIR@/tests/data/mimo_model
 exedir=@CMAKE_BINARY_DIR@/bin
-
 eng_type=@type_@
 model_path=$datadir/@model_@
 
+# Run ctests with mpi if enabled 
+# INFERO_TEST_NPROCS to be set to the desired NPROCS (default=1)
+RUN_TESTS_WITH_MPI=@HAVE_MPI@
+if [ $RUN_TESTS_WITH_MPI = 1 ]; then
+  INFERO_TEST_NPROCS=${INFERO_TEST_NPROCS:-1}
+  test_exe="mpirun -np ${INFERO_TEST_NPROCS} $exedir/@runner_exe@"
+else
+  test_exe=$exedir/@runner_exe@
+fi
+
+test_tolerance=${INFERO_TEST_TOL:-0.01}
+
 # run inference
-$exedir/@runner_exe@ \
+$test_exe \
   $model_path \
   $eng_type \
-  @layers_@
+  @layers_@ \
+  $test_tolerance
 

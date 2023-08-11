@@ -30,20 +30,15 @@ public:
 
     constexpr static const char* type() { return "tf_c"; }
 
-protected:
+    void print(std::ostream& os) const override;
+
+private:
+
     void infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linalg::TensorFloat& tOut,
                     std::string input_name = "", std::string output_name = "") override;
 
     void infer_mimo_impl(std::vector<eckit::linalg::TensorFloat*> &tIn, std::vector<const char*> &input_names,
                          std::vector<eckit::linalg::TensorFloat*> &tOut, std::vector<const char*> &output_names) override;
-
-    void print(std::ostream& os) const override;
-
-    virtual void broadcast_model(const std::string path) override;
-
-    virtual ModelParams_t implDefaultParams_() override;
-
-private:
 
     void check_status(const TF_Status* s, std::string name);    
     TF_Tensor *TF_TensorFromData(const std::vector<size_t> &dims, float *data);
@@ -58,6 +53,14 @@ private:
     /// Get an oeration tensor buffer from layer name
     /// + contains specialised logic for output layer
     TF_Output GetOutputOperationBuffer_(std::string name);
+
+
+    virtual void broadcast_model(const std::string path);
+
+    static eckit::LocalConfiguration defaultConfig();
+
+    // configure session options from model configuration
+    void configureSessionOptions();
 
 private:
 

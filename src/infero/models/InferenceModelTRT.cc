@@ -24,17 +24,20 @@ namespace infero {
 
 static InferenceModelBuilder<InferenceModelTRT> TRTBuilder;
 
+eckit::LocalConfiguration InferenceModelTRT::defaultConfig() {
+    static eckit::LocalConfiguration config;
+    // empty defaults..
+    return config;
+}
+
 
 InferenceModelTRT::InferenceModelTRT(const eckit::Configuration& conf) :
-    InferenceModel(conf), Engine_(nullptr), Network_(nullptr) {
-
-    // Model configuration
-    readConfig_(conf);
-
-    std::string ModelPath(ModelConfig_->getString("path"));
+    InferenceModel(conf, InferenceModelTRT::defaultConfig()), 
+    Engine_(nullptr), 
+    Network_(nullptr) {
 
     // read/bcast model by mpi (when possible)
-    broadcast_model(ModelPath);
+    broadcast_model(modelPath());
 
     InferRuntime_ = nvinfer1::createInferRuntime(sample::gLogger.getTRTLogger());
 
@@ -134,10 +137,10 @@ void InferenceModelTRT::infer_impl(eckit::linalg::TensorFloat& tIn, eckit::linal
 
     eckit::Timing t_start(statistics_.timer());
     float* output = static_cast<float*>(buffers.getHostBuffer(output_tensor_name));    
-    if (tOut.isRight()) {
+    if (tOut.layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
         // TRT uses Left (C) tensor layouts, so we need to convert
         eckit::linalg::TensorFloat tLeft(output, tOut.shape(), false);  // wrap data
-        eckit::linalg::TensorFloat tRight = tLeft.transformLeftToRightLayout();
+        eckit::linalg::TensorFloat tRight = tLeft.transformRowMajorToColMajor();
         tOut = tRight;
     }
     else {
@@ -196,11 +199,11 @@ void infero::InferenceModelTRT::infer_mimo_impl(std::vector<eckit::linalg::Tenso
         // output buffer
         float* output = static_cast<float*>(buffers.getHostBuffer(output_names[i]));
 
-        if (tOut[i]->isRight()) {
+        if (tOut[i]->layout() == eckit::linalg::TensorFloat::Layout::ColMajor) {
 
             // TFC uses Left (C) tensor layouts, so we need to convert
             eckit::linalg::TensorFloat tLeft(output, tOut[i]->shape(), false);  // wrap data
-            eckit::linalg::TensorFloat tRight = tLeft.transformLeftToRightLayout();
+            eckit::linalg::TensorFloat tRight = tLeft.transformRowMajorToColMajor();
             *tOut[i] = tRight;
 
         } else {

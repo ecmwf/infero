@@ -1,3 +1,11 @@
+# (C) Copyright 1996- ECMWF.
+#
+# This software is licensed under the terms of the Apache Licence Version 2.0
+# which can be obtained at http://www.apache.org/licenses/LICENSE-2.0.
+# In applying this licence, ECMWF does not waive the privileges and immunities
+# granted to it by virtue of its status as an intergovernmental organisation
+# nor does it submit to any jurisdiction.
+
 if(HAVE_FINAL)
     add_definitions(-DHAVE_FINAL)
 endif()
@@ -28,7 +36,7 @@ ecbuild_add_library(
         "${eckit_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
-        eckit
+        eckit        
 
     PUBLIC_LIBS
         infero
@@ -56,14 +64,16 @@ ecbuild_add_library(
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
         $<INSTALL_INTERFACE:include>
         $<INSTALL_INTERFACE:module/infero>
+        "${FCKIT_INCLUDE_DIRS}"
 
     PRIVATE_INCLUDES
-        "${eckit_INCLUDE_DIRS}"
-        "${FCKIT_INCLUDE_DIRS}"
+        "${eckit_INCLUDE_DIRS}"        
 
     PRIVATE_LIBS
         inferoapi
         eckit
+
+    PUBLIC_LIBS
         ${FCKIT_LIBRARIES}
 )
 
