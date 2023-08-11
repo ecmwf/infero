@@ -38,7 +38,7 @@ void read_csv(const char* file_path, float* values){
 
 int main(int argc, char** argv){
 
-    const float tol = 1e-3;
+    float tol = 1e-3;
     const int nInferenceReps = 10;
     const int n_batch = 32;
 
@@ -46,6 +46,9 @@ int main(int argc, char** argv){
     char* model_type = argv[2];
     char* input_path = argv[3];
     char* ref_output_path = argv[4];
+    if (argc>5) {
+        tol = atof(argv[5]);
+    }
     char yaml_str[1024];
 
     int input_size[4];

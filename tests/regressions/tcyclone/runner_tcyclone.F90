@@ -13,7 +13,7 @@ use inferof
 use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 implicit none
 
-real(c_float), parameter :: tol = 1e-3;
+real(c_float) :: tol = 1e-3;
 integer, parameter :: n_inference_reps = 10
 
 ! Command line arguments
@@ -22,12 +22,14 @@ character(1024) :: model_type
 character(1024) :: input_path
 character(1024) :: ref_output_path
 character(1024) :: yaml_config
+character(1024) :: tol_str
 
 ! model of infero model
 type(infero_model) :: model
 
 ! indexes and Tensor dimensions
 integer :: ss, i, j, ch
+integer :: argc
 
 integer :: input_dim_0
 integer :: input_dim_1
@@ -71,6 +73,13 @@ CALL get_command_argument(1, model_path)
 CALL get_command_argument(2, model_type)
 CALL get_command_argument(3, input_path)
 CALL get_command_argument(4, ref_output_path)
+
+argc = command_argument_count()
+if (argc>4) then
+   call get_command_argument(5, tol_str)
+   read(tol_str,*) tol
+   write(*,*) "Tolerance set to ", tol
+endif
 
 ! 0) init infero
 call infero_check(infero_initialise())
