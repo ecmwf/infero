@@ -36,11 +36,11 @@ void print_data(size_t n_tensors,
             n_values *= (size_t)(*(shape+s));
         }
 
-        // loop over values
-        printf("Values:\n");
-        for (size_t v=0; v<n_values; v++){
-            printf("value [%lu] %f \n", v, *(*(data+t)+v));
-        }
+        // // loop over values
+        // printf("Values:\n");
+        // for (size_t v=0; v<n_values; v++){
+        //     printf("value [%lu] %f \n", v, *(*(data+t)+v));
+        // }
 
     }
 
@@ -60,7 +60,7 @@ void delete_data(size_t n_tensors,
 
 int main(int argc, char** argv){
 
-    const float tol = 1e-2;
+    float tol = 1e-2;
     const int nInferenceReps = 10;
 
     char* model_path = argv[1];
@@ -68,6 +68,10 @@ int main(int argc, char** argv){
     char* name_input1 = argv[3];
     char* name_input2 = argv[4];
     char* name_output = argv[5];
+
+    if (argc>6) {
+        tol = atof(argv[6]);
+    }
 
     char yaml_str[1024];
 
@@ -87,6 +91,7 @@ int main(int argc, char** argv){
     printf("name_input1 %s \n", name_input1);
     printf("name_input2 %s \n", name_input2);
     printf("name_output %s \n", name_output);
+    printf("test tolerance %f \n", tol);
 
     sprintf(yaml_str, " path: %s\n type: %s", model_path, model_type);
     printf("yaml_str:\n%s\n", yaml_str);

@@ -17,13 +17,15 @@ use iso_c_binding, only : c_double, c_int, c_float, c_char, c_null_char, c_ptr
 
 implicit none
 
-real(c_float), parameter :: tol = 1e-2;
+real(c_float) :: tol = 1e-2;
 integer, parameter :: n_inference_reps = 10
 
 ! Command line arguments
 character(1024) :: model_path
 character(1024) :: model_type
 character(1024) :: yaml_config
+character(1024) :: tol_str
+
 character(len=128) :: t1_name
 character(len=128) :: t2_name
 character(len=128) :: t3_name
@@ -33,6 +35,7 @@ type(fckit_tensor_real32) :: tensor2
 type(fckit_tensor_real32) :: tensor3
 
 integer :: i, j, cc
+integer :: argc
 
 integer, parameter :: n_batch_i = 10
 integer, parameter :: n_batch = 256
@@ -63,6 +66,13 @@ CALL get_command_argument(2, model_type)
 CALL get_command_argument(3, t1_name)
 CALL get_command_argument(4, t2_name)
 CALL get_command_argument(5, t3_name)
+
+argc = command_argument_count()
+if (argc>5) then
+   call get_command_argument(6, tol_str)
+   read(tol_str,*) tol
+   write(*,*) "Tolerance set to ", tol
+endif
 
 ! init the input tensors
 cc=0
