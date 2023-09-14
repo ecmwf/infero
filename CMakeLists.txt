@@ -22,23 +22,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set( PERSISTENT_NAMESPACE "eckit" CACHE INTERNAL "" ) # needed for generating .b files for persistent support
 
+# eckit always required
 ecbuild_find_package( NAME eckit  VERSION  1.19 REQUIRED )
 
-ecbuild_add_option( FEATURE BUILD_TOOLS
-                    DEFAULT ON
-                    DESCRIPTION "Build the command line tools" )
+# for cnpy
+find_package(ZLIB REQUIRED) 
 
+
+############## FORTRAN
 ecbuild_add_option( FEATURE FORTRAN
-                    DESCRIPTION "Provide Fortran bindings" )
-if(HAVE_FORTRAN)
-    ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
-endif()
-
-############## FCKIT
-ecbuild_add_option( FEATURE FCKIT
                     DEFAULT ON
-                    DESCRIPTION "Support for fckit"
-                    REQUIRED_PACKAGES fckit)
+                    DESCRIPTION "Support for fckit Fortran wrappers"
+                    REQUIRED_PACKAGES "NAME fckit VERSION 0.11" )
 
 ############## MPI
 ecbuild_add_option(DEFAULT OFF
@@ -70,9 +65,17 @@ ecbuild_add_option( FEATURE TENSORRT
                     DESCRIPTION "TensorRT engine"
                     REQUIRED_PACKAGES TensorRT )
 
-find_package(ZLIB REQUIRED) # for cnpy
 
-if (HAVE_FCKIT)
+ecbuild_add_option( FEATURE BUILD_TOOLS
+                    DEFAULT ON
+                    DESCRIPTION "Build the command line tools" )
+
+if(HAVE_FORTRAN)
+    ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
+endif()
+
+
+if (HAVE_FORTRAN)
     set(infero_HAVE_FINAL ${fckit_HAVE_FINAL})
     set(infero_HAVE_FORTRAN_APIS TRUE)
     set(infero_LIBRARIES "MLclustering inferoapi inferof")

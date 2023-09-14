@@ -30,7 +30,7 @@ set_target_properties( infero_runner_mimo
 )
 
 
-if(HAVE_FCKIT)
+if(HAVE_FORTRAN)
 
     ecbuild_add_executable( TARGET infero_runner_oro_drag_file
        SOURCES   runner_oro_drag_file.F90
