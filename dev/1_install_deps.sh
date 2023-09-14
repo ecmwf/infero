@@ -71,7 +71,7 @@ fi
 
 
 # ============= FCKIT =============
-if [ ${WITH_FCKIT} == ON ]; then
+if [ ${WITH_FORTRAN} == ON ]; then
 
     if [ ! -d ${FCKIT_SRC_DIR} ]; then
 
