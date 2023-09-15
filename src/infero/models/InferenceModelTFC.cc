@@ -453,11 +453,8 @@ void InferenceModelTFC::configureSessionOptions() {
     uint8_t numInteropThreads_ = config().getInt("numInteropThreads");
     uint8_t numIntraopThreads_ = config().getInt("numIntraopThreads");
 
-    int deviceID = 0;
     if (config().getString("device") == "rank") {
-// #ifdef HAVE_MPI
-        deviceID = eckit::mpi::comm().rank();
-// #endif
+    int deviceID = eckit::mpi::comm().rank();
     } else {
         try {
             deviceID = std::stoi(config().getString("device"));
