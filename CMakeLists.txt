@@ -65,10 +65,16 @@ ecbuild_add_option( FEATURE TENSORRT
                     DESCRIPTION "TensorRT engine"
                     REQUIRED_PACKAGES TensorRT )
 
-
+############## Option for CL tools
 ecbuild_add_option( FEATURE BUILD_TOOLS
                     DEFAULT ON
                     DESCRIPTION "Build the command line tools" )
+
+############## Option for Examples
+ecbuild_add_option( FEATURE BUILD_EXAMPLES
+                    DEFAULT ON
+                    DESCRIPTION "Build the infero examples" )
+
 
 if(HAVE_FORTRAN)
     ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )
