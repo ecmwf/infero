@@ -9,7 +9,7 @@
 # infero-version executable
 ecbuild_add_executable( TARGET infero-version
     SOURCES   infero_version.cc
-    CONDITION HAVE_BUILD_TOOLS
+    CONDITION HAVE_TOOLS
     INCLUDES  infero_version.h
 )
 

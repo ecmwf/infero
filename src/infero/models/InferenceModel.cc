@@ -14,10 +14,8 @@
 #include "eckit/exception/Exceptions.h"
 #include "eckit/config/LocalConfiguration.h"
 #include "eckit/filesystem/LocalPathName.h"
-
-#ifdef HAVE_MPI
 #include "eckit/mpi/Comm.h"
-#endif
+
 
 #include "infero/models/InferenceModel.h"
 
@@ -175,9 +173,7 @@ void InferenceModel::close() {
 }
 
 void InferenceModel::broadcast_model(const std::string path) {
-#ifdef HAVE_MPI
     modelBuffer_ = eckit::mpi::comm().broadcastFile(path, 0);
-#endif
 }
 
 

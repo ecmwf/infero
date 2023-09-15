@@ -58,6 +58,7 @@ if [ ! -d ${ECKIT_BUILD_DIR} ]; then
   cmake \
   -DCMAKE_INSTALL_PREFIX=${ROOT_INSTALL_DIR} \
   -Decbuild_ROOT=${ECBUILD_SRC_DIR} \
+  -DENABLE_MPI=ON \
   ${ECKIT_SRC_DIR}
   
   make -j${BUILD_NPROCS} && make install

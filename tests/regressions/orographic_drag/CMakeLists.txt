@@ -9,7 +9,7 @@
 # ----------------- Runners ----------------
 ecbuild_add_executable( TARGET runner_oro_drag
    SOURCES   runner_oro_drag.c
-   CONDITION HAVE_BUILD_TOOLS
+   CONDITION HAVE_TOOLS
    INCLUDES  ${eckit_INCLUDE_DIRS}
    LIBS      inferoapi
    NOINSTALL
@@ -21,7 +21,7 @@ set_target_properties( runner_oro_drag
 if(infero_HAVE_FORTRAN_APIS)
     ecbuild_add_executable( TARGET runner_oro_drag_f90
        SOURCES   runner_oro_drag.F90
-       CONDITION HAVE_BUILD_TOOLS
+       CONDITION HAVE_TOOLS
        INCLUDES  ${eckit_INCLUDE_DIRS}
        LIBS      inferof
        NOINSTALL

@@ -19,11 +19,10 @@
 #include "eckit/runtime/Main.h"
 #include "eckit/config/YAMLConfiguration.h"
 #include "eckit/exception/Exceptions.h"
+#include "eckit/filesystem/LocalPathName.h"
 
-#ifdef HAVE_MPI
-  #include "eckit/io/SharedBuffer.h"
-  #include "eckit/mpi/Comm.h"
-#endif
+#include "eckit/io/SharedBuffer.h"
+#include "eckit/mpi/Comm.h"
 
 #include "infero/api/infero.h"
 #include "infero/models/InferenceModel.h"
@@ -149,15 +148,9 @@ int infero_create_handle_from_yaml_str(const char* str, infero_handle_t** h) {
 
 int infero_create_handle_from_yaml_file(const char* path, infero_handle_t** h) {
     return wrapApiFunction([path, h]{
-#ifdef HAVE_MPI
         eckit::SharedBuffer buff = eckit::mpi::comm().broadcastFile(path, 0);
         eckit::YAMLConfiguration cfg(buff);
-#else
-        eckit::YAMLConfiguration cfg(path);
-#endif    
-
         *h = new infero_handle_t(InferenceModelFactory::instance().build(cfg.getString("type"), cfg));
-
         ASSERT(*h);
         ASSERT((*h)->impl_);
 

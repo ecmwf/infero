@@ -35,12 +35,6 @@ ecbuild_add_option( FEATURE FORTRAN
                     DESCRIPTION "Support for fckit Fortran wrappers"
                     REQUIRED_PACKAGES "NAME fckit VERSION 0.11" )
 
-############## MPI
-ecbuild_add_option(DEFAULT OFF
-                   FEATURE MPI
-                   DESCRIPTION "Use system MPI libraries"
-                   REQUIRED_PACKAGES "MPI COMPONENTS CXX C" )
-
 ############## TFlite
 ecbuild_add_option( FEATURE TF_LITE
                     DEFAULT OFF
@@ -66,14 +60,26 @@ ecbuild_add_option( FEATURE TENSORRT
                     REQUIRED_PACKAGES TensorRT )
 
 ############## Option for CL tools
-ecbuild_add_option( FEATURE BUILD_TOOLS
+ecbuild_add_option( FEATURE TOOLS
                     DEFAULT ON
                     DESCRIPTION "Build the command line tools" )
 
 ############## Option for Examples
-ecbuild_add_option( FEATURE BUILD_EXAMPLES
+ecbuild_add_option( FEATURE EXAMPLES
                     DEFAULT ON
                     DESCRIPTION "Build the infero examples" )
+
+############## Use infero-run for tests
+ecbuild_add_option( FEATURE INFERO_RUN
+                    DEFAULT ON
+                    DESCRIPTION "Use infero/tools/infero-run to run tests" )
+
+
+if( HAVE_INFERO_RUN )
+  set( MPIEXEC_EXECUTABLE ${CMAKE_CURRENT_SOURCE_DIR}/tools/infero-run )
+  set( MPIEXEC_NUMPROC_FLAG "-n" )
+  set( CMAKE_CROSSCOMPILING_EMULATOR ${CMAKE_CURRENT_SOURCE_DIR}/tools/infero-run )
+endif()                    
 
 
 if(HAVE_FORTRAN)
@@ -90,10 +96,6 @@ else()
     set(infero_HAVE_FORTRAN_APIS FALSE)
     set(infero_LIBRARIES "MLclustering inferoapi")
 endif()
-
-ecbuild_info("MPI_FOUND ${MPI_FOUND}")
-ecbuild_info("MPI_CXX_LIBRARIES ${MPI_CXX_LIBRARIES}")
-ecbuild_info("MPI_CXX_INCLUDE_DIRS ${MPI_CXX_INCLUDE_DIRS}")
 
 ecbuild_info("TENSORFLOWLITE_FOUND ${TENSORFLOWLITE_FOUND}")
 ecbuild_info("TENSORFLOWLITE_LIBRARIES ${TENSORFLOWLITE_LIBRARIES}")

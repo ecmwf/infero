@@ -9,7 +9,7 @@
 # ----------------- Runners ----------------
 ecbuild_add_executable( TARGET runner_mimo
    SOURCES   runner_mimo.c
-   CONDITION HAVE_BUILD_TOOLS
+   CONDITION HAVE_TOOLS
    INCLUDES  ${eckit_INCLUDE_DIRS}
    LIBS      inferoapi
    NOINSTALL
@@ -24,7 +24,7 @@ if(infero_HAVE_FORTRAN_APIS)
 
     ecbuild_add_executable( TARGET runner_mimo_f90
        SOURCES   runner_mimo.F90
-       CONDITION HAVE_BUILD_TOOLS
+       CONDITION HAVE_TOOLS
        INCLUDES  ${eckit_INCLUDE_DIRS}
        LIBS      inferof
        NOINSTALL

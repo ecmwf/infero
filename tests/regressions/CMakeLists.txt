@@ -6,7 +6,7 @@
 # granted to it by virtue of its status as an intergovernmental organisation
 # nor does it submit to any jurisdiction.
 
-if (HAVE_BUILD_TOOLS)
+if (HAVE_TOOLS)
     add_subdirectory(orographic_drag)
     add_subdirectory(tcyclone)
     add_subdirectory(mimo_model)
