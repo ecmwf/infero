@@ -238,19 +238,19 @@ class Infero:
         out_name_ptr2ptrs = ffi.new("char*[]", out_cname_ptrs)
         oranks = ffi.new("int[]", [len(t) for t in output_shapes.values()])
 
-        lib.infero_inference_float_mimo_ctensor(self.infero_hdl[0],
-                                                n_inputs,
-                                                name_ptr2ptrs,
-                                                iranks,
-                                                shape_ptr2ptrs,
-                                                data_ptr2ptrs,
-                                                0,
-                                                n_output,
-                                                out_name_ptr2ptrs,
-                                                oranks,
-                                                out_shape_ptr2ptrs,
-                                                out_data_ptr2ptrs,
-                                                0)
+        lib.infero_inference_float_mimo(self.infero_hdl[0],
+                                        n_inputs,
+                                        name_ptr2ptrs,
+                                        iranks,
+                                        shape_ptr2ptrs,
+                                        data_ptr2ptrs,
+                                        0,
+                                        n_output,
+                                        out_name_ptr2ptrs,
+                                        oranks,
+                                        out_shape_ptr2ptrs,
+                                        out_data_ptr2ptrs,
+                                        0)
 
         output_tensors = {}
         for tidx, t in enumerate(out_data_ptr2ptrs):            

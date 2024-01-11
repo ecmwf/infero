@@ -37,3 +37,6 @@ def test_mimo():
 
     # check output
     assert np.abs(output_tensors['dense_6'] - 5112.6704) < 0.01
+
+if __name__=="__main__":
+    test_mimo()
