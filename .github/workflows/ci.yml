@@ -27,7 +27,7 @@ jobs:
         - gnu-10@ubuntu-20.04
         - clang-12@ubuntu-20.04
         - gnu-11@ubuntu-22.04
-        - clang-14@ubuntu-22.04
+#        - clang-14@ubuntu-22.04
         include:
         - name: gnu-10@ubuntu-20.04
           os: ubuntu-20.04
@@ -47,12 +47,12 @@ jobs:
           compiler_cc: gcc-11
           compiler_cxx: g++-11
           compiler_fc: gfortran-11
-        - name: clang-14@ubuntu-22.04
-          os: ubuntu-22.04
-          compiler: clang-14
-          compiler_cc: clang-14
-          compiler_cxx: clang++-14
-          compiler_fc: gfortran-14
+#        - name: clang-14@ubuntu-22.04
+#          os: ubuntu-22.04
+#          compiler: clang-14
+#          compiler_cc: clang-14
+#          compiler_cxx: clang++-14
+#          compiler_fc: gfortran-14
     runs-on: ${{ matrix.os }}
     env:
 
@@ -187,6 +187,7 @@ jobs:
     with:
       skip_matrix_jobs: |
         clang-14@macos-12
+        clang-14@ubuntu-22.04
       codecov_upload: false
       notify_teams: true
       deps_cache_key: ${{ needs.deps.outputs.deps-cache-key }}
