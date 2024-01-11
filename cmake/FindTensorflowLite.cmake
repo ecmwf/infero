@@ -21,23 +21,41 @@
 # Search with priority for TENSORFLOWLITE_PATH if given as CMake or env var
 
 find_path(TENSORFLOWLITE_INCLUDE_DIR tensorflow/lite/model.h
-          HINTS $ENV{TENSORFLOWLITE_ROOT} ${TENSORFLOWLITE_ROOT}
-          PATHS ${TENSORFLOWLITE_PATH} ENV TENSORFLOWLITE_PATH
+          HINTS 
+            $ENV{TENSORFLOWLITE_ROOT}
+            ${TENSORFLOWLITE_ROOT}
+            $ENV{TFLITE_DIR}
+            ${TFLITE_DIR}
+          PATHS 
+            ${TENSORFLOWLITE_PATH}
+            ENV TENSORFLOWLITE_PATH
           PATH_SUFFIXES include NO_DEFAULT_PATH)
 
 find_path(TENSORFLOWLITE_INCLUDE_DIR tensorflow/lite/model.h PATH_SUFFIXES include )
 
 find_path(TENSORFLOWLITE_FLATBUFFERS_DIR flatbuffers/flatbuffers.h
-          HINTS $ENV{TENSORFLOWLITE_ROOT}/flatbuffers/include ${TENSORFLOWLITE_ROOT}/flatbuffers/include
-          PATHS ${TENSORFLOWLITE_PATH} ENV TENSORFLOWLITE_PATH
+          HINTS
+            $ENV{TENSORFLOWLITE_ROOT}/flatbuffers/include 
+            ${TENSORFLOWLITE_ROOT}/flatbuffers/include
+            $ENV{TFLITE_DIR}/flatbuffers/include
+            ${TFLITE_DIR}/flatbuffers/include
+          PATHS
+            ${TENSORFLOWLITE_PATH}
+            ENV TENSORFLOWLITE_PATH
           PATH_SUFFIXES include NO_DEFAULT_PATH)
 
 find_path(TENSORFLOWLITE_FLATBUFFERS_DIR flatbuffers/flatbuffers.h PATH_SUFFIXES include )
 
 # Search with priority for TENSORFLOWLITE_PATH if given as CMake or env var
 find_library(TENSORFLOWLITE_LIB tensorflow-lite
-            HINTS $ENV{TENSORFLOWLITE_ROOT} ${TENSORFLOWLITE_ROOT}
-            PATHS ${TENSORFLOWLITE_PATH} ENV TENSORFLOWLITE_PATH
+            HINTS 
+              $ENV{TENSORFLOWLITE_ROOT} 
+              ${TENSORFLOWLITE_ROOT}
+              $ENV{TFLITE_DIR}
+              ${TFLITE_DIR}
+            PATHS
+              ${TENSORFLOWLITE_PATH}
+              ENV TENSORFLOWLITE_PATH
             PATH_SUFFIXES lib64 lib NO_DEFAULT_PATH)
 
 find_library( TENSORFLOWLITE_LIB tensorflow-lite )

@@ -53,7 +53,7 @@ ecbuild_add_executable(
 
     SOURCES   cluster.cc
 
-    CONDITION HAVE_BUILD_TOOLS
+    CONDITION HAVE_TOOLS
 
     INCLUDES  ${eckit_INCLUDE_DIRS}
 

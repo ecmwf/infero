@@ -9,22 +9,23 @@ exedir=@CMAKE_BINARY_DIR@/bin
 eng_type=@type_@
 model_path=$datadir/@model_@
 
-# Run ctests with mpi if enabled 
-# INFERO_TEST_NPROCS to be set to the desired NPROCS (default=1)
-RUN_TESTS_WITH_MPI=@HAVE_MPI@
-if [ $RUN_TESTS_WITH_MPI = 1 ]; then
-  INFERO_TEST_NPROCS=${INFERO_TEST_NPROCS:-1}
-  test_exe="mpirun -np ${INFERO_TEST_NPROCS} $exedir/@runner_exe@"
-else
-  test_exe=$exedir/@runner_exe@
-fi
-
+# Set test tolerance
 test_tolerance=${INFERO_TEST_TOL:-0.01}
 
-# run inference
-$test_exe \
+# serial test
+$exedir/@runner_exe@ \
   $model_path \
   $eng_type \
   @layers_@ \
   $test_tolerance
 
+# parallel test (if MPI is found through eckit)
+if [ "@eckit_HAVE_MPI@" == "1" ] && [ "@HAVE_INFERO_RUN@" == "1" ]; then  
+  INFERO_TEST_NPROCS=${INFERO_TEST_NPROCS:-4}
+
+  @MPIEXEC_EXECUTABLE@ @MPIEXEC_NUMPROC_FLAG@ ${INFERO_TEST_NPROCS} $exedir/@runner_exe@ \
+  $model_path \
+  $eng_type \
+  @layers_@ \
+  $test_tolerance
+fi

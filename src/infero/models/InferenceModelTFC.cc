@@ -14,9 +14,7 @@
 #include <vector>
 
 #include "eckit/log/Log.h"
-#ifdef HAVE_MPI
 #include "eckit/mpi/Comm.h"
-#endif
 
 #include "infero/models/InferenceModelTFC.h"
 #include "infero/infero_utils.h"
@@ -457,9 +455,7 @@ void InferenceModelTFC::configureSessionOptions() {
 
     int deviceID = 0;
     if (config().getString("device") == "rank") {
-#ifdef HAVE_MPI
         deviceID = eckit::mpi::comm().rank();
-#endif
     } else {
         try {
             deviceID = std::stoi(config().getString("device"));

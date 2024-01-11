@@ -8,7 +8,7 @@
 
 ecbuild_add_executable( TARGET infero_runner_tcyclone_ctensor
     SOURCES   runner_tcyclone.c
-    CONDITION HAVE_BUILD_TOOLS
+    CONDITION HAVE_TOOLS
     INCLUDES  ${eckit_INCLUDE_DIRS}
     LIBS      inferoapi
     NOINSTALL
@@ -20,7 +20,7 @@ set_target_properties( infero_runner_tcyclone_ctensor
 
 ecbuild_add_executable( TARGET infero_runner_mimo
    SOURCES   runner_mimo.c
-   CONDITION HAVE_BUILD_TOOLS
+   CONDITION HAVE_TOOLS
    INCLUDES  ${eckit_INCLUDE_DIRS}
    LIBS      inferoapi
    NOINSTALL
@@ -30,11 +30,11 @@ set_target_properties( infero_runner_mimo
 )
 
 
-if(HAVE_FCKIT)
+if(HAVE_FORTRAN)
 
     ecbuild_add_executable( TARGET infero_runner_oro_drag_file
        SOURCES   runner_oro_drag_file.F90
-       CONDITION HAVE_BUILD_TOOLS
+       CONDITION HAVE_TOOLS
        INCLUDES  ${eckit_INCLUDE_DIRS}
        LIBS      inferof
        NOINSTALL
@@ -45,7 +45,7 @@ if(HAVE_FCKIT)
 
     ecbuild_add_executable( TARGET infero_runner_oro_drag
        SOURCES   runner_oro_drag.F90
-       CONDITION HAVE_BUILD_TOOLS
+       CONDITION HAVE_TOOLS
        INCLUDES  ${eckit_INCLUDE_DIRS}
        LIBS      inferof
        NOINSTALL
@@ -56,7 +56,7 @@ if(HAVE_FCKIT)
 
     ecbuild_add_executable( TARGET infero_runner_tcyclone
        SOURCES   runner_tcyclone.F90
-       CONDITION HAVE_BUILD_TOOLS
+       CONDITION HAVE_TOOLS
        INCLUDES  ${eckit_INCLUDE_DIRS}
        LIBS      inferof
        NOINSTALL
@@ -67,7 +67,7 @@ if(HAVE_FCKIT)
 
     ecbuild_add_executable( TARGET infero_runner_mimo_f90
        SOURCES   runner_mimo.F90
-       CONDITION HAVE_BUILD_TOOLS
+       CONDITION HAVE_TOOLS
        INCLUDES  ${eckit_INCLUDE_DIRS}
        LIBS      inferof
        NOINSTALL

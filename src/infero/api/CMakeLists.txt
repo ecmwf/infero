@@ -36,7 +36,8 @@ ecbuild_add_library(
         "${eckit_INCLUDE_DIRS}"
 
     PRIVATE_LIBS
-        eckit        
+        eckit
+        eckit_mpi
 
     PUBLIC_LIBS
         infero
@@ -45,7 +46,7 @@ install( FILES ${CMAKE_CURRENT_SOURCE_DIR}/infero.h DESTINATION include/infero/a
 
 
 # Infero Fortran-API
-if(HAVE_FCKIT)
+if(HAVE_FORTRAN)
 
 ecbuild_add_library(
 
@@ -72,6 +73,7 @@ ecbuild_add_library(
     PRIVATE_LIBS
         inferoapi
         eckit
+        eckit_mpi
 
     PUBLIC_LIBS
         ${FCKIT_LIBRARIES}

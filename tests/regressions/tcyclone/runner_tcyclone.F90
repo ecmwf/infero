@@ -15,11 +15,13 @@ implicit none
 
 real(c_float) :: tol = 1e-3;
 integer, parameter :: n_inference_reps = 10
+integer :: n_batches
 
 ! Command line arguments
 character(1024) :: model_path
 character(1024) :: model_type
 character(1024) :: input_path
+character(1024) :: n_batches_str
 character(1024) :: ref_output_path
 character(1024) :: yaml_config
 character(1024) :: tol_str
@@ -35,6 +37,7 @@ integer :: input_dim_0
 integer :: input_dim_1
 integer :: input_dim_2
 integer :: input_dim_3
+integer :: input_dim_flat
 
 integer :: output_dim_0
 integer :: output_dim_1
@@ -56,30 +59,37 @@ real(c_float), allocatable :: it2f(:,:,:,:)
 real(c_float), allocatable :: ot2f(:,:,:,:)
 real(c_float), allocatable :: ot2f_ref(:,:,:,:)
 
-! tcyclone model input size [ 1, 200, 200, 17 ]
-input_dim_0 = 1
-input_dim_1 = 200
-input_dim_2 = 200
-input_dim_3 = 17
-
-! tcyclone model output size [ 1, 200, 200, 1 ]
-output_dim_0 = 1
-output_dim_1 = 200
-output_dim_2 = 200
-output_dim_3 = 1
-
 ! Get CL arguments
 CALL get_command_argument(1, model_path)
 CALL get_command_argument(2, model_type)
 CALL get_command_argument(3, input_path)
-CALL get_command_argument(4, ref_output_path)
+CALL get_command_argument(4, n_batches_str)
+CALL get_command_argument(5, ref_output_path)
+
+! read n batches
+read(n_batches_str,*) n_batches
+write(*,*) "N batches set to ", n_batches
 
 argc = command_argument_count()
-if (argc>4) then
-   call get_command_argument(5, tol_str)
+if (argc>5) then
+   call get_command_argument(6, tol_str)
    read(tol_str,*) tol
    write(*,*) "Tolerance set to ", tol
 endif
+
+! tcyclone model input size [ 1, 200, 200, 17 ]
+input_dim_0 = n_batches
+input_dim_1 = 200
+input_dim_2 = 200
+input_dim_3 = 17
+input_dim_flat =  input_dim_0 * input_dim_1 * input_dim_2 * input_dim_3
+
+! tcyclone model output size [ 1, 200, 200, 1 ]
+output_dim_0 = n_batches
+output_dim_1 = 200
+output_dim_2 = 200
+output_dim_3 = 1
+
 
 ! 0) init infero
 call infero_check(infero_initialise())
@@ -97,8 +107,9 @@ if (ios /= 0) stop
 do ch = 1,input_dim_3
     do j = 1,input_dim_2
         do i = 1,input_dim_1
-            do ss = 1,input_dim_0
-              read(fu, *) tmp_input
+          read(fu, *) tmp_input
+            do ss = 1,input_dim_0              
+              ! write(*,*) "input_dim_0=", input_dim_0 , ", ss=", ss, "  -> idx=", (ss-1)*input_dim_flat + 1
               it2f(ss, i, j, ch) = tmp_input
               input_sum = input_sum + tmp_input
             end do
@@ -132,8 +143,8 @@ if (ios /= 0) stop
 do ch = 1,output_dim_3
     do j = 1,output_dim_2
         do i = 1,output_dim_1
-            do ss = 1,output_dim_0
-              read(fu, *) tmp_input
+          read(fu, *) tmp_input
+            do ss = 1,output_dim_0              
               ot2f_ref(ss, i, j, ch) = tmp_input
             end do
         end do

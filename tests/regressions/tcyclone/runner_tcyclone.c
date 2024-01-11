@@ -40,14 +40,18 @@ int main(int argc, char** argv){
 
     float tol = 1e-3;
     const int nInferenceReps = 10;
-    const int n_batch = 32;
+    int n_batch;
 
     char* model_path = argv[1];
     char* model_type = argv[2];
     char* input_path = argv[3];
-    char* ref_output_path = argv[4];
-    if (argc>5) {
-        tol = atof(argv[5]);
+
+    char* n_batch_str = argv[4];
+    n_batch = atof(n_batch_str);
+
+    char* ref_output_path = argv[5];
+    if (argc>6) {
+        tol = atof(argv[6]);
     }
     char yaml_str[1024];
 

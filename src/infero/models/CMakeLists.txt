@@ -66,21 +66,14 @@ if(HAVE_TENSORRT)
 endif()
 
 
-if(HAVE_MPI)
-    add_definitions(-DHAVE_MPI)
-endif()
 
 ecbuild_add_library(
-
     TARGET infero
-
+    
     INSTALL_HEADERS LISTED
 
     HEADER_DESTINATION
         ${INSTALL_INCLUDE_DIR}/infero
-
-    # GENERATED
-    #     infero_version.cc
 
     SOURCES
         ${infero_srcs}
@@ -92,7 +85,6 @@ ecbuild_add_library(
 
     PRIVATE_INCLUDES
         "${eckit_INCLUDE_DIRS}"
-        "${MPI_INCLUDE_DIRS}"
         "${TENSORFLOWC_INCLUDE_DIRS}"
         "${TENSORFLOWLITE_INCLUDE_DIRS}"
         "${ONNX_INCLUDE_DIRS}"
