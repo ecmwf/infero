@@ -9,6 +9,7 @@ exedir=@CMAKE_BINARY_DIR@/bin
 
 
 eng_type=@type_@
+n_batches=@batch_@
 
 model_path=$datadir/@model_@
 input_path=$datadir/@input_data_filename@
@@ -23,6 +24,7 @@ $exedir/@runner_exe@ \
   $model_path \
   $eng_type \
   $input_path \
+  $n_batches \
   $ref_pred \
   $test_tolerance
 
@@ -34,6 +36,7 @@ if [ "@eckit_HAVE_MPI@" == "1" ] && [ "@HAVE_INFERO_RUN@" == "1" ]; then
   $model_path \
   $eng_type \
   $input_path \
+  $n_batches \
   $ref_pred \
   $test_tolerance
 fi

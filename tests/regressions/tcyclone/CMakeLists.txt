@@ -37,25 +37,30 @@ endif()
 # ----------------- tests ------------------
 list(APPEND tests_types_ "")
 list(APPEND tests_models_ "")
+list(APPEND tests_batches_ "")
 
 if (HAVE_ONNX)
     list(APPEND tests_types_ onnx)
     list(APPEND tests_models_ cyclone_model_200x200.onnx)
+    list(APPEND tests_batches_ 32)
 endif()
 
 if (HAVE_TF_C)
     list(APPEND tests_types_ tf_c)
     list(APPEND tests_models_ cyclone_model_200x200_tf)
+    list(APPEND tests_batches_ 32)
 endif()
 
 if (HAVE_TF_LITE)
     list(APPEND tests_types_ tflite)
     list(APPEND tests_models_ cyclone_model_200x200.tflite)
+    list(APPEND tests_batches_ 1)
 endif()
 
 if (HAVE_TENSORRT)
     list(APPEND tests_types_ tensorrt)
     list(APPEND tests_models_ cyclone_model_200x200.trt)
+    list(APPEND tests_batches_ 32)
 endif()
 
 message("TCYCLONE test models: ${tests_models_}")
@@ -68,6 +73,7 @@ if(NOT ${_count} EQUAL "-1")
 
         list( GET tests_types_ ${_i} type_ )
         list( GET tests_models_ ${_i} model_ )
+        list( GET tests_batches_ ${_i} batch_ )
 
         # Different models use different tensor names
         if (${type_} MATCHES "tf_c")
