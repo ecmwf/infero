@@ -54,6 +54,7 @@ Features
    * `TensorFlow C-API <https://www.tensorflow.org/install/lang_c>`__
    * `ONNX-Runtime <https://github.com/Microsoft/onnxruntime>`__
    * `TensorRT <https://developer.nvidia.com/tensorrt>`__
+   * `Torch C++ API <https://docs.pytorch.org/cppdocs/>`__
 * Support for Multiple-input Multiple-output models
 * Automatic handling of C-style and Fortran-style tensors
 

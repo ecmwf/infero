@@ -59,6 +59,12 @@ ecbuild_add_option( FEATURE TENSORRT
                     DESCRIPTION "TensorRT engine"
                     REQUIRED_PACKAGES TensorRT )
 
+############## Torch
+ecbuild_add_option( FEATURE TORCH
+                    DEFAULT OFF
+                    DESCRIPTION "Torch engine"
+                    REQUIRED_PACKAGES Torch )
+
 ############## Option for CL tools
 ecbuild_add_option( FEATURE TOOLS
                     DEFAULT ON
@@ -80,7 +86,6 @@ if( HAVE_INFERO_RUN )
   set( MPIEXEC_NUMPROC_FLAG "-n" )
   set( CMAKE_CROSSCOMPILING_EMULATOR ${CMAKE_CURRENT_SOURCE_DIR}/tools/infero-run )
 endif()                    
-
 
 if(HAVE_FORTRAN)
     ecbuild_enable_fortran( REQUIRED MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/module )

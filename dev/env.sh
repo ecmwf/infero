@@ -10,7 +10,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
 # ======= Basic config =========
 INFERO_VERBOSE_COMPILATION=${INFERO_VERBOSE_COMPILATION:-"0"}
-ROOT_DIR=${INFERO_HOME:-$HOME}
+ROOT_DIR=${INFERO_HOME:-$(pwd)}
 
 ROOT_SRC_DIR=${ROOT_DIR}/local
 ROOT_BUILD_DIR=${ROOT_DIR}/builds
@@ -31,6 +31,9 @@ WITH_TFLITE_RUNTIME=OFF
 
 # TensorRT
 WITH_TRT=OFF
+
+# Torch
+WITH_TORCH=ON
 
 # Tests/tools/examples
 ENABLE_TESTS=ON
@@ -92,6 +95,15 @@ TFLITE_BUILD_DIR=${ROOT_BUILD_DIR}/tflite
 # NB TensorRT must be downloaded separately..
 TRT_SOURCE_DIR=${ROOT_SRC_DIR}/TensorRT-8.0.0.3
 TRT_BUILD_DIR=${ROOT_SRC_DIR}/TensorRT-8.0.0.3
+
+# TORCH
+TORCH_VERSION=2.0.1
+TORCH_SOURCE_DIR=${ROOT_SRC_DIR}/libtorch
+TORCH_URL=https://download.pytorch.org/libtorch/cpu
+TORCH_TARBALL=libtorch-cxx11-abi-shared-with-deps-$TORCH_VERSION%2Bcpu.zip
+TORCH_TARBALL_ZIP=libtorch-cxx11-abi-shared-with-deps-$TORCH_VERSION+cpu.zip
+
+TORCH_BUILD_DIR=${ROOT_BUILD_DIR}/torch
 
 # INFERO
 INFERO_SRC_DIR=$(dirname ${SCRIPT_DIR})

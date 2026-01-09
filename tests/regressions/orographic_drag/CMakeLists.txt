@@ -55,6 +55,7 @@ if (HAVE_TENSORRT)
     list(APPEND tests_models_ model.trt)
 endif()
 
+
 message("ORO_DRAG test models: ${tests_models_}")
 
 list( LENGTH tests_types_ _count )

@@ -24,6 +24,7 @@ Optional runtime dependencies:
  * `TensorFlow C-API <https://www.tensorflow.org/install/lang_c>`__
  * `ONNX-Runtime <https://github.com/Microsoft/onnxruntime>`__
  * `TensorRT <https://developer.nvidia.com/tensorrt>`__
+ * `Torch C++ API <https://docs.pytorch.org/cppdocs/>`__
 
 
 Installation scripts
@@ -53,13 +54,15 @@ Installation environment can also be customised by editing the following variabl
 +----------------------------+-------------------------------+-------------------------------+
 |WITH_ONNX_RUNTIME           |      ONNX runtime             |             ON                |
 +----------------------------+-------------------------------+-------------------------------+
-|WITH_TFC_RUNTIME            |      Tensorflow C-API         |             ON                |
+|WITH_TFC_RUNTIME            |      Tensorflow C-API         |             OFF               |
 +----------------------------+-------------------------------+-------------------------------+
 |TFC_GPU                     |      TEnsorflow C-API (GPU)   |             1                 |
 +----------------------------+-------------------------------+-------------------------------+
 |WITH_TFLITE_RUNTIME         |      TensorFlow TFlite        |             OFF               |
 +----------------------------+-------------------------------+-------------------------------+
 |WITH_TRT                    |      TensorRT                 |             OFF               |
++----------------------------+-------------------------------+-------------------------------+
+|WITH_TORCH                  |      Torch C++ API            |             OFF               |
 +----------------------------+-------------------------------+-------------------------------+
 |ENABLE_TESTS                |      Build Infero tests       |             ON                |
 +----------------------------+-------------------------------+-------------------------------+
@@ -141,7 +144,9 @@ Useful Cmake arguments:
 +----------------------------------+------------------------------+
 | -DTENSORRT_ROOT                  | TensorRT root path           |
 +----------------------------------+------------------------------+
-| -DENABLE_TOOLS             | Enable CL tools              |
+| -DENABLE_TORCH                   | Enable Torch C++.            |
++----------------------------------+------------------------------+
+| -DENABLE_TOOLS                   | Enable CL tools              |
 +----------------------------------+------------------------------+
 | -DENABLE_EXAMPLES                | Enable examples              |
 +----------------------------------+------------------------------+

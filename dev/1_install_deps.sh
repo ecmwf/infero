@@ -196,5 +196,29 @@ if [[ ! -d ${TRT_BUILD_DIR} && ${WITH_TRT} == ON ]] ; then
 fi
 # =============================================
 
+
+# ================ TORCH =====================
+if [ ${WITH_TORCH} == ON ]; then
+
+    if [ ! -d ${TORCH_SOURCE_DIR} ]; then
+        echo "Creating dir ${TORCH_SOURCE_DIR}.."
+        mkdir -p ${TORCH_SOURCE_DIR}
+
+        echo "Downloading TORCH in ${TORCH_SOURCE_DIR}.."
+        wget ${TORCH_URL}/${TORCH_TARBALL} -P ${TORCH_SOURCE_DIR}
+
+        echo "Unzipping ${TORCH_SOURCE_DIR}/${TORCH_TARBALL_ZIP}.."
+        unzip ${TORCH_SOURCE_DIR}/${TORCH_TARBALL_ZIP} -d ${TORCH_SOURCE_DIR}
+    else
+        echo "Skipping downloading and unzipping of libtorch in ${TORCH_SOURCE_DIR}.."
+    fi
+
+    # rsync into the install dir
+    echo "Installing TORCH in ${ROOT_INSTALL_DIR}.."
+    echo "Executing: rsync -av ${TORCH_SOURCE_DIR}/libtorch/ ${ROOT_INSTALL_DIR}/"
+    rsync -av "${TORCH_SOURCE_DIR}/libtorch/" "${ROOT_INSTALL_DIR}/"
+fi
+# =============================================
+
 echo "all done."
 
