@@ -68,17 +68,6 @@ InferenceModelONNX::InferenceModelONNX(const eckit::Configuration& conf) :
     setupOutputLayers();
 }
 
-InferenceModelONNX::~InferenceModelONNX() {
-
-    for (auto& n: inputNames){
-        free (n);
-    }
-
-    for (auto& n: outputNames){
-        free (n);
-    }
-}
-
 std::string InferenceModelONNX::name() const
 {
     return std::string(this->type());
@@ -200,15 +189,20 @@ void InferenceModelONNX::setupInputLayers() {
 
     for (size_t i=0; i<numInputs; i++){
 
-        char* inputName_ = session->GetInputName(i, allocator);
-        inputNames.push_back(inputName_);
+        Ort::AllocatedStringPtr inputName_ = session->GetInputNameAllocated(i, allocator);
+        inputNamesStr.push_back(inputName_.get());
 
         Ort::TypeInfo type_info = session->GetInputTypeInfo(i);
-        Ort::Unowned<Ort::TensorTypeAndShapeInfo> tensor_info = type_info.GetTensorTypeAndShapeInfo();
+        Ort::ConstTensorTypeAndShapeInfo tensor_info = type_info.GetTensorTypeAndShapeInfo();
 
         std::vector<int64_t> inputLayerShape_ = tensor_info.GetShape();
         inputLayerShapes.push_back(inputLayerShape_);
     }
+
+    // convert input names to char* for ONNX Runtime API
+    std::transform(inputNamesStr.begin(), inputNamesStr.end(), std::back_inserter(inputNames),
+                   [](const std::string& s){ return const_cast<char*>(s.c_str()); });
+
 }
 
 
@@ -219,16 +213,19 @@ void InferenceModelONNX::setupOutputLayers() {
 
     for (size_t i=0; i<numOutputs; i++){
 
-        char* outputName_ = session->GetOutputName(i, allocator);
-        outputNames.push_back(outputName_);
+        Ort::AllocatedStringPtr outputName_ = session->GetOutputNameAllocated(i, allocator);
+        outputNamesStr.push_back(outputName_.get());
 
         Ort::TypeInfo type_info = session->GetOutputTypeInfo(i);
-        Ort::Unowned<Ort::TensorTypeAndShapeInfo> tensor_info = type_info.GetTensorTypeAndShapeInfo();
+        Ort::ConstTensorTypeAndShapeInfo tensor_info = type_info.GetTensorTypeAndShapeInfo();
 
         std::vector<int64_t> outputLayerShape_ = tensor_info.GetShape();
         outputLayerShapes.push_back(outputLayerShape_);
-
     }
+
+    // convert output names to char* for ONNX Runtime API
+    std::transform(outputNamesStr.begin(), outputNamesStr.end(), std::back_inserter(outputNames),
+                [](const std::string& s){ return const_cast<char*>(s.c_str()); });
 }
 
 
@@ -236,7 +233,7 @@ void InferenceModelONNX::print(std::ostream& os) const {
 
     os << "ONNX model has: " << numInputs << " inputs" << std::endl;
     for (size_t i=0; i<numInputs; i++){
-        Log::info() << "Layer [" << i << "] " << inputNames[i] << " has shape: ";
+        Log::info() << "Layer [" << i << "] " << inputNamesStr[i] << " has shape: ";
         for (auto s: inputLayerShapes[i]){
             Log::info() << s << ", ";
         }
@@ -245,7 +242,7 @@ void InferenceModelONNX::print(std::ostream& os) const {
 
     os << "ONNX model has: " << numOutputs << " outputs" << std::endl;
     for (size_t i=0; i<numOutputs; i++){
-        Log::info() << "Layer [" << i << "] " << outputNames[i] << " has shape: ";
+        Log::info() << "Layer [" << i << "] " << outputNamesStr[i] << " has shape: ";
         for (auto s: outputLayerShapes[i]){
             Log::info() << s << ", ";
         }

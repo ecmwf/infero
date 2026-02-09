@@ -25,8 +25,6 @@ public:
 
     InferenceModelONNX(const eckit::Configuration& conf);
 
-    ~InferenceModelONNX() override;
-
     virtual std::string name() const override;
 
     constexpr static const char* type() { return "onnx"; }
@@ -53,15 +51,15 @@ private:
 
     // input interface
     size_t numInputs;
-    std::vector<char*> inputNames;    
+    std::vector<std::string> inputNamesStr;
+    std::vector<char*> inputNames;
     std::vector<std::vector<int64_t>> inputLayerShapes;
 
     // output interface
     size_t numOutputs;
+    std::vector<std::string> outputNamesStr;
     std::vector<char*> outputNames;
-    std::vector<Ort::Value> outputTensors;
     std::vector<std::vector<int64_t>> outputLayerShapes;
-
 
 private:
 

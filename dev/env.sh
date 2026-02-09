@@ -63,7 +63,8 @@ FCKIT_BUILD_DIR=${ROOT_BUILD_DIR}/fckit
 # ONNX runtime
 arch=$(uname -m)
 if [[ "${OSTYPE}" == "linux"* ]] && [[ "${arch}" == "x86_64" ]]; then
-  ONNX_VERSION=1.10.0
+  # ONNX_VERSION=1.10.0
+  ONNX_VERSION=1.24.1
   ONNX_TARFILE=onnxruntime-linux-x64-${ONNX_VERSION}.tgz
 elif [[ "${OSTYPE}" == "darwin"* ]] && [[ "${arch}" == "arm64" ]]; then
   ONNX_VERSION=1.11.1
