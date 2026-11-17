@@ -17,6 +17,7 @@
 #include "eckit/mpi/Comm.h"
 
 #include "infero/models/InferenceModelTFC.h"
+#include "infero/models/TFCSessionConfig.h"
 #include "infero/infero_utils.h"
 #include "eckit/utils/StringTools.h"
 
@@ -450,9 +451,6 @@ void InferenceModelTFC::configureSessionOptions() {
     // options
     session_options = TF_NewSessionOptions();
 
-    uint8_t numInteropThreads_ = config().getInt("numInteropThreads");
-    uint8_t numIntraopThreads_ = config().getInt("numIntraopThreads");
-
     int deviceID = 0;
     if (config().getString("device") == "rank") {
         deviceID = eckit::mpi::comm().rank();
@@ -461,18 +459,17 @@ void InferenceModelTFC::configureSessionOptions() {
             deviceID = std::stoi(config().getString("device"));
         } catch(std::invalid_argument const& ex) {
             eckit::Log::info() << "Model configuration <device> not valid. "
-                            << "It must be either an integer in [0..9] or \"rank\". "
+                            << "It must be either a non-negative integer or \"rank\". "
                             << "Found instead:" << config().getString("device") 
                             << " => defaulting to deviceID=0" << std::endl;
             eckit::Log::info() << ex.what() << std::endl;
             deviceID = 0;
         }
     }
-        // NB: assume one digit only in [0,1,2,3,4,5,6,7,8,9]
-        uint8_t device_ = deviceID + 48; // 48 ASCII decimal code for char "0"
-        uint8_t buf[]={0x10,numInteropThreads_,0x28,numIntraopThreads_,0x32,0x3,0x2a,0x1,device_};
-        TF_SetConfig(session_options, buf, sizeof(buf), err_status);    
+    const auto buffer = detail::makeTFCSessionConfig(config(), deviceID);
+    TF_SetConfig(session_options, buffer.data(), buffer.size(), err_status);
+    check_status(err_status, "TF_SetConfig");
 
-    }
+}
 
 }  // namespace infero

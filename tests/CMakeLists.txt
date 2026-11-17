@@ -16,6 +16,19 @@ ecbuild_add_test(TARGET        infero_test_inference_model
                  LIBS          infero eckit
 )
 
+# TensorFlow configuration serialization can be tested without the backend.
+ecbuild_add_test(TARGET        infero_test_tfc_session_config
+                 INCLUDES      ${eckit_INCLUDE_DIRS} ${PROJECT_SOURCE_DIR}/src
+                 SOURCES       test_tfc_session_config.cc
+                 LIBS          eckit
+)
+
+if(HAVE_TESTS AND HAVE_TF_C)
+  target_compile_definitions(infero_test_tfc_session_config PRIVATE HAVE_TF_C)
+  target_include_directories(infero_test_tfc_session_config PRIVATE ${TENSORFLOWC_INCLUDE_DIRS})
+  target_link_libraries(infero_test_tfc_session_config ${TENSORFLOWC_LIBRARIES})
+endif()
+
 # regression tests
 add_subdirectory(regressions)
 
