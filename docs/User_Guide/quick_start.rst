@@ -42,3 +42,28 @@ On successful run, Infero reports an output similar to the one shown here:
 
 For more information on this and other available examples, see Section :ref:`examples`.
 
+TensorFlow C session options
+----------------------------
+
+The ``tf_c`` backend accepts session settings in ``model_config``:
+
+.. code-block:: yaml
+
+   type: tf_c
+   path: /path/to/saved_model
+   model_config:
+     numIntraopThreads: 4
+     numInteropThreads: 2
+     device: 0
+
+``numIntraopThreads`` controls parallelism within an operation, while
+``numInteropThreads`` controls parallelism between operations. Both default to
+1; 0 lets TensorFlow choose. Counts of 128 and above are supported, subject to
+TensorFlow and system resource limits. A negative ``numInteropThreads`` runs
+operations in the calling thread.
+
+``device`` selects a GPU visible to the process and supports multi-digit IDs.
+Its default, ``rank``, uses the rank in the default MPI communicator, not the
+node-local rank. The selected GPU must exist among the devices visible to that
+process; serializing a larger ID does not make additional GPUs available.
+
