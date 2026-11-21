@@ -66,6 +66,20 @@ if(HAVE_TENSORRT)
 endif()
 
 
+### support for Torch
+if(HAVE_TORCH)
+
+    list(APPEND infero_srcs
+        InferenceModelTorch.h
+        InferenceModelTorch.cc
+        )
+
+    list(APPEND torch_libs ${TORCH_LIBRARIES})
+    message("--->>> TORCH_LIBRARIES: ${TORCH_LIBRARIES}")
+
+    add_definitions(-DHAVE_TORCH)
+endif()
+
 
 ecbuild_add_library(
     TARGET infero
@@ -79,27 +93,29 @@ ecbuild_add_library(
         ${infero_srcs}
 
     PUBLIC_INCLUDES
-       $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>
-       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
-       $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/contrib>
+        "${eckit_INCLUDE_DIRS}" 
+        $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/src>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/contrib>
 
-    PRIVATE_INCLUDES
-        "${eckit_INCLUDE_DIRS}"
+    PRIVATE_INCLUDES        
         "${TENSORFLOWC_INCLUDE_DIRS}"
         "${TENSORFLOWLITE_INCLUDE_DIRS}"
         "${ONNX_INCLUDE_DIRS}"
         "${TENSORRT_INCLUDE_DIRS}"
+        "${TORCH_INCLUDE_DIRS}"
 
-    PRIVATE_LIBS
-        ${ZLIB_LIBRARIES}        
+    PUBLIC_LIBS
+        cnpy
         eckit
         eckit_option
         eckit_mpi
+
+    PRIVATE_LIBS
+        ${ZLIB_LIBRARIES}
         "${tensorflow_c_libs}"
         "${tensorflow_lite_libs}"
         "${onnx_libs}"
         "${tensor_rt_libs}"
-
-    PUBLIC_LIBS
-        cnpy
+        "${torch_libs}"
 )

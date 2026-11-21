@@ -17,8 +17,4 @@ ecbuild_add_executable( TARGET infero.x
     INCLUDES  ${eckit_INCLUDE_DIRS}
     LIBS
         infero
-        cnpy
-        eckit
-        eckit_option
-        eckit_mpi
 )
